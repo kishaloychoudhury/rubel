@@ -1,0 +1,281 @@
+/* =============================================================
+   UMBC Cookie Consent Banner
+   Designed to be portable — no Astra or theme-specific variables.
+   ============================================================= */
+
+.umbc-cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+    background: #2d2d2d;
+    color: #fff;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.25);
+
+    /* Hidden by default — JS removes [hidden] after a tick so it
+       doesn't flash on pages where the cookie is already set. */
+}
+
+.umbc-cookie-banner[hidden] {
+    display: none !important;
+}
+
+/* The banner renders visible-by-default so scanners / no-JS visitors detect the
+   disclaimer. For visitors who already chose, the inline <head> script in
+   header.php adds .umbc-has-consent before paint, hiding it with no flash.
+   The footer "Cookie settings" control removes this class to re-open it. */
+html.umbc-has-consent .umbc-cookie-banner {
+    display: none !important;
+}
+
+/* WCAG 2.4.11/2.4.12 Focus Not Obscured — while the fixed bottom banner is
+   showing, reserve scroll space at the bottom so that tabbing to a control
+   low on the page scrolls it to sit ABOVE the banner instead of behind it.
+   The class is toggled on <html> by cookie-banner.js. 160px clears the
+   banner even when its text wraps to 2-3 lines on small screens. */
+html.umbc-cookie-banner-open {
+    scroll-padding-bottom: 160px;
+}
+
+/* Reserve real layout space while the banner is showing, so it never covers
+   page content. Before this, the fixed banner sat on top of whatever was at the
+   bottom of the viewport — including the programs "Request Info" modal Submit
+   button, which made the site's highest-intent form unsubmittable until the
+   banner was dismissed. --umbc-banner-h is measured by prefs-bar.js and kept
+   current with a ResizeObserver as the text wraps. */
+html.umbc-cookie-banner-open body {
+    padding-bottom: var(--umbc-banner-h, 0px);
+}
+
+/* A modal dialog owns the screen: never let the consent banner sit on top of
+   one. The banner is z-index 99999 and modals are ~1000, so rather than guess a
+   z-index that clears the modal but not the sticky header, prefs-bar.js sets an
+   explicit signal on <html> while a dialog is open. */
+html.umbc-dialog-open .umbc-cookie-banner {
+    display: none !important;
+}
+
+/* Dismiss (X). US only — see prefs-bar.php. */
+.umbc-cookie-banner__close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #cfcfcf;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.umbc-cookie-banner__close:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.umbc-cookie-banner__close:focus-visible {
+    outline: 2px solid #fdb515;
+    outline-offset: 2px;
+    color: #fff;
+}
+
+/* Keep the X from overlapping the text on narrow screens. */
+@media (max-width: 600px) {
+    .umbc-cookie-banner__inner {
+        padding-right: 44px;
+    }
+}
+
+.umbc-cookie-banner__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 20px;
+}
+
+.umbc-cookie-banner__text {
+    margin: 0 !important;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #fff;
+}
+
+.umbc-cookie-banner__link {
+    color: #fdb515 !important;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+.umbc-cookie-banner__link:hover,
+.umbc-cookie-banner__link:focus {
+    color: #fff !important;
+    outline-offset: 2px;
+}
+
+.umbc-cookie-banner__actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.umbc-cookie-banner__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 3px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.umbc-cookie-banner__btn-icon {
+    flex-shrink: 0;
+    display: block;
+}
+
+.umbc-cookie-banner__btn--primary {
+    background: #fdb515;
+    color: #000;
+    border-color: #fdb515;
+}
+
+.umbc-cookie-banner__btn--primary:hover,
+.umbc-cookie-banner__btn--primary:focus {
+    background: #e5a213;
+    border-color: #e5a213;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.umbc-cookie-banner__btn--secondary {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+}
+
+.umbc-cookie-banner__btn--secondary:hover,
+.umbc-cookie-banner__btn--secondary:focus {
+    background: rgba(255, 255, 255, 0.12);
+    outline: 2px solid #fdb515;
+    outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+    .umbc-cookie-banner__inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .umbc-cookie-banner__actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .umbc-cookie-banner__btn {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+}
+
+/* =============================================================
+   Tiered model (dev/test): "Manage preferences" link + the
+   three-level preferences panel. Legacy live banner is unaffected.
+   ============================================================= */
+
+.umbc-cookie-banner__btn--link {
+    background: transparent;
+    color: #fdb515;
+    border-color: transparent;
+    text-decoration: underline;
+    padding: 8px 10px;
+}
+
+.umbc-cookie-banner__btn--link:hover,
+.umbc-cookie-banner__btn--link:focus {
+    color: #fff;
+    outline: 2px solid #fdb515;
+    outline-offset: 2px;
+}
+
+.umbc-cookie-prefs {
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    background: #262626;
+}
+
+.umbc-cookie-prefs[hidden] {
+    display: none !important;
+}
+
+.umbc-cookie-prefs__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.umbc-cookie-prefs__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+}
+
+.umbc-cookie-prefs__row--locked {
+    cursor: default;
+}
+
+.umbc-cookie-prefs__row strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.umbc-cookie-prefs__row span {
+    display: block;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: #cfcfcf;
+}
+
+.umbc-cookie-prefs__toggle {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #fdb515;
+    cursor: pointer;
+}
+
+.umbc-cookie-prefs__locked-label {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #9a9a9a;
+    font-style: italic;
+}
+
+.umbc-cookie-prefs__actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 6px;
+}

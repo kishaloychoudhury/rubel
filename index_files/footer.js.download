@@ -1,0 +1,31 @@
+/**
+ * Footer JavaScript
+ * Handles footer interactions
+ */
+
+// Request Info button toggle
+document.addEventListener('DOMContentLoaded', function() {
+	var reqInfoButton = document.getElementById('req-info-button');
+	var additionalChoices = document.getElementById('additionalChoices');
+
+
+	if (reqInfoButton && additionalChoices) {
+		reqInfoButton.addEventListener('click', function(e) {
+			e.preventDefault();
+			var isExpanded = this.getAttribute('aria-expanded') === 'true';
+			this.setAttribute('aria-expanded', !isExpanded);
+			additionalChoices.style.display = isExpanded ? 'none' : 'block';
+		});
+	} else {
+		console.error('Required elements not found:', {
+			button: !!reqInfoButton,
+			menu: !!additionalChoices
+		});
+	}
+});
+
+// Open Emma signup in popup window
+function openEmmaSignup() {
+	window.open('https://signup.e2ma.net/signup/1907810/1780402/', 'signup', 'menubar=no, location=no, toolbar=no, scrollbars=yes, height=500, width=600');
+	return false;
+}

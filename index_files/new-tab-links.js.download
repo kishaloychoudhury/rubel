@@ -1,0 +1,91 @@
+/**
+ * new-tab-links.js
+ *
+ * WCAG 2.0 AAA 3.2.5 (Change on Request) — links that open in a new tab must
+ * tell the user so in advance.
+ *
+ * Scans every `a[target="_blank"]` and appends real, visually-hidden DOM text
+ * ("(opens in a new tab)") to the link's accessible name. We use a real text
+ * node rather than a CSS `::before` because generated content is not reliably
+ * exposed to assistive tech and is ignored by automated accessibility audits.
+ *
+ * Also hardens security by ensuring `rel="noopener noreferrer"` on each
+ * new-tab link.
+ *
+ * Idempotent: a processed link gets `data-newtab-labeled` so re-runs (and
+ * dynamically injected content) are not double-labeled.
+ */
+(function () {
+    "use strict";
+
+    var SUFFIX = " (opens in a new tab)";
+    // Accessible names that already convey the new-tab behavior — skip these.
+    var ALREADY = /\b(new tab|new window|opens in)\b/i;
+
+    function accessibleNameHint(link) {
+        // Cheap approximation of the accessible name for the skip check.
+        var aria = link.getAttribute("aria-label") || "";
+        var title = link.getAttribute("title") || "";
+        return aria + " " + title + " " + (link.textContent || "");
+    }
+
+    function hardenRel(link) {
+        var rel = (link.getAttribute("rel") || "").toLowerCase().split(/\s+/);
+        var changed = false;
+        ["noopener", "noreferrer"].forEach(function (token) {
+            if (rel.indexOf(token) === -1) {
+                rel.push(token);
+                changed = true;
+            }
+        });
+        if (changed) {
+            link.setAttribute("rel", rel.join(" ").trim());
+        }
+    }
+
+    function label(link) {
+        if (link.hasAttribute("data-newtab-labeled")) {
+            return;
+        }
+        link.setAttribute("data-newtab-labeled", "");
+
+        hardenRel(link);
+
+        // If the link (or its aria-label) already says it opens a new tab,
+        // don't add a second announcement.
+        if (ALREADY.test(accessibleNameHint(link))) {
+            return;
+        }
+
+        // An aria-label overrides child text for the accessible name, so when
+        // one is present we must extend the label itself, not append a span.
+        var existingLabel = link.getAttribute("aria-label");
+        if (existingLabel) {
+            link.setAttribute("aria-label", existingLabel + SUFFIX);
+            return;
+        }
+
+        var span = document.createElement("span");
+        span.className = "umbc-newtab-sr";
+        span.textContent = SUFFIX;
+        link.appendChild(span);
+    }
+
+    function run(root) {
+        var links = (root || document).querySelectorAll('a[target="_blank"]');
+        for (var i = 0; i < links.length; i++) {
+            label(links[i]);
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () {
+            run(document);
+        });
+    } else {
+        run(document);
+    }
+
+    // Expose for any later dynamic content (e.g. AJAX-loaded event lists).
+    window.umbcLabelNewTabLinks = run;
+})();

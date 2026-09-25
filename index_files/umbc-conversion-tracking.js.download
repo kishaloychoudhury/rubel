@@ -1,0 +1,184 @@
+/**
+ * UMBC Conversion Tracking — high-intent event/registration + form signals.
+ *
+ * Two independent trackers, both pushing to window.dataLayer for GTM/GA4:
+ *
+ *  1. event_register_click — fired when a user clicks a CTA that enters an
+ *     event-registration funnel (Blackthorn now, GiveCampus/Eventbrite future).
+ *     This is the single highest-intent action on our event pages and the thing
+ *     our event ad spend drives toward. Two detection paths (deduped per click):
+ *       a. Explicit: links inside a [data-umbc-register-cta] wrapper (the Tribe
+ *          "Event Website"/Register button) — enriched with event title + id.
+ *       b. Heuristic: any anchor whose destination host is a known registration
+ *          platform, wherever it appears — catches reg links pasted straight
+ *          into event descriptions or promo blocks.
+ *
+ *  2. form_submit — fired on a FormAssembly thank-you redirect that follows the
+ *     convention ?form_success=true&source=formassembly[&form_id=…&form_name=…].
+ *     Works for inline shortcode forms AND iframes. Programs keeps its own richer
+ *     `programs_form_thank_you` detection, so this skips program contexts to
+ *     avoid double-counting. See umbc-sgtm-migration-plan.md §12.6.
+ *
+ * In addition, Blackthorn register links are rewritten (before navigation) to
+ * carry the visitor's umbc.edu consent + GA/Meta IDs across, so our container
+ * on events.blackthorn.io can continue the same client and apply the same
+ * advertising consent there. See hub/docs/blackthorn-conversion-plan.md Step 1.
+ */
+(function () {
+	'use strict';
+
+	/* ──────────────────────────────────────────────────────────────────
+	 * 1. Event registration click intent
+	 * ────────────────────────────────────────────────────────────────── */
+
+	// Destination-host substring → platform label. Host-based so we don't have
+	// to mark every button, and so GiveCampus/Eventbrite are caught the day a
+	// link to them ships — no code change needed.
+	var REGISTER_PLATFORMS = [
+		{ match: 'blackthorn', label: 'blackthorn' },
+		{ match: 'givecampus', label: 'givecampus' },
+		{ match: 'eventbrite', label: 'eventbrite' }
+	];
+
+	function classifyPlatform(href) {
+		if (!href) return null;
+		var host;
+		try { host = new URL(href, window.location.href).hostname.toLowerCase(); }
+		catch (e) { return null; }
+		for (var i = 0; i < REGISTER_PLATFORMS.length; i++) {
+			if (host.indexOf(REGISTER_PLATFORMS[i].match) !== -1) return REGISTER_PLATFORMS[i].label;
+		}
+		return null;
+	}
+
+	// Read a first-party cookie; used to carry GA and Meta IDs across to Blackthorn.
+	function getCookie(name) {
+		var m = document.cookie.match(
+			new RegExp('(?:^|;)\\s*' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)')
+		);
+		return m ? decodeURIComponent(m[1]) : null;
+	}
+
+	// Rewrite a Blackthorn register link, before navigation, with the visitor's
+	// umbc.edu consent + IDs so our container on events.blackthorn.io continues
+	// the same client and applies the same advertising consent there.
+	//   - utm_* params survive Blackthorn's client-side redirect (the flag);
+	//   - the ID params (umbc_ga etc.) rely on Blackthorn's sessionStorage
+	//     retention of non-utm params — verify in Step 3 testing, and rename
+	//     them with a utm_umbc_ prefix if they are dropped instead.
+	// See hub/docs/blackthorn-conversion-plan.md Step 1.
+	function decorateBlackthornLink(link) {
+		var u;
+		try { u = new URL(link.href, window.location.href); } catch (e) { return; }
+
+		// Advertising consent carries only when it is on and the browser sends
+		// no Global Privacy Control. Never add utm_source/medium/campaign —
+		// that would overwrite real campaign attribution.
+		var ads = window.umbcAdConsent === true && !navigator.globalPrivacyControl;
+		if (ads) {
+			u.searchParams.set('utm_umbc_ad', '1');
+			var fbc = getCookie('_fbc');
+			var fbp = getCookie('_fbp');
+			if (fbc) u.searchParams.set('umbc_fbc', fbc);
+			if (fbp) u.searchParams.set('umbc_fbp', fbp);
+		}
+		// Analytics continuity: carry the GA client/session cookies so GA4 on
+		// Blackthorn keeps the same client id (only when analytics is granted).
+		if (window.umbcConsentGranted === true) {
+			var ga  = getCookie('_ga');
+			var gas = getCookie('_ga_6WCD1J6LHT');
+			if (ga)  u.searchParams.set('umbc_ga',  ga);
+			if (gas) u.searchParams.set('umbc_gas', gas);
+		}
+
+		link.href = u.toString();
+	}
+
+	// Capture phase so we still record the click even if another handler calls
+	// stopPropagation on it.
+	document.addEventListener('click', function (e) {
+		var link = e.target.closest ? e.target.closest('a[href]') : null;
+		if (!link) return;
+
+		var href     = link.getAttribute('href');
+		var cta      = link.closest('[data-umbc-register-cta]');
+		var platform = classifyPlatform(href);
+
+		// Only a register CTA (explicit) or a known reg-platform link counts.
+		if (!cta && !platform) return;
+
+		// Guard against a single click being recorded twice.
+		if (link.__umbcRegTracked) return;
+		link.__umbcRegTracked = true;
+		setTimeout(function () { link.__umbcRegTracked = false; }, 800);
+
+		// Carry umbc.edu consent + GA/Meta IDs to Blackthorn before navigation.
+		if (platform === 'blackthorn') decorateBlackthornLink(link);
+
+		var payload = {
+			event: 'event_register_click',
+			register_platform: platform || 'other',
+			destination_url: href
+		};
+		if (cta) {
+			payload.event_title      = cta.getAttribute('data-event-title') || '';
+			payload.event_id         = cta.getAttribute('data-event-id') || '';
+			payload.register_surface = cta.getAttribute('data-register-surface') || 'event_page';
+		} else {
+			// No explicit CTA wrapper. In practice this is the common case: editors
+			// paste registration links into the event description rather than
+			// filling Tribe's "Event Website" field, so the wrapper never renders
+			// and every click used to arrive with no event attached. If we are on a
+			// single event page, attribute the click to that event anyway.
+			var ctx = document.querySelector('[data-umbc-event-context]');
+			if (ctx) {
+				payload.event_title      = ctx.getAttribute('data-event-title') || '';
+				payload.event_id         = ctx.getAttribute('data-event-id') || '';
+				payload.register_surface = 'event_description';
+			} else {
+				payload.register_surface = 'inline_link';
+			}
+		}
+
+		window.dataLayer = window.dataLayer || [];
+		window.dataLayer.push(payload);
+	}, true);
+
+	/* ──────────────────────────────────────────────────────────────────
+	 * 2. Generic FormAssembly completion (thank-you redirect convention)
+	 * ────────────────────────────────────────────────────────────────── */
+
+	function trackFormCompletion() {
+		var params = new URLSearchParams(window.location.search);
+		if (params.get('form_success') !== 'true') return;
+		if (params.get('source') !== 'formassembly') return;
+
+		// Programs has its own richer detection (programs_form_thank_you); don't
+		// double-count when we land back on a program context.
+		if (window.__programMeta) return;
+
+		window.dataLayer = window.dataLayer || [];
+		window.dataLayer.push({
+			event: 'form_submit',
+			form_name: params.get('form_name') || 'formassembly',
+			form_id: params.get('form_id') || ''
+		});
+
+		// Strip the success params so a refresh / back-forward can't re-fire it.
+		params.delete('form_success');
+		params.delete('source');
+		params.delete('form_name');
+		params.delete('form_id');
+		var qs = params.toString();
+		var clean = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+		if (window.history && window.history.replaceState) {
+			window.history.replaceState(null, '', clean);
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', trackFormCompletion);
+	} else {
+		trackFormCompletion();
+	}
+})();

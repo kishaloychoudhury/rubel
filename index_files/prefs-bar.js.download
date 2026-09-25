@@ -1,0 +1,404 @@
+/**
+ * UMBC Cookie Consent Banner
+ *
+ * Two models, chosen by window.umbcUseNewConsent (set in header.php):
+ *
+ *   LEGACY (live):  load nothing until "Accept All". Cookie: all | essential.
+ *   TIERED (dev/test): three levels —
+ *     1. Essential   — always on, not gated.
+ *     2. Analytics   — ON by default (US); first-party.   → window.umbcConsentGranted
+ *     3. Advertising — opt-out (US) / opt-in (EU) / off on GPC. → window.umbcAdConsent
+ *   Cookie: all | analytics | essential.
+ *
+ * Effective state is pushed to the dataLayer as `umbc_consent` for GTM (and,
+ * via the server container, for ad-tag gating — see migration plan §12.3).
+ *
+ * See PLAN.md for the human-readable description of all three levels.
+ */
+
+(function () {
+    'use strict';
+
+    var CONFIG = {
+        cookieName:    'umbc_cookie_consent',
+        cookieDays:    180,
+        cookiePath:    '/',
+        trackerFnName: 'umbcLoadTracking', // GTM loader defined in header.php
+    };
+
+    // IMPORTANT: read at boot() time, NOT here. cookie-banner.js loads in the
+    // <head> and executes BEFORE header.php's inline script sets
+    // window.umbcUseNewConsent (which prints after wp_head()). Evaluating these
+    // at module load would freeze NEW_MODEL to false. boot() runs at
+    // DOMContentLoaded, by which point the flags are set.
+    var NEW_MODEL = false;
+    var REGION    = 'us';
+    var GPC       = false;
+
+    /* ---- cookie helpers ---- */
+    function getCookie(name) {
+        var m = document.cookie.match(
+            new RegExp('(?:^|;)\\s*' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)')
+        );
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+    function setCookie(name, value, days, path) {
+        var exp = '';
+        if (days) { var d = new Date(); d.setTime(d.getTime() + days * 86400000); exp = '; expires=' + d.toUTCString(); }
+        document.cookie = name + '=' + encodeURIComponent(value) + exp + '; path=' + (path || '/') + '; SameSite=Lax';
+    }
+
+    /* ---- consent state ---- */
+    // Resolve {analytics, advertising} from a saved cookie value + model/region/GPC.
+    function computeState(saved) {
+        var analytics, advertising;
+        if (saved === 'all')            { analytics = true;  advertising = true;  }
+        else if (saved === 'analytics') { analytics = true;  advertising = false; }
+        else if (saved === 'essential') { analytics = false; advertising = false; }
+        else {                          // no explicit choice yet
+            if (!NEW_MODEL)             { analytics = false; advertising = false; } // legacy: nothing until accept
+            else if (REGION === 'eu')   { analytics = false; advertising = false; } // EU: opt-in pending
+            else                        { analytics = true;  advertising = true;  } // US: default-on
+        }
+        if (GPC) { advertising = false; } // honor Global Privacy Control as an ad opt-out, always
+        return { analytics: analytics, advertising: advertising };
+    }
+
+    function pushConsent(state) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'umbc_consent_update',
+            umbc_consent: {
+                analytics:   state.analytics,
+                advertising: state.advertising,
+                region:      REGION,
+                gpc:         GPC
+            }
+        });
+    }
+
+    /* ---- mid-page revoke -------------------------------------------------
+     * GTM's blocking trigger stops NEW ad tags from firing the moment consent
+     * flips, but the platform libraries that already loaded keep beaconing on
+     * their own. Measured 2026-09-17: 5 further requests to facebook.com/tr and
+     * px.ads.linkedin.com in the 9 seconds after an opt-out. These calls tell
+     * the loaded libraries to stop, so the opt-out takes effect on THIS page
+     * rather than only on the next navigation.
+     * -------------------------------------------------------------------- */
+
+    // Consent Mode is not initialized on this site and window.gtag does not
+    // otherwise exist, so define the standard shim before calling it. Without
+    // this the consent update is silently dropped. Steers Google tags only.
+    function gtagShim() {
+        window.dataLayer = window.dataLayer || [];
+        if (typeof window.gtag !== 'function') {
+            window.gtag = function () { window.dataLayer.push(arguments); };
+        }
+        return window.gtag;
+    }
+
+    function revokeAdvertising() {
+        try {
+            gtagShim()('consent', 'update', {
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied'
+            });
+        } catch (e) {}
+
+        // Meta: this is the call that actually stops the autonomous sending.
+        try { if (typeof window.fbq === 'function') window.fbq('consent', 'revoke'); } catch (e) {}
+
+        // Bing UET.
+        try {
+            if (window.uetq && typeof window.uetq.push === 'function') {
+                window.uetq.push('consent', 'update', { ad_storage: 'denied' });
+            }
+        } catch (e) {}
+
+        // LinkedIn publishes no revoke API, and Reddit's is unconfirmed. Replacing
+        // the globals with no-ops kills anything still queued or on a timer.
+        // Requests already in flight will still complete — that residual is
+        // documented rather than claimed to be zero.
+        try { window.lintrk = function () {}; window._linkedin_data_partner_ids = []; } catch (e) {}
+        try { if (window.rdt) { window.rdt = function () {}; } } catch (e) {}
+
+        clearAdCookies();
+    }
+
+    // First-party advertising identifiers on our own domain. These are what let
+    // an ad platform connect this visitor's later actions back to an ad they
+    // clicked (e.g. _gcl_aw holds the Google Ads click ID). An opt-out means those
+    // identifiers go. Deliberately NOT cleared: _ga / _ga_* (analytics identity,
+    // kept so opt-outs don't show up as new users) and FPID / FPLC (server-set,
+    // likely HttpOnly, so unreachable from script anyway). Cookies on the
+    // platforms' own domains (.facebook.com, .linkedin.com) are not ours to delete.
+    var AD_COOKIE_PREFIXES = ['_gcl_', '_uet', '_rdt_'];
+    var AD_COOKIES         = ['_fbp', '_fbc', 'li_fat_id'];
+
+    function clearAdCookies() {
+        try {
+            var names = document.cookie.split(';').map(function (c) { return c.split('=')[0].trim(); });
+            // A cookie can only be deleted with the exact domain it was set on, and
+            // platforms differ (.umbc.edu on live, .dev-umbc.pantheonsite.io on dev).
+            // Try the host-only copy and every parent level of the hostname; the
+            // browser ignores any level it would never have accepted (e.g. .io).
+            var parts   = window.location.hostname.split('.');
+            var domains = [];
+            for (var i = 0; i < parts.length - 1; i++) { domains.push('.' + parts.slice(i).join('.')); }
+            names.forEach(function (name) {
+                var isAd = AD_COOKIES.indexOf(name) !== -1 ||
+                    AD_COOKIE_PREFIXES.some(function (p) { return name.indexOf(p) === 0; });
+                if (!isAd) return;
+                var expire = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+                document.cookie = expire;                                   // host-only copy
+                domains.forEach(function (d) { document.cookie = expire + '; domain=' + d; });
+            });
+        } catch (e) {}
+
+        // The platforms also keep copies of their IDs in localStorage (found by
+        // live probe 2026-09-23): Bing's _uetvid/_uetsid (+ _exp twins), Google's
+        // _gcl_ls click store, LinkedIn's li_adsId. Bing rebuilds its cookie from
+        // these, so without clearing them an opt-out would not reset ad identity.
+        try {
+            var AD_STORAGE = /^_uet|^_gcl_|^_fbp|^_fbc|^_rdt_|^li_adsId$|^li_fat_id$/;
+            Object.keys(window.localStorage).forEach(function (k) {
+                if (AD_STORAGE.test(k)) window.localStorage.removeItem(k);
+            });
+        } catch (e) {}
+    }
+
+    function grantAdvertising() {
+        try {
+            gtagShim()('consent', 'update', {
+                ad_storage: 'granted',
+                ad_user_data: 'granted',
+                ad_personalization: 'granted'
+            });
+        } catch (e) {}
+        try { if (typeof window.fbq === 'function') window.fbq('consent', 'grant'); } catch (e) {}
+        try {
+            if (window.uetq && typeof window.uetq.push === 'function') {
+                window.uetq.push('consent', 'update', { ad_storage: 'granted' });
+            }
+        } catch (e) {}
+        // LinkedIn and Reddit were stubbed above and cannot be restored in place;
+        // they resume on the next page load. Re-granting mid-page is rare.
+    }
+
+    function denyAnalyticsStorage() {
+        // Note: this makes GA4 send cookieless pings, it does not stop it. Truly
+        // halting GA4 mid-page needs a blocking trigger on the GA4 tags in GTM,
+        // which is a container change and is tracked separately.
+        try { gtagShim()('consent', 'update', { analytics_storage: 'denied' }); } catch (e) {}
+    }
+
+    // The last state we applied, so we can tell a genuine mid-page flip from the
+    // initial application on page load (where nothing has loaded yet to revoke).
+    var appliedState = null;
+
+    // Apply a state: set the gate flags, tell GTM, push the dataLayer signal.
+    function applyState(state) {
+        var prev = appliedState;
+        appliedState = state;
+
+        window.umbcConsentGranted = state.analytics;   // gates GTM load (analytics bucket)
+        window.umbcAdConsent      = state.advertising; // gates ad tags + Crazy Egg (advertising bucket)
+
+        if (prev) {
+            if (prev.advertising && !state.advertising)      { revokeAdvertising(); }
+            else if (!prev.advertising && state.advertising) { grantAdvertising(); }
+            if (prev.analytics && !state.analytics)          { denyAnalyticsStorage(); }
+        }
+
+        pushConsent(state);
+        if (state.analytics && typeof window[CONFIG.trackerFnName] === 'function') {
+            window[CONFIG.trackerFnName]();
+        }
+    }
+
+    function saveAndApply(value) {
+        setCookie(CONFIG.cookieName, value, CONFIG.cookieDays, CONFIG.cookiePath);
+        applyState(computeState(value));
+        hideBanner();
+    }
+
+    /* ---- banner show / hide ---- */
+    function el() { return document.getElementById('umbc-cookie-banner'); }
+    // Toggling .umbc-cookie-banner-open on <html> lets CSS reserve
+    // scroll-padding-bottom so keyboard focus is never hidden behind this
+    // fixed bottom banner (WCAG 2.4.12 / 2.4.11 Focus Not Obscured).
+    function hideBanner() { var b = el(); if (b) b.setAttribute('hidden', ''); document.documentElement.classList.remove('umbc-cookie-banner-open'); setBannerHeight(); }
+    function showBanner() { var b = el(); if (b) b.removeAttribute('hidden'); document.documentElement.classList.add('umbc-cookie-banner-open'); setBannerHeight(); }
+
+    /* ---- reserve layout space ----
+       Publish the banner's real height as --umbc-banner-h so CSS can pad the
+       page bottom by exactly that much. Without this the fixed banner covered
+       whatever sat at the bottom of the viewport. */
+    function setBannerHeight() {
+        var root = document.documentElement;
+        var b = el();
+        if (!b || b.hasAttribute('hidden') || root.classList.contains('umbc-has-consent')) {
+            root.style.removeProperty('--umbc-banner-h');
+            return;
+        }
+        root.style.setProperty('--umbc-banner-h', b.offsetHeight + 'px');
+    }
+
+    function watchBannerHeight() {
+        var b = el();
+        if (!b || typeof ResizeObserver !== 'function') return;
+        new ResizeObserver(setBannerHeight).observe(b);
+    }
+
+    /* ---- yield to dialogs ----
+       While a modal owns the screen the banner must not float above it. We
+       detect the dialogs from here rather than editing each component (the
+       mobile menu ships minified), keeping the banner the sole owner of its own
+       visibility rules.
+         - body.no-scroll        -> programs "Request Info" modal (toggleOverlay)
+         - .mobile-menu-overlay.active -> mobile navigation overlay */
+    function dialogOpen() {
+        if (document.body && document.body.classList.contains('no-scroll')) return true;
+        if (document.querySelector('.mobile-menu-overlay.active')) return true;
+        return false;
+    }
+
+    function syncDialogState() {
+        document.documentElement.classList.toggle('umbc-dialog-open', dialogOpen());
+    }
+
+    function watchDialogs() {
+        if (typeof MutationObserver !== 'function') return;
+        var mo = new MutationObserver(syncDialogState);
+        if (document.body) mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        var overlay = document.querySelector('.mobile-menu-overlay');
+        if (overlay) mo.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+        syncDialogState();
+    }
+
+    // Re-open the banner from the footer "Cookie settings" control. Clears the
+    // consented-hidden state, reveals the banner, and (tiered model) opens the
+    // preferences panel reflecting the visitor's current choice.
+    function openSettings() {
+        document.documentElement.classList.remove('umbc-has-consent');
+        showBanner();
+        var b = el();
+        var prefs = document.getElementById('umbc-cookie-prefs');
+        if (b && prefs) {
+            var st = computeState(getCookie(CONFIG.cookieName));
+            setToggle('analytics', st.analytics);
+            setToggle('advertising', st.advertising);
+            prefs.removeAttribute('hidden');
+            var manageBtn = b.querySelector('[data-action="manage"]');
+            if (manageBtn) { manageBtn.setAttribute('aria-expanded', 'true'); }
+        }
+        if (b) {
+            var focusable = b.querySelector('button, [href], input, select, textarea');
+            if (focusable) { focusable.focus(); }
+        }
+    }
+    // Exposed so any control can re-open the cookie settings.
+    window.umbcOpenCookieSettings = openSettings;
+
+    function bindCookieSettingsLinks() {
+        var links = document.querySelectorAll('.umbc-cookie-settings');
+        for (var i = 0; i < links.length; i++) {
+            links[i].addEventListener('click', function (e) {
+                e.preventDefault();
+                openSettings();
+            });
+        }
+    }
+
+    /* ---- legacy model wiring (live) ---- */
+    function bindLegacy() {
+        var b = el(); if (!b) return;
+        b.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-consent]');
+            if (!btn) return;
+            saveAndApply(btn.dataset.consent); // 'all' | 'essential'
+        });
+    }
+
+    /* ---- tiered model wiring (dev/test) ---- */
+    function bindTiered() {
+        var b = el(); if (!b) return;
+        var prefs = document.getElementById('umbc-cookie-prefs');
+
+        b.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            var action = btn.dataset.action;
+
+            if (action === 'accept') {            // "Got it" (US) / "Accept all" (EU)
+                saveAndApply('all');
+            } else if (action === 'dismiss') {    // X — US only (not rendered in EU)
+                // Identical to "Got it". US visitors already have analytics and
+                // advertising on by default, so closing the notice grants nothing
+                // they did not already have. The X is never rendered in EU, where
+                // dismissal-as-consent would be a dark pattern.
+                saveAndApply('all');
+            } else if (action === 'reject') {     // EU only
+                saveAndApply('essential');
+            } else if (action === 'manage') {     // open preferences panel
+                if (!prefs) return;
+                var open = prefs.hasAttribute('hidden');
+                if (open) {
+                    // reflect current effective state in the toggles
+                    var st = computeState(getCookie(CONFIG.cookieName));
+                    setToggle('analytics', st.analytics);
+                    setToggle('advertising', st.advertising);
+                    prefs.removeAttribute('hidden');
+                } else {
+                    prefs.setAttribute('hidden', '');
+                }
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            } else if (action === 'save') {       // save the toggles
+                var a  = getToggle('analytics');
+                var ad = getToggle('advertising');
+                var value = !a ? 'essential' : (ad ? 'all' : 'analytics');
+                saveAndApply(value);
+            }
+        });
+    }
+    function toggleEl(bucket) { return document.querySelector('.umbc-cookie-prefs__toggle[data-bucket="' + bucket + '"]'); }
+    function getToggle(bucket) { var t = toggleEl(bucket); return t ? t.checked : false; }
+    function setToggle(bucket, on) { var t = toggleEl(bucket); if (t) t.checked = !!on; }
+
+    /* ---- boot ---- */
+    function boot() {
+        // Read the consent flags now (DOMContentLoaded) — header.php's inline
+        // script has run by this point, so window.umbcUseNewConsent is set.
+        NEW_MODEL = window.umbcUseNewConsent === true;
+        REGION    = window.umbcRegion === 'eu' ? 'eu' : 'us';
+        GPC       = (navigator && navigator.globalPrivacyControl === true);
+
+        var saved = getCookie(CONFIG.cookieName);
+
+        // Always apply current state on every load (loads analytics-by-default in
+        // the tiered/US model; respects a saved opt-out; does nothing in legacy
+        // until a choice exists).
+        applyState(computeState(saved));
+
+        // Bind interactions regardless of saved state, so the footer
+        // "Cookie settings" control can re-open a fully working banner later.
+        if (NEW_MODEL) { bindTiered(); } else { bindLegacy(); }
+        bindCookieSettingsLinks();
+
+        // Keep the banner out of the way of modals, and keep the reserved
+        // bottom space accurate. Bound even when the banner starts hidden, so
+        // the footer "Cookie settings" control gets the same behaviour later.
+        watchDialogs();
+        watchBannerHeight();
+
+        if (saved) { return; } // explicit choice already made → leave it hidden
+        showBanner();          // first visit → reveal the disclaimer
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+})();

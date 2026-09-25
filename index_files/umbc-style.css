@@ -1,0 +1,4770 @@
+/**
+Theme Name: UMBC Theme Non Astra
+Author: UMBC Web Team
+Description: UMBC standalone theme — no Astra dependency.
+Version: 1.0.3
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: umbc-theme
+*/
+
+@media (max-width: 781px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 781px) {
+    .hide-on-desktop {
+        display: none !important;
+    }
+}
+
+.type-post {
+    max-width: 1200px !important;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* =============================================================
+   Mobile: contain WP block-columns inside covers
+   -------------------------------------------------------------
+   WP outputs a per-instance .wp-container-core-columns-is-layout-*
+   class with `flex-wrap: nowrap` whenever the editor sets the
+   column wrap option that way. Combined with column content that
+   has a min-content width (icon + button), the row refuses to
+   stack on mobile and pushes the parent cover wider than the
+   viewport. Force wrap + min-width:0 so columns collapse normally
+   below 781px. (WP core's own stacking rule has the same selectors
+   but loses the cascade against the instance class — these matching
+   selectors with !important win.)
+   ============================================================= */
+@media (max-width: 781px) {
+    .wp-block-columns:not(.is-not-stacked-on-mobile) {
+        flex-wrap: wrap !important;
+    }
+
+    .wp-block-columns:not(.is-not-stacked-on-mobile) > .wp-block-column {
+        flex-basis: 100% !important;
+        flex-grow: 1 !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* The image inside the cover gets `max-width: none` from WP core
+       (see .wp-block-cover .wp-block-cover__image-background), so its
+       intrinsic pixel width can drag layout calculations wider than
+       the viewport even when the cover itself is sized correctly.
+       Re-apply max-width:100% so the image always tracks its parent. */
+    .wp-block-cover > img.wp-block-cover__image-background,
+    .wp-block-cover-image > img.wp-block-cover__image-background {
+        max-width: 100% !important;
+    }
+}
+
+/* =============================================================
+   Mobile: inset UMBC custom blocks from the viewport edge
+   -------------------------------------------------------------
+   Pages have no horizontal padding on #primary so full-bleed
+   cover/hero blocks can extend to the viewport edge. The trade-
+   off is that all the boxed UMBC blocks (six-pack, spotlight,
+   stories, etc.) also sit flush. Target the wp-block-acf-* and
+   wp-block-umbc-* class patterns to inset them on mobile, while
+   keeping hero + cover blocks (and any explicit alignfull) at
+   true edge-to-edge.
+   ============================================================= */
+@media (max-width: 768px) {
+    body.page .entry-content > [class*="wp-block-acf-"],
+    body.page .entry-content > [class*="wp-block-umbc-"],
+    /* Bare in-flow text content on plain (non-section) pages never carries
+       its own horizontal padding, so it sits flush against the viewport edge
+       on mobile. Inset it to match the custom blocks. Full-bleed figures /
+       tables opt out via :not(.alignfull) below. */
+    body.page .entry-content > p,
+    body.page .entry-content > h1,
+    body.page .entry-content > h2,
+    body.page .entry-content > h3,
+    body.page .entry-content > h4,
+    body.page .entry-content > h5,
+    body.page .entry-content > h6,
+    body.page .entry-content > ul,
+    body.page .entry-content > ol,
+    body.page .entry-content > dl,
+    body.page .entry-content > pre,
+    body.page .entry-content > blockquote,
+    body.page .entry-content > .wp-block-heading,
+    body.page .entry-content > .wp-block-list,
+    body.page .entry-content > .wp-block-quote,
+    body.page .entry-content > figure:not(.alignfull),
+    body.page .entry-content > table:not(.alignfull),
+    body.page .entry-content > .wp-block-table:not(.alignfull) {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        box-sizing: border-box;
+    }
+
+    /* Exclusions — hero / cover blocks (custom + WP core) and any
+       block the editor explicitly marked alignfull should still
+       run to the viewport edge. */
+    body.page .entry-content > .homepage-hero-block,
+    body.page .entry-content > .page-hero-block,
+    body.page .entry-content > [class*="hero-block"],
+    body.page .entry-content > [class*="cover-block"],
+    body.page .entry-content > .wp-block-cover,
+    body.page .entry-content > [class*="wp-block-acf-"].alignfull,
+    body.page .entry-content > [class*="wp-block-umbc-"].alignfull {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+footer {
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.umbc-breadcrumbs-wrap,
+.umbc-breadcrumbs {
+    max-width: 1200px;
+    margin: 4rem auto 0.75rem;
+    padding: 0 1.75rem;
+    color: #636466;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.umbc-breadcrumbs-wrap a,
+.umbc-breadcrumbs a,
+.umbc-breadcrumbs-wrap .rank-math-breadcrumb a {
+    color: #007176;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.umbc-breadcrumbs-wrap p,
+.umbc-breadcrumbs .breadcrumb,
+.umbc-breadcrumbs .breadcrumbs,
+.umbc-breadcrumbs-wrap .rank-math-breadcrumb p {
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .umbc-breadcrumbs-wrap,
+    .umbc-breadcrumbs {
+        padding: 0 1rem;
+    }
+}
+
+/* img, entry-content, alignwide, entry-title, entry-header title,
+   block alignment, and separator rules moved to style.css */
+
+.tribe-events .tribe-events-c-nav__next:disabled,
+.tribe-events .tribe-events-c-nav__prev:disabled {
+    color: #757575 !important;
+}
+
+/* Desktop Search Icon - Touch Target Size (44x44px minimum) */
+a.full-screen.astra-search-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+/* Full-screen search overlay — hidden globally until activated.
+   Declared here so it wins regardless of which search CSS loaded. */
+#ast-seach-full-screen-form {
+    display: none !important;
+}
+
+#ast-seach-full-screen-form.active {
+    display: flex !important;
+}
+
+/* Global focus-visible override moved to style.css */
+
+/* Navigation system moved to css/umbc-nav.css — 2026-04-29 */
+/* =============================================================
+   ugrad spacing utilities — migrated from legacy-undergraduate.css
+   Bootstrap-style margin/padding scale: 0=0, 1=.5rem, 2=1rem,
+   3=1.5rem, 4=2rem, 5=2.5rem. Responsive -md- variants at ≥768px.
+   ============================================================= */
+.ugrad-mt-0 {
+    margin-top: 0 !important;
+}
+.ugrad-mb-0 {
+    margin-bottom: 0 !important;
+}
+.ugrad-ml-0 {
+    margin-left: 0 !important;
+}
+.ugrad-mr-0 {
+    margin-right: 0 !important;
+}
+.ugrad-my-0 {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+.ugrad-mx-0 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+.ugrad-p-0 {
+    padding: 0 !important;
+}
+.ugrad-pt-0 {
+    padding-top: 0 !important;
+}
+.ugrad-pb-0 {
+    padding-bottom: 0 !important;
+}
+.ugrad-pl-0 {
+    padding-left: 0 !important;
+}
+.ugrad-pr-0 {
+    padding-right: 0 !important;
+}
+.ugrad-py-0 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+.ugrad-px-0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.ugrad-m-1 {
+    margin: 0.5rem !important;
+}
+.ugrad-mt-1 {
+    margin-top: 0.5rem !important;
+}
+.ugrad-mb-1 {
+    margin-bottom: 0.5rem !important;
+}
+.ugrad-ml-1 {
+    margin-left: 0.5rem !important;
+}
+.ugrad-mr-1 {
+    margin-right: 0.5rem !important;
+}
+.ugrad-my-1 {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+.ugrad-mx-1 {
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+}
+.ugrad-p-1 {
+    padding: 0.5rem !important;
+}
+.ugrad-pt-1 {
+    padding-top: 0.5rem !important;
+}
+.ugrad-pb-1 {
+    padding-bottom: 0.5rem !important;
+}
+.ugrad-pl-1 {
+    padding-left: 0.5rem !important;
+}
+.ugrad-pr-1 {
+    padding-right: 0.5rem !important;
+}
+.ugrad-py-1 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+.ugrad-px-1 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+
+.ugrad-m-2 {
+    margin: 1rem !important;
+}
+.ugrad-mt-2 {
+    margin-top: 1rem !important;
+}
+.ugrad-mb-2 {
+    margin-bottom: 1rem !important;
+}
+.ugrad-ml-2 {
+    margin-left: 1rem !important;
+}
+.ugrad-mr-2 {
+    margin-right: 1rem !important;
+}
+.ugrad-my-2 {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+.ugrad-mx-2 {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+}
+.ugrad-p-2 {
+    padding: 1rem !important;
+}
+.ugrad-pt-2 {
+    padding-top: 1rem !important;
+}
+.ugrad-pb-2 {
+    padding-bottom: 1rem !important;
+}
+.ugrad-pl-2 {
+    padding-left: 1rem !important;
+}
+.ugrad-pr-2 {
+    padding-right: 1rem !important;
+}
+.ugrad-py-2 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+.ugrad-px-2 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+.ugrad-m-3 {
+    margin: 1.5rem !important;
+}
+.ugrad-mt-3 {
+    margin-top: 1.5rem !important;
+}
+.ugrad-mb-3 {
+    margin-bottom: 1.5rem !important;
+}
+.ugrad-ml-3 {
+    margin-left: 1.5rem !important;
+}
+.ugrad-mr-3 {
+    margin-right: 1.5rem !important;
+}
+.ugrad-my-3 {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+.ugrad-mx-3 {
+    margin-left: 1.5rem !important;
+    margin-right: 1.5rem !important;
+}
+.ugrad-p-3 {
+    padding: 1.5rem !important;
+}
+.ugrad-pt-3 {
+    padding-top: 1.5rem !important;
+}
+.ugrad-pb-3 {
+    padding-bottom: 1.5rem !important;
+}
+.ugrad-pl-3 {
+    padding-left: 1.5rem !important;
+}
+.ugrad-pr-3 {
+    padding-right: 1.5rem !important;
+}
+.ugrad-py-3 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+}
+.ugrad-px-3 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+.ugrad-m-4 {
+    margin: 2rem !important;
+}
+.ugrad-mt-4 {
+    margin-top: 2rem !important;
+}
+.ugrad-mb-4 {
+    margin-bottom: 2rem !important;
+}
+.ugrad-ml-4 {
+    margin-left: 2rem !important;
+}
+.ugrad-mr-4 {
+    margin-right: 2rem !important;
+}
+.ugrad-my-4 {
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+}
+.ugrad-mx-4 {
+    margin-left: 2rem !important;
+    margin-right: 2rem !important;
+}
+.ugrad-p-4 {
+    padding: 2rem !important;
+}
+.ugrad-pt-4 {
+    padding-top: 2rem !important;
+}
+.ugrad-pb-4 {
+    padding-bottom: 2rem !important;
+}
+.ugrad-pl-4 {
+    padding-left: 2rem !important;
+}
+.ugrad-pr-4 {
+    padding-right: 2rem !important;
+}
+.ugrad-py-4 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+.ugrad-px-4 {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}
+
+.ugrad-m-5 {
+    margin: 2.5rem !important;
+}
+.ugrad-mt-5 {
+    margin-top: 2.5rem !important;
+}
+.ugrad-mb-5 {
+    margin-bottom: 2.5rem !important;
+}
+.ugrad-ml-5 {
+    margin-left: 2.5rem !important;
+}
+.ugrad-mr-5 {
+    margin-right: 2.5rem !important;
+}
+.ugrad-my-5 {
+    margin-top: 2.5rem !important;
+    margin-bottom: 2.5rem !important;
+}
+.ugrad-mx-5 {
+    margin-left: 2.5rem !important;
+    margin-right: 2.5rem !important;
+}
+.ugrad-p-5 {
+    padding: 2.5rem !important;
+}
+.ugrad-pt-5 {
+    padding-top: 2.5rem !important;
+}
+.ugrad-pb-5 {
+    padding-bottom: 2.5rem !important;
+}
+.ugrad-pl-5 {
+    padding-left: 2.5rem !important;
+}
+.ugrad-pr-5 {
+    padding-right: 2.5rem !important;
+}
+.ugrad-py-5 {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+}
+.ugrad-px-5 {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+}
+
+@media (min-width: 768px) {
+    .ugrad-m-md-0 {
+        margin: 0 !important;
+    }
+    .ugrad-mt-md-0 {
+        margin-top: 0 !important;
+    }
+    .ugrad-mb-md-0 {
+        margin-bottom: 0 !important;
+    }
+    .ugrad-ml-md-0 {
+        margin-left: 0 !important;
+    }
+    .ugrad-mr-md-0 {
+        margin-right: 0 !important;
+    }
+    .ugrad-my-md-0 {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .ugrad-mx-md-0 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .ugrad-p-md-0 {
+        padding: 0 !important;
+    }
+    .ugrad-pt-md-0 {
+        padding-top: 0 !important;
+    }
+    .ugrad-pb-md-0 {
+        padding-bottom: 0 !important;
+    }
+    .ugrad-pl-md-0 {
+        padding-left: 0 !important;
+    }
+    .ugrad-pr-md-0 {
+        padding-right: 0 !important;
+    }
+    .ugrad-py-md-0 {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    .ugrad-px-md-0 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .ugrad-m-md-1 {
+        margin: 0.5rem !important;
+    }
+    .ugrad-mt-md-1 {
+        margin-top: 0.5rem !important;
+    }
+    .ugrad-mb-md-1 {
+        margin-bottom: 0.5rem !important;
+    }
+    .ugrad-ml-md-1 {
+        margin-left: 0.5rem !important;
+    }
+    .ugrad-mr-md-1 {
+        margin-right: 0.5rem !important;
+    }
+    .ugrad-my-md-1 {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .ugrad-mx-md-1 {
+        margin-left: 0.5rem !important;
+        margin-right: 0.5rem !important;
+    }
+    .ugrad-p-md-1 {
+        padding: 0.5rem !important;
+    }
+    .ugrad-pt-md-1 {
+        padding-top: 0.5rem !important;
+    }
+    .ugrad-pb-md-1 {
+        padding-bottom: 0.5rem !important;
+    }
+    .ugrad-pl-md-1 {
+        padding-left: 0.5rem !important;
+    }
+    .ugrad-pr-md-1 {
+        padding-right: 0.5rem !important;
+    }
+    .ugrad-py-md-1 {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    .ugrad-px-md-1 {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    .ugrad-m-md-2 {
+        margin: 1rem !important;
+    }
+    .ugrad-mt-md-2 {
+        margin-top: 1rem !important;
+    }
+    .ugrad-mb-md-2 {
+        margin-bottom: 1rem !important;
+    }
+    .ugrad-ml-md-2 {
+        margin-left: 1rem !important;
+    }
+    .ugrad-mr-md-2 {
+        margin-right: 1rem !important;
+    }
+    .ugrad-my-md-2 {
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .ugrad-mx-md-2 {
+        margin-left: 1rem !important;
+        margin-right: 1rem !important;
+    }
+    .ugrad-p-md-2 {
+        padding: 1rem !important;
+    }
+    .ugrad-pt-md-2 {
+        padding-top: 1rem !important;
+    }
+    .ugrad-pb-md-2 {
+        padding-bottom: 1rem !important;
+    }
+    .ugrad-pl-md-2 {
+        padding-left: 1rem !important;
+    }
+    .ugrad-pr-md-2 {
+        padding-right: 1rem !important;
+    }
+    .ugrad-py-md-2 {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+    .ugrad-px-md-2 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .ugrad-m-md-3 {
+        margin: 1.5rem !important;
+    }
+    .ugrad-mt-md-3 {
+        margin-top: 1.5rem !important;
+    }
+    .ugrad-mb-md-3 {
+        margin-bottom: 1.5rem !important;
+    }
+    .ugrad-ml-md-3 {
+        margin-left: 1.5rem !important;
+    }
+    .ugrad-mr-md-3 {
+        margin-right: 1.5rem !important;
+    }
+    .ugrad-my-md-3 {
+        margin-top: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    .ugrad-mx-md-3 {
+        margin-left: 1.5rem !important;
+        margin-right: 1.5rem !important;
+    }
+    .ugrad-p-md-3 {
+        padding: 1.5rem !important;
+    }
+    .ugrad-pt-md-3 {
+        padding-top: 1.5rem !important;
+    }
+    .ugrad-pb-md-3 {
+        padding-bottom: 1.5rem !important;
+    }
+    .ugrad-pl-md-3 {
+        padding-left: 1.5rem !important;
+    }
+    .ugrad-pr-md-3 {
+        padding-right: 1.5rem !important;
+    }
+    .ugrad-py-md-3 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+    .ugrad-px-md-3 {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+
+    .ugrad-m-md-4 {
+        margin: 2rem !important;
+    }
+    .ugrad-mt-md-4 {
+        margin-top: 2rem !important;
+    }
+    .ugrad-mb-md-4 {
+        margin-bottom: 2rem !important;
+    }
+    .ugrad-ml-md-4 {
+        margin-left: 2rem !important;
+    }
+    .ugrad-mr-md-4 {
+        margin-right: 2rem !important;
+    }
+    .ugrad-my-md-4 {
+        margin-top: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+    .ugrad-mx-md-4 {
+        margin-left: 2rem !important;
+        margin-right: 2rem !important;
+    }
+    .ugrad-p-md-4 {
+        padding: 2rem !important;
+    }
+    .ugrad-pt-md-4 {
+        padding-top: 2rem !important;
+    }
+    .ugrad-pb-md-4 {
+        padding-bottom: 2rem !important;
+    }
+    .ugrad-pl-md-4 {
+        padding-left: 2rem !important;
+    }
+    .ugrad-pr-md-4 {
+        padding-right: 2rem !important;
+    }
+    .ugrad-py-md-4 {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+    .ugrad-px-md-4 {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+
+    .ugrad-m-md-5 {
+        margin: 2.5rem !important;
+    }
+    .ugrad-mt-md-5 {
+        margin-top: 2.5rem !important;
+    }
+    .ugrad-mb-md-5 {
+        margin-bottom: 2.5rem !important;
+    }
+    .ugrad-ml-md-5 {
+        margin-left: 2.5rem !important;
+    }
+    .ugrad-mr-md-5 {
+        margin-right: 2.5rem !important;
+    }
+    .ugrad-my-md-5 {
+        margin-top: 2.5rem !important;
+        margin-bottom: 2.5rem !important;
+    }
+    .ugrad-mx-md-5 {
+        margin-left: 2.5rem !important;
+        margin-right: 2.5rem !important;
+    }
+    .ugrad-p-md-5 {
+        padding: 2.5rem !important;
+    }
+    .ugrad-pt-md-5 {
+        padding-top: 2.5rem !important;
+    }
+    .ugrad-pb-md-5 {
+        padding-bottom: 2.5rem !important;
+    }
+    .ugrad-pl-md-5 {
+        padding-left: 2.5rem !important;
+    }
+    .ugrad-pr-md-5 {
+        padding-right: 2.5rem !important;
+    }
+    .ugrad-py-md-5 {
+        padding-top: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+    .ugrad-px-md-5 {
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
+    }
+}
+
+/* Single post layout moved to css/umbc-single.css — 2026-04-29 */
+/* Archive layout moved to css/umbc-archive.css — 2026-04-29 */
+/* =======================================================================
+   DARK MODE — page canvas + bare content text
+
+   Strategy: use a CSS custom property --dm-text as an intermediary.
+   - .entry-content sets --dm-text: #e0e0e0 and elements inherit it.
+   - Blocks that own their background reset --dm-text: unset on themselves,
+     so their descendants naturally inherit whatever WP/the block sets.
+   - No !important cascade battles — the custom property is just switched
+     off at the fence of each self-contained block.
+   - One targeted !important covers has-black-color / has-text-color on
+     bare headings, which WP sets via inline style or class-level CSS.
+
+   "Owns its background" = has-background, has-*-background-color,
+   wp-block-cover, wp-block-quote, wp-block-pullquote, wp-block-table,
+   wp-block-code, wp-block-verse, wp-block-preformatted.
+   ======================================================================= */
+
+/* ── Page canvas ── */
+[data-theme="dark"] body {
+    background-color: var(--umbc-surface-page, #1a1a1a);
+    color: var(--umbc-text, #e0e0e0);
+}
+
+[data-theme="dark"] #page,
+[data-theme="dark"] #primary,
+[data-theme="dark"] .site-content,
+[data-theme="dark"] .ast-container,
+[data-theme="dark"] .entry-content {
+    background-color: var(--umbc-surface-page, #1a1a1a);
+}
+
+/* ── Propagate the dark text token through .entry-content ── */
+[data-theme="dark"] .entry-content {
+    --dm-text: #e0e0e0;
+    --dm-link: #fff;
+    --dm-link-hover: #fff;
+}
+
+/* ── Apply token to bare text elements ── */
+[data-theme="dark"] .entry-content p,
+[data-theme="dark"] .entry-content h1,
+[data-theme="dark"] .entry-content h2,
+[data-theme="dark"] .entry-content h3,
+[data-theme="dark"] .entry-content h4,
+[data-theme="dark"] .entry-content h5,
+[data-theme="dark"] .entry-content h6,
+[data-theme="dark"] .entry-content li,
+[data-theme="dark"] .entry-content figcaption,
+[data-theme="dark"] .entry-content label {
+    color: var(--dm-text);
+}
+
+/* Custom (non-palette) text colors set by editors arrive as an inline style
+   plus the bare has-text-color class. Palette picks carry a specific
+   has-<slug>-color class and flip through the ink tokens in css/style.css,
+   so they are EXCLUDED here — forcing them to --dm-text would erase
+   intentional red/teal/gold text. The :where() keeps this at zero extra
+   specificity so surface rules can still override it. */
+[data-theme="dark"]
+    .entry-content
+    :where(
+        .has-text-color:not([class*="has-ast-global-color"]):not(
+            [class*="has-umbc-"]
+        ):not(.has-white-color):not(.has-black-color)
+    ) {
+    color: var(--dm-text) !important;
+}
+
+/* ── Token behavior at surface boundaries.
+   Light surfaces (white / light grays) flip to dark cards via the bg tokens
+   in css/style.css, so --dm-text keeps flowing through them — light text on
+   a dark card is correct with no per-surface rules.
+   Brand surfaces KEEP their background, so they re-assert the right ink here:
+   white text plus gold links. Gold surfaces are handled separately below —
+   they never flip and force dark ink.
+   Self-styled blocks (quote, table, code) still cut the token off entirely. ── */
+
+[data-theme="dark"]
+    .entry-content
+    :is(
+        .has-umbc-black-background-color,
+        .has-umbc-dark-gray-background-color,
+        .has-umbc-red-background-color,
+        .has-umbc-retriever-brown-background-color,
+        .has-ast-global-color-1-background-color,
+        .has-ast-global-color-3-background-color,
+        .has-ast-global-color-4-background-color,
+        .has-ast-global-color-6-background-color,
+        .has-ast-global-color-7-background-color
+    ) {
+    color: #fff;
+    --dm-text: #fff;
+    --dm-link: #fdb515;
+    --dm-link-hover: #ffd36a;
+}
+
+/* Teal surfaces: plain gold is borderline on teal — use light gold. */
+[data-theme="dark"]
+    .entry-content
+    :is(
+        .has-umbc-aok-teal-background-color,
+        .has-ast-global-color-2-background-color
+    ) {
+    color: #fff;
+    --dm-text: #fff;
+    --dm-link: #ffd36a;
+    --dm-link-hover: #fff;
+}
+
+[data-theme="dark"] .entry-content .wp-block-quote,
+[data-theme="dark"] .entry-content .wp-block-pullquote,
+[data-theme="dark"] .entry-content .wp-block-table,
+[data-theme="dark"] .entry-content .wp-block-code,
+[data-theme="dark"] .entry-content .wp-block-verse,
+[data-theme="dark"] .entry-content .wp-block-preformatted {
+    --dm-text: unset;
+    --dm-link: unset;
+}
+
+/* ── Bare links ── */
+[data-theme="dark"] .entry-content a:not([class*="wp-block-button"]) {
+    color: var(--dm-link, #fdb515);
+}
+
+[data-theme="dark"] .entry-content a:not([class*="wp-block-button"]):hover {
+    color: var(--dm-link-hover, #ffd36a);
+}
+
+/* =======================================================================
+   Intrinsically-dark surfaces — bare-link color in BOTH light and dark mode.
+   The per-background link rules further down are [data-theme="dark"]-gated,
+   so in light mode a link on one of these explicitly-dark palette
+   backgrounds falls back to the site's teal link color and is hard to read.
+   These surfaces are near-black/dark in every mode, so their links stay
+   gold regardless of mode. Mid-grays (ast-global-color-4/-6) are excluded —
+   gold on them is lower-contrast than the default teal in light mode.
+   ======================================================================= */
+.entry-content
+    .has-ast-global-color-1-background-color.has-background
+    a:not([class*="wp-block-button"]),
+.entry-content
+    .has-ast-global-color-7-background-color.has-background
+    a:not([class*="wp-block-button"]),
+.entry-content
+    .has-umbc-black-background-color.has-background
+    a:not([class*="wp-block-button"]),
+.entry-content
+    .has-umbc-dark-gray-background-color.has-background
+    a:not([class*="wp-block-button"]) {
+    color: #fdb515;
+}
+.entry-content
+    .has-ast-global-color-1-background-color.has-background
+    a:not([class*="wp-block-button"]):hover,
+.entry-content
+    .has-ast-global-color-7-background-color.has-background
+    a:not([class*="wp-block-button"]):hover,
+.entry-content
+    .has-umbc-black-background-color.has-background
+    a:not([class*="wp-block-button"]):hover,
+.entry-content
+    .has-umbc-dark-gray-background-color.has-background
+    a:not([class*="wp-block-button"]):hover {
+    color: #ffd36a;
+}
+.entry-content
+    .has-umbc-aok-teal-background-color.has-background
+    a:not([class*="wp-block-button"]),
+.entry-content
+    .has-ast-global-color-2-background-color.has-background
+    a:not([class*="wp-block-button"]) {
+    color: #ffd36a;
+}
+.entry-content
+    .has-umbc-aok-teal-background-color.has-background
+    a:not([class*="wp-block-button"]):hover,
+.entry-content
+    .has-ast-global-color-2-background-color.has-background
+    a:not([class*="wp-block-button"]):hover {
+    color: #fff;
+}
+
+/* =======================================================================
+   DARK MODE — Light surfaces flip to dark cards (2026-06 policy change).
+   Palette-classed surfaces (has-white-background-color, ast-global-color-5/8,
+   umbc-white/extra-light-gray/light-gray) flip automatically through the
+   bg tokens in css/style.css — no rules needed here. The rules below only
+   cover INLINE-style light backgrounds, which bypass the class layer.
+   These are data debt from the 9-site merge; a future migration converting
+   them to palette slugs deletes this whole section.
+   ======================================================================= */
+[data-theme="dark"] .entry-content [style*="background-color:#fff"],
+[data-theme="dark"] .entry-content [style*="background-color: #fff"],
+[data-theme="dark"] .entry-content [style*="background-color:#ffffff"],
+[data-theme="dark"] .entry-content [style*="background-color: #ffffff"] {
+    background-color: var(--umbc-surface-card, #2d2d2d) !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+    --dm-link-hover: #ffd36a;
+}
+
+/* Light gray INLINE backgrounds (#f3f3f3, #f5f5f5, #efefef) — flip to the
+   alt dark card. The palette class (ast-global-color-8 etc.) flips via the
+   bg tokens in css/style.css; only inline styles need handling here. */
+[data-theme="dark"]
+    .entry-content
+    :is(.wp-block-group, .wp-block-column):is(
+        [style*="background-color:#f3f3f3"],
+        [style*="background-color: #f3f3f3"],
+        [style*="background-color:#f5f5f5"],
+        [style*="background-color: #f5f5f5"],
+        [style*="background-color:#efefef"],
+        [style*="background-color: #efefef"]
+    ) {
+    background-color: var(--umbc-surface-card-alt, #232323) !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+    --dm-link-hover: #ffd36a;
+}
+
+/* FormAssembly dark-mode chrome is handled globally by the broad
+   .wFormContainer rules further down. The form's own stylesheet paints
+   .wForm white directly on the inner element; clear it so the flipped
+   card surface shows through. */
+[data-theme="dark"] .wFormContainer .wForm {
+    background-color: transparent !important;
+    border-color: #4a4a4a !important;
+}
+
+/* ── #social-media-icons (UAGB icon-list): cap size + dark-mode color ──
+ * UAGB icon-list ships with no size or color theming, so its inline SVG
+ * paths render at intrinsic dimensions in default black. Cap to 44px
+ * height (width auto preserves each glyph's aspect ratio) and flip the
+ * path fill to white in dark mode. Scoped to the ID to avoid affecting
+ * other icon-list instances on the site. ──────────────────────────── */
+#social-media-icons .uagb-icon-list__wrap {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 0.75rem 1.25rem;
+    width: max-content;
+}
+
+#social-media-icons .uagb-icon-list__source-wrap svg {
+    height: 44px;
+    width: auto;
+}
+
+[data-theme="dark"] #social-media-icons .uagb-icon-list__source-wrap svg path {
+    fill: #fff;
+}
+
+/* The College Tour social icon list has no #social-media-icons wrapper. */
+.uagb-block-f0761696 .uagb-icon-list__wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.uagb-block-f0761696 .wp-block-uagb-icon-list-child {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.uagb-block-f0761696 .uagb-icon-list__source-wrap,
+.uagb-block-f0761696 .uagb-icon-list__source-wrap svg {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+.uagb-block-f0761696 .uagb-icon-list__source-wrap svg {
+    fill: #fff;
+}
+
+/* =======================================================================
+   DARK MODE — Inline hex backgrounds with no palette class.
+   These colours appear as background-color in inline styles across ~60
+   pages from the 9-site merge. Grouped by surface type.
+   ======================================================================= */
+
+/* Near-black (#262626, #1e1e1e) — keep dark, white text */
+[data-theme="dark"] .entry-content [style*="background-color:#262626"],
+[data-theme="dark"] .entry-content [style*="background-color: #262626"],
+[data-theme="dark"] .entry-content [style*="background-color:#1e1e1e"],
+[data-theme="dark"] .entry-content [style*="background-color: #1e1e1e"] {
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+}
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#262626"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #262626"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#1e1e1e"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #1e1e1e"]
+    :is(h1, h2, h3, h4, h5, h6, p, li) {
+    color: #e0e0e0 !important;
+}
+
+/* Dark teal (#006f75) — keep dark, white text, gold links */
+[data-theme="dark"] .entry-content [style*="background-color:#006f75"],
+[data-theme="dark"] .entry-content [style*="background-color: #006f75"] {
+    color: #fff;
+    --dm-text: #fff;
+    --dm-link: #ffd36a;
+}
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#006f75"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #006f75"]
+    :is(h1, h2, h3, h4, h5, h6, p, li) {
+    color: #fff !important;
+}
+
+/* Light teal (#c6e1e2) — flip to dark card, teal-tinted surface */
+[data-theme="dark"] .entry-content [style*="background-color:#c6e1e2"],
+[data-theme="dark"] .entry-content [style*="background-color: #c6e1e2"] {
+    background-color: #1a2e2f !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #7dd3d6;
+}
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#c6e1e2"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #c6e1e2"]
+    :is(h1, h2, h3, h4, h5, h6, p, li) {
+    color: #e0e0e0 !important;
+}
+
+/* Off-white (#f2f2f2, #fafafa) — flip to dark card, same as #f3f3f3 treatment */
+[data-theme="dark"] .entry-content [style*="background-color:#f2f2f2"],
+[data-theme="dark"] .entry-content [style*="background-color: #f2f2f2"],
+[data-theme="dark"] .entry-content [style*="background-color:#fafafa"],
+[data-theme="dark"] .entry-content [style*="background-color: #fafafa"] {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+}
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#f2f2f2"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #f2f2f2"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#fafafa"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #fafafa"]
+    :is(h1, h2, h3, h4, h5, h6, p, li) {
+    color: #e0e0e0 !important;
+}
+
+/* f2f2f2 alpha variants (#f2f2f2db, #f2f2f2f0, #f2f2f2e3, #f2f2f2c7, #f2f2f2e8) —
+   8-digit hex with alpha channel. The [style*="#f2f2f2"] above matches these too since
+   the string "#f2f2f2" is a substring — no extra rules needed. Same for #efefef variants.
+   Listed here for documentation only. */
+
+/* Semi-transparent dark overlays used as group/column backgrounds (#262626e8, #262626de,
+   #262626d9, #262626c4, #1e1e1e) — near-black at 75–90% alpha.
+   In dark mode these are already dark enough — just ensure text stays white. */
+[data-theme="dark"] .entry-content [style*="background-color:#262626"],
+[data-theme="dark"] .entry-content [style*="background-color: #262626"],
+[data-theme="dark"] .entry-content [style*="background-color:#1e1e1e"],
+[data-theme="dark"] .entry-content [style*="background-color: #1e1e1e"] {
+    color: #fff;
+    --dm-text: #fff;
+    --dm-link: #fdb515;
+}
+
+/* Semi-transparent teal (#006f753b — teal at ~23% alpha, used as event section tint).
+   In dark mode replace with a subtle dark teal card rather than a near-invisible overlay. */
+[data-theme="dark"] .entry-content [style*="background-color:#006f753b"],
+[data-theme="dark"] .entry-content [style*="background-color: #006f753b"] {
+    background-color: #0d2e2f !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+}
+
+/* Semi-transparent white overlays (#ffffff9c, #ffffffc2 — white at 60–75% alpha).
+   Used on cover images as a lightening scrim. In dark mode invert to a dark overlay. */
+[data-theme="dark"] .entry-content [style*="background-color:#ffffff9c"],
+[data-theme="dark"] .entry-content [style*="background-color:#ffffffc2"] {
+    background-color: rgba(0, 0, 0, 0.55) !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+}
+
+/* Light cover overlays DO flip dark, like every other light surface. The
+   consolidated :has() rule near the gold-overlay section (search "light
+   overlay span that the dark-mode rules") keeps each cover's inner text
+   legible against the darkened overlay. */
+
+/* Warm light grays (#c9c5c4, #c2aca7, #bcafa9, #bcbab3, #81807e, #7d7265, #8f7b76,
+   #595f4d, #949c92, #91755d, #897972) — per-site holdovers from the 9-site merge.
+   All are muted mid-tones used as cover overlays or section BGs. Flip to dark card. */
+[data-theme="dark"] .entry-content [style*="background-color:#c9c5c4"],
+[data-theme="dark"] .entry-content [style*="background-color:#c2aca7"],
+[data-theme="dark"] .entry-content [style*="background-color:#bcafa9"],
+[data-theme="dark"] .entry-content [style*="background-color:#bcbab3"],
+[data-theme="dark"] .entry-content [style*="background-color:#81807e"],
+[data-theme="dark"] .entry-content [style*="background-color:#7d7265"],
+[data-theme="dark"] .entry-content [style*="background-color:#8f7b76"],
+[data-theme="dark"] .entry-content [style*="background-color:#595f4d"],
+[data-theme="dark"] .entry-content [style*="background-color:#949c92"],
+[data-theme="dark"] .entry-content [style*="background-color:#91755d"],
+[data-theme="dark"] .entry-content [style*="background-color:#897972"] {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+}
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#c9c5c4"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#c2aca7"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#bcafa9"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#bcbab3"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#81807e"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#7d7265"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#8f7b76"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#595f4d"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#949c92"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#91755d"]
+    :is(h1, h2, h3, h4, h5, h6, p, li),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#897972"]
+    :is(h1, h2, h3, h4, h5, h6, p, li) {
+    color: #e0e0e0 !important;
+}
+
+/* Warm amber (#ffefcf) — light warm yellow, flip to dark warm card */
+[data-theme="dark"] .entry-content [style*="background-color:#ffefcf"],
+[data-theme="dark"] .entry-content [style*="background-color: #ffefcf"] {
+    background-color: #2a2416 !important;
+    color: #e0e0e0;
+    --dm-text: #e0e0e0;
+    --dm-link: #fdb515;
+}
+
+/* Green (#339060) — keep dark green, white text */
+[data-theme="dark"] .entry-content [style*="background-color:#339060"],
+[data-theme="dark"] .entry-content [style*="background-color: #339060"] {
+    color: #fff;
+    --dm-text: #fff;
+}
+
+/* =======================================================================
+   DARK MODE — Gold surfaces: always black text, no exceptions.
+   This is the hardest constraint — gold bg paired with explicit white text
+   (has-ast-global-color-5-color, has-white-color, has-umbc-white-color) is
+   an authoring error on ~25 pages but CSS can override it here.
+   ======================================================================= */
+[data-theme="dark"] .entry-content .has-umbc-gold-background-color,
+[data-theme="dark"] .entry-content .has-ast-global-color-0-background-color,
+[data-theme="dark"] .entry-content .has-luminous-vivid-amber-background-color,
+[data-theme="dark"] .entry-content [style*="background-color:#fdb515"],
+[data-theme="dark"] .entry-content [style*="background-color: #fdb515"],
+[data-theme="dark"] .entry-content [style*="background-color:#fcb900"],
+[data-theme="dark"] .entry-content [style*="background-color: #fcb900"] {
+    color: #1a1a1a !important;
+    --dm-text: #1a1a1a;
+    --dm-link: #1a1a1a;
+}
+
+/* Force ALL descendants — including explicit white/light text classes and buttons — to black.
+   This overrides has-white-color, has-ast-global-color-5-color, etc. set by editors.
+   wp-block-button__link is included because WP's color class on the anchor wins without it. */
+[data-theme="dark"]
+    .entry-content
+    .has-umbc-gold-background-color
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-0-background-color
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    .has-luminous-vivid-amber-background-color
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#fdb515"]
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #fdb515"]
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#fcb900"]
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color: #fcb900"]
+    :is(
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        li,
+        figcaption,
+        label,
+        a,
+        span,
+        .wp-block-button__link
+    ) {
+    color: #1a1a1a !important;
+}
+
+/* Fill-Black / Pill-Black / Teal buttons inside a gold group carry their own
+   opaque background — the rule above would paint their text #1a1a1a
+   (black-on-charcoal). Re-assert their own light text. Ghost and default
+   buttons are intentionally left forced-dark: they sit transparent on the gold. */
+[data-theme="dark"]
+    .entry-content
+    :is(
+        .has-umbc-gold-background-color,
+        .has-ast-global-color-0-background-color,
+        .has-luminous-vivid-amber-background-color,
+        [style*="background-color:#fdb515"],
+        [style*="background-color: #fdb515"],
+        [style*="background-color:#fcb900"],
+        [style*="background-color: #fcb900"]
+    )
+    .wp-block-button:is(
+        .is-style-fill-black,
+        .is-style-pill-black,
+        .is-style-umbc-teal
+    )
+    > .wp-block-button__link {
+    color: #fff !important;
+}
+/* Teal's hover/active flips to dark text on its light hover fill. */
+[data-theme="dark"]
+    .entry-content
+    :is(
+        .has-umbc-gold-background-color,
+        .has-ast-global-color-0-background-color,
+        .has-luminous-vivid-amber-background-color,
+        [style*="background-color:#fdb515"],
+        [style*="background-color: #fdb515"],
+        [style*="background-color:#fcb900"],
+        [style*="background-color: #fcb900"]
+    )
+    .wp-block-button.is-style-umbc-teal
+    > .wp-block-button__link:is(:hover, :active) {
+    color: #000 !important;
+}
+
+/* Cover blocks with a gold overlay span — force inner content to black text.
+   The gold class is on wp-block-cover__background (the overlay span), not the cover container,
+   so the rules above don't reach the inner-container content. :has() targets the cover.
+   Button links (.wp-block-button__link) are excluded — the generic `a` would otherwise
+   catch them; buttons carry their own dark-mode contrast in umbc-buttons.css. */
+[data-theme="dark"]
+    .entry-content
+    .wp-block-cover:has(
+        .wp-block-cover__background.has-ast-global-color-0-background-color
+    )
+    .wp-block-cover__inner-container
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label, a, span):not(
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    .wp-block-cover:has(
+        .wp-block-cover__background.has-umbc-gold-background-color
+    )
+    .wp-block-cover__inner-container
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label, a, span):not(
+        .wp-block-button__link
+    ),
+[data-theme="dark"]
+    .entry-content
+    .wp-block-cover:has(
+        .wp-block-cover__background.has-luminous-vivid-amber-background-color
+    )
+    .wp-block-cover__inner-container
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label, a, span):not(
+        .wp-block-button__link
+    ) {
+    color: #1a1a1a !important;
+}
+/* Buttons that carry their own opaque dark/colored background (fill-black,
+   pill-black, teal) keep their own light text — the gold-overlay rule must not
+   reach them or it paints black-on-black. Their dark-mode contrast is already
+   handled in umbc-buttons.css. */
+[data-theme="dark"]
+    .entry-content
+    .wp-block-cover:has(
+        .wp-block-cover__background.has-ast-global-color-0-background-color
+    )
+    .wp-block-cover__inner-container
+    .wp-block-button:not(.is-style-fill-black):not(.is-style-pill-black):not(
+        .is-style-umbc-teal
+    )
+    > .wp-block-button__link,
+[data-theme="dark"]
+    .entry-content
+    .wp-block-cover:has(
+        .wp-block-cover__background.has-umbc-gold-background-color
+    )
+    .wp-block-cover__inner-container
+    .wp-block-button:not(.is-style-fill-black):not(.is-style-pill-black):not(
+        .is-style-umbc-teal
+    )
+    > .wp-block-button__link {
+    color: #1a1a1a !important;
+}
+
+/* Cover overlay spans with INLINE light fills — flip to a dark scrim.
+   Palette-classed overlays (white / color-5 / color-8 / umbc-*) flip via the
+   bg tokens in css/style.css; this list only covers inline-hex holdovers
+   (off-whites, light teal, warm amber, warm grays, semi-transparent whites)
+   that bypass the class layer. Inner text inherits the standard --dm-text
+   light token, so no separate text-flip rule is needed. */
+[data-theme="dark"]
+    .entry-content
+    .wp-block-cover__background:is(
+        [style*="background-color:#fff"],
+        [style*="background-color: #fff"],
+        [style*="background-color:#ffffff"],
+        [style*="background-color: #ffffff"],
+        [style*="background-color:#f2f2f2"],
+        [style*="background-color:#fafafa"],
+        [style*="background-color:#c6e1e2"],
+        [style*="background-color:#ffefcf"],
+        [style*="background-color:#c9c5c4"],
+        [style*="background-color:#c2aca7"],
+        [style*="background-color:#bcafa9"],
+        [style*="background-color:#bcbab3"],
+        [style*="background-color:#81807e"],
+        [style*="background-color:#7d7265"],
+        [style*="background-color:#8f7b76"],
+        [style*="background-color:#595f4d"],
+        [style*="background-color:#949c92"],
+        [style*="background-color:#91755d"],
+        [style*="background-color:#897972"],
+        [style*="background-color:#ffffff9c"],
+        [style*="background-color:#ffffffc2"]
+    ) {
+    background-color: var(--umbc-surface-card, #2d2d2d) !important;
+}
+
+/* ── EXCEPTION: .scrim / .scrim-dark covers keep their photo in dark mode ──
+   The flip above darkens a light overlay so inner text stays legible — right
+   for a plain light-fill overlay, wrong for a scrim cover. Those already force
+   their own black bottom-up gradient AND pin the span to `opacity:1 !important`
+   (css/style.css, .scrim/.scrim-dark rules), so painting the same span an
+   OPAQUE #2d2d2d turns the whole hero into a flat grey wall and hides the
+   photograph — e.g. /corporate-and-foundation-relations/, whose overlay is
+   `has-background-dim-0` (editor asked for NO overlay) with an inline
+   #81807e fill.
+
+   Clearing background-color back to transparent leaves the forced gradient as
+   the only paint, which is exactly what light mode renders — these covers are
+   identical in both themes by design. Text legibility is unaffected: the
+   .scrim rules already pin inner text to #fff in both modes.
+   (0,5,0) + !important beats both the (0,4,0) overlay flip above and the
+   (0,3,0) generic inline-hex flip near line 1166.) */
+[data-theme="dark"]
+    .entry-content
+    :is(.scrim, .scrim-dark)
+    .wp-block-cover__background[style*="background-color:"] {
+    background-color: transparent !important;
+}
+
+/* Gold button background — also force the button itself black regardless of text class. */
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-0-background-color.wp-block-button__link,
+[data-theme="dark"]
+    .entry-content
+    .has-umbc-gold-background-color.wp-block-button__link,
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#fdb515"].wp-block-button__link,
+[data-theme="dark"]
+    .entry-content
+    [style*="background-color:#fcb900"].wp-block-button__link {
+    color: #1a1a1a !important;
+}
+
+/* has-ast-global-color-8 (extra-light-gray #f3f3f3) — covered by the light-gray block above.
+   Gold inset cards nested inside that section always keep black text. */
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-8-background-color.has-background
+    .has-ast-global-color-0-background-color.has-background {
+    background-color: #fdb515 !important;
+    color: #1a1a1a !important;
+    --dm-text: #1a1a1a;
+    --dm-link: #1a1a1a;
+    --dm-link-hover: #1a1a1a;
+}
+
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-8-background-color.has-background
+    .has-ast-global-color-0-background-color.has-background
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label, a) {
+    color: #1a1a1a !important;
+}
+
+/* ── Columns/groups with no background stay transparent ── */
+[data-theme="dark"] .entry-content .wp-block-column:not(.has-background),
+[data-theme="dark"]
+    .entry-content
+    .wp-block-group:not(.has-background):not(
+        [class*="has-"][class*="-background-color"]
+    ) {
+    background-color: transparent;
+}
+
+/* ── Horizontal rules ── */
+[data-theme="dark"] .entry-content hr {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Cover block text-class overrides removed — covers don't flip in dark mode,
+   so compensating rules for is-light / dark-overlay text are no longer needed. */
+
+/* ── Issue 1: gold group inside cover — has-ast-global-color-7-color (near-black)
+   text still reads white because WP's emitted !important class wins. Add a higher-
+   specificity rule scoped to gold-bg descendants to force dark text. ── */
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-0-background-color
+    .has-ast-global-color-7-color,
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-0-background-color
+    .has-black-color,
+[data-theme="dark"]
+    .entry-content
+    .has-ast-global-color-0-background-color
+    .has-umbc-black-color,
+[data-theme="dark"]
+    .entry-content
+    .has-umbc-gold-background-color
+    .has-ast-global-color-7-color,
+[data-theme="dark"]
+    .entry-content
+    .has-umbc-gold-background-color
+    .has-black-color,
+[data-theme="dark"]
+    .entry-content
+    .has-umbc-gold-background-color
+    .has-umbc-black-color {
+    color: #1a1a1a !important;
+}
+
+/* Issues 3 & 6 deferred: .is-light is too broad — WP sets isDark:false on many
+   dark-photo covers too. Fix requires a custom class (e.g. .white-overlay-cover)
+   added in the block markup to safely scope the rule. */
+
+/* ── Issue 7a: social media icon PNGs with black circles — invert in dark mode.
+   Targets inline-image columns with classes like .social-icons-row, as well as
+   the guide template's social block context. Only inverts image elements that
+   contain visible black-circle platform icons. ── */
+[data-theme="dark"] .social-icons-row .wp-block-image img,
+[data-theme="dark"] .entry-content .social-icons-row .wp-block-image img {
+    filter: invert(1);
+}
+
+/* =======================================================================
+   DARK MODE — The Events Calendar (tribe) templates
+   Covers: tribe/events/v2/list.php, list/event/*, venue.php,
+           tribe-events/single-event.php (inline <style> overrides),
+           tribe/events-pro/blocks/related-events/*
+   ======================================================================= */
+
+/* ── Single event: schedule meta box (gold left bar + light bg) ── */
+[data-theme="dark"] .single-tribe_events .tribe-events-schedule {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+/* ── "Add to Calendar" and common tribe buttons (gold bg + black text — valid pair) ── */
+
+/* ── Register / event URL button (gold bg + black text — valid pair) ── */
+
+/* ── Event meta sections ── */
+[data-theme="dark"] .tribe-events-event-meta {
+    color: #c0c0c0;
+}
+
+/* ── Section headings (gold underline stays) ── */
+[data-theme="dark"] .tribe-events-single-section-title {
+    color: #e0e0e0;
+}
+
+/* ── Back link ── */
+[data-theme="dark"] .tribe-events-back a {
+    color: #fdb515;
+}
+
+/* ── Prev/Next event navigation links ── */
+/* Specificity must match Tribe's bundled selectors, which use the chain
+   `.tribe-events-single .tribe-events-sub-nav .tribe-events-nav-* a`
+   (3 classes). A shorter selector loses the cascade. */
+[data-theme="dark"] .tribe-events-sub-nav .tribe-events-nav-next a,
+[data-theme="dark"]
+    .tribe-events-single
+    .tribe-events-sub-nav
+    .tribe-events-nav-previous
+    a {
+    color: #fdb515;
+}
+
+[data-theme="dark"] .tribe-events-sub-nav .tribe-events-nav-next a:hover,
+[data-theme="dark"] .tribe-events-sub-nav .tribe-events-nav-next a:focus,
+[data-theme="dark"]
+    .tribe-events-single
+    .tribe-events-sub-nav
+    .tribe-events-nav-previous
+    a:hover,
+[data-theme="dark"]
+    .tribe-events-single
+    .tribe-events-sub-nav
+    .tribe-events-nav-previous
+    a:focus {
+    color: #ffd55a;
+}
+
+/* ── Register / read-more / CTA links in event descriptions ── */
+[data-theme="dark"] .tribe-events-register-link,
+[data-theme="dark"] .tribe-events-read-more,
+[data-theme="dark"] .tribe-events-calendar-list__event-description a {
+    color: #c0c0c0 !important;
+    text-decoration: underline;
+}
+[data-theme="dark"] .tribe-events-register-link:hover,
+[data-theme="dark"] .tribe-events-read-more:hover,
+[data-theme="dark"] .tribe-events-calendar-list__event-description a:hover {
+    color: #fff !important;
+}
+
+/* ── List view: event row wrapper ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-row {
+    border-color: #333;
+}
+
+/* ── List view: event article ── */
+[data-theme="dark"] .tribe-events-calendar-list__event {
+    background: transparent;
+}
+
+/* ── List view: event title link ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-title-link {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .tribe-events-calendar-list__event-title-link:hover {
+    color: #00a8af !important;
+}
+
+/* ── List view: date text — !important needed to override Tribe's --tec-color-* vars ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-date-tag-datetime,
+[data-theme="dark"] .tribe-events-calendar-list__event-date-tag-daynum,
+[data-theme="dark"] .tribe-events-calendar-list__event-date-tag-weekday,
+[data-theme="dark"] .tribe-events-calendar-list__event-date-tag-month,
+[data-theme="dark"] .tribe-events-calendar-list__event-datetime {
+    color: #c0c0c0 !important;
+}
+
+/* ── List view: venue address ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-venue {
+    color: #aaa;
+}
+
+[data-theme="dark"] .tribe-events-calendar-list__event-venue a {
+    color: #00a8af;
+}
+
+/* ── List view: description text ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-description {
+    color: #b0b0b0;
+}
+
+/* ── List view: month separator heading ── */
+[data-theme="dark"] .tribe-events-calendar-list__month-separator-text {
+    color: #e0e0e0 !important;
+    border-color: #333 !important;
+}
+
+/* ── List view: date tag container ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-date-tag {
+    background: transparent;
+    border-color: #333;
+}
+
+/* ── Venue page: venue info content box ── */
+[data-theme="dark"] .tribe-events-venue-info__content {
+    background: #1e1e1e !important;
+    border-color: #333 !important;
+    color: #c0c0c0;
+}
+
+[data-theme="dark"] .tribe-events-venue-info__detail-label {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .tribe-events-venue-info__detail a {
+    color: #00a8af;
+}
+
+/* ── Tribe event meta dl/dt/dd ── */
+[data-theme="dark"] .tribe-events-meta-group {
+    color: #c0c0c0;
+}
+
+[data-theme="dark"] .tribe-events-meta-group dt,
+[data-theme="dark"] .tribe-events-meta-group .tribe-venue,
+[data-theme="dark"] .tribe-events-meta-group .tribe-organizer {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .tribe-events-meta-group a {
+    color: #00a8af;
+}
+
+/* ── Related events block thumbnails ── */
+[data-theme="dark"] .tribe-related-events-thumbnail {
+    background: #1e1e1e;
+}
+
+/* ── tribe-common shared text ──
+   Must match plugin's .tribe-common .tribe-common-b2 selector exactly to win by
+   specificity — bare [data-theme] .tribe-common-b2 loses to it by source order. */
+[data-theme="dark"] .tribe-common .tribe-common-b1,
+[data-theme="dark"] .tribe-common .tribe-common-b2 {
+    color: #c0c0c0 !important;
+}
+
+/* ── "No results found" notice: icon SVG ── */
+[data-theme="dark"] .tribe-common .tribe-common-c-svgicon--messages-not-found {
+    color: #666 !important;
+}
+[data-theme="dark"]
+    .tribe-common
+    .tribe-common-c-svgicon--messages-not-found
+    .tribe-common-c-svgicon__svg-stroke {
+    stroke: #c2c2c2 !important;
+    fill: none !important;
+}
+
+/* ── category-links, subscribe links, anchor-thin — all text links in event blocks ── */
+[data-theme="dark"] .category-links a,
+[data-theme="dark"] .tribe-common-anchor-thin,
+[data-theme="dark"] .tribe-events-c-subscribe-dropdown__list-item-link,
+[data-theme="dark"] .tribe-events-calendar-list__event-venue a,
+[data-theme="dark"] .tribe-events-meta-group a {
+    color: #c0c0c0 !important;
+    text-decoration: underline;
+}
+[data-theme="dark"] .category-links a:hover,
+[data-theme="dark"] .tribe-common-anchor-thin:hover,
+[data-theme="dark"] .tribe-events-c-subscribe-dropdown__list-item-link:hover,
+[data-theme="dark"] .tribe-events-calendar-list__event-venue a:hover,
+[data-theme="dark"] .tribe-events-meta-group a:hover {
+    color: #fff !important;
+}
+
+/* ── Events bar / search bar ── */
+[data-theme="dark"] .tribe-events-c-search__input,
+[data-theme="dark"] .tribe-common-form-control-text__input {
+    background: #1e1e1e;
+    border-color: #3a3a3a;
+    color: #e0e0e0;
+}
+
+/* ── Tribe loading / skeleton ── */
+[data-theme="dark"] .tribe-events-l-container {
+    background: transparent;
+}
+
+/* ── List view toolbar: nav buttons, Today, view switcher ── */
+[data-theme="dark"] .tribe-events-c-nav__list-item-link,
+[data-theme="dark"] .tribe-events-c-nav__next,
+[data-theme="dark"] .tribe-events-c-nav__prev,
+[data-theme="dark"] .tribe-common-c-btn-border,
+[data-theme="dark"] .tribe-events-c-view-selector__button {
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+    background: transparent !important;
+}
+[data-theme="dark"] .tribe-events-c-nav__list-item-link:hover,
+[data-theme="dark"] .tribe-common-c-btn-border:hover,
+[data-theme="dark"] .tribe-events-c-view-selector__button:hover {
+    color: #fff !important;
+    border-color: #888 !important;
+}
+
+/* ── Top-bar prev/next arrow buttons (< >) next to the month label ── */
+[data-theme="dark"] .tribe-events-c-top-bar__nav-link,
+[data-theme="dark"] .tribe-common-c-btn-icon {
+    color: #e0e0e0 !important;
+    background: transparent !important;
+}
+[data-theme="dark"] .tribe-events-c-top-bar__nav-link:hover,
+[data-theme="dark"] .tribe-common-c-btn-icon:hover {
+    color: #fff !important;
+}
+
+/* SVG arrow icons inside nav buttons — top bar and bottom nav.
+   Target both the svg and path since Tribe may set fill on either. */
+[data-theme="dark"] .tribe-events-c-nav__list-item-link svg,
+[data-theme="dark"] .tribe-events-c-nav__list-item-link svg path,
+[data-theme="dark"] .tribe-events-c-nav__next svg,
+[data-theme="dark"] .tribe-events-c-nav__next svg path,
+[data-theme="dark"] .tribe-events-c-nav__prev svg,
+[data-theme="dark"] .tribe-events-c-nav__prev svg path,
+[data-theme="dark"] .tribe-events-c-view-selector__button svg,
+[data-theme="dark"] .tribe-events-c-view-selector__button svg path,
+[data-theme="dark"] .tribe-events-c-top-bar__nav-link svg,
+[data-theme="dark"] .tribe-events-c-top-bar__nav-link svg path,
+[data-theme="dark"] .tribe-common-c-btn-icon svg,
+[data-theme="dark"] .tribe-common-c-btn-icon svg path {
+    fill: #e0e0e0 !important;
+}
+
+/* ── Month / date separator heading ── */
+[data-theme="dark"] .tribe-events-calendar-list__month-separator-title,
+[data-theme="dark"] .tribe-events-c-top-bar__datepicker-button,
+[data-theme="dark"] .tribe-events-c-top-bar__datepicker {
+    color: #e0e0e0 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+/* ── "Today" button ── */
+[data-theme="dark"] .tribe-events-c-top-bar__today-button,
+[data-theme="dark"]
+    .tribe-common-c-btn-border.tribe-events-c-top-bar__today-button {
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+    background: #1e1e1e !important;
+}
+[data-theme="dark"] .tribe-events-c-top-bar__today-button:hover {
+    background: #2a2a2a !important;
+    border-color: #888 !important;
+}
+
+/* ── View selector dropdown panel ── */
+[data-theme="dark"] .tribe-events-c-view-selector__content {
+    background: #1e1e1e !important;
+    border-color: #333 !important;
+}
+[data-theme="dark"] .tribe-events-c-view-selector__list-item-link {
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .tribe-events-c-view-selector__list-item-link:hover {
+    background: #2a2a2a !important;
+    color: #fff !important;
+}
+
+/* ── Top bar container ── */
+[data-theme="dark"] .tribe-events-header,
+[data-theme="dark"] .tribe-events-c-top-bar {
+    background: transparent !important;
+    border-color: #333 !important;
+}
+
+/* ── Date tag (FRI / 8) on list rows ── */
+[data-theme="dark"] .tribe-events-calendar-list__event-date-tag-datetime {
+    color: #c0c0c0 !important;
+}
+
+/* ── mailto: email icon ─────────────────────────────────────────────────── */
+/* Prepend a small envelope icon before all mailto links. Uses inline-flex
+   so icon and text always wrap as one unit — icon never orphans on its own line. */
+a[href^="mailto:"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+}
+
+a[href^="mailto:"]::before {
+    content: "";
+    display: block;
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    background-color: currentColor;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 0 24 24' width='24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 0 24 24' width='24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z'/%3E%3C/svg%3E");
+    -webkit-mask-position: 50% 50%;
+    mask-position: 50% 50%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Screen-reader label after mailto links */
+a[href^="mailto:"]::after {
+    content: "[open email client]";
+    display: inline-block;
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+}
+
+/* ── FormAssembly / wForm — broad dark mode (form embedded directly on page) ──
+   The scoped rules above handle forms inside light-gray card columns.
+   These cover any wFormContainer that sits directly on a dark page background. ── */
+[data-theme="dark"] .wFormContainer,
+[data-theme="dark"] .wForm {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .wFormContainer label,
+[data-theme="dark"] .wFormContainer .label,
+[data-theme="dark"] .wFormContainer .preField,
+[data-theme="dark"] .wFormContainer legend,
+[data-theme="dark"] .wFormContainer .wfTabNavLabel,
+[data-theme="dark"] .wFormContainer .wfTab {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .wFormContainer input[type="text"],
+[data-theme="dark"] .wFormContainer input[type="email"],
+[data-theme="dark"] .wFormContainer input[type="tel"],
+[data-theme="dark"] .wFormContainer input[type="number"],
+[data-theme="dark"] .wFormContainer input[type="password"],
+[data-theme="dark"]
+    .wFormContainer
+    input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not(
+        [type="radio"]
+    ):not([type="hidden"]),
+[data-theme="dark"] .wFormContainer .tt-input,
+[data-theme="dark"] .wFormContainer textarea,
+[data-theme="dark"] .wFormContainer select {
+    background-color: #2a2a2a !important;
+    border-color: #4a4a4a !important;
+    color: #e0e0e0 !important;
+}
+
+/* tt-hint is a visually-hidden mirror input; make it transparent so it doesn't bleed white */
+[data-theme="dark"] .wFormContainer .tt-hint {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .wFormContainer input[type="text"]:focus,
+[data-theme="dark"] .wFormContainer input[type="email"]:focus,
+[data-theme="dark"] .wFormContainer input[type="tel"]:focus,
+[data-theme="dark"] .wFormContainer .tt-input:focus,
+[data-theme="dark"] .wFormContainer textarea:focus,
+[data-theme="dark"] .wFormContainer select:focus {
+    border-color: #fdb515 !important;
+    outline-color: #fdb515 !important;
+}
+
+[data-theme="dark"] .wFormContainer .hint,
+[data-theme="dark"] .wFormContainer .field-hint-inactive,
+[data-theme="dark"] .wFormContainer .field-hint-inactive .hint,
+[data-theme="dark"] .wFormContainer .supportInfo,
+[data-theme="dark"] .wFormContainer .sms-consent,
+[data-theme="dark"] .wFormContainer .sms-consent span {
+    color: #c8c8c8 !important;
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .wFormContainer a:not([class*="wp-block-button"]),
+[data-theme="dark"] .wFormContainer .supportInfo a,
+[data-theme="dark"] .wFormContainer .sms-consent a {
+    color: #00a8af !important;
+}
+
+/* Next/Submit page buttons */
+[data-theme="dark"] .wFormContainer .wfPageNextButton,
+[data-theme="dark"] .wFormContainer .wfPagePreviousButton,
+[data-theme="dark"] .wFormContainer input[type="submit"],
+[data-theme="dark"] .wFormContainer button[type="submit"] {
+    background-color: #fdb515 !important;
+    color: #000 !important;
+    border-color: #fdb515 !important;
+}
+
+[data-theme="dark"] .wFormContainer .wfPageNextButton:hover,
+[data-theme="dark"] .wFormContainer .wfPagePreviousButton:hover,
+[data-theme="dark"] .wFormContainer input[type="submit"]:hover,
+[data-theme="dark"] .wFormContainer button[type="submit"]:hover {
+    background-color: #e6a514 !important;
+    color: #000 !important;
+}
+
+/* Tab nav active indicator */
+[data-theme="dark"] .wFormContainer .wfTab {
+    border-color: #4a4a4a !important;
+}
+[data-theme="dark"] .wFormContainer .wfTabCurrentPage {
+    border-color: #fdb515 !important;
+    color: #fdb515 !important;
+}
+
+/* Typeahead autocomplete dropdown */
+[data-theme="dark"] .wFormContainer .tt-menu {
+    background-color: #2a2a2a !important;
+    border-color: #4a4a4a !important;
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .wFormContainer .tt-suggestion {
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .wFormContainer .tt-suggestion:hover,
+[data-theme="dark"] .wFormContainer .tt-cursor {
+    background-color: #383838 !important;
+    color: #fff !important;
+}
+[data-theme="dark"] .wFormContainer .tt-hint {
+    background: transparent !important;
+    color: #666 !important;
+}
+
+/* Error messages */
+[data-theme="dark"] .wFormContainer .errMsg,
+[data-theme="dark"] .wFormContainer .errFld {
+    color: #ff9999 !important;
+}
+
+/* Form title, inline HTML content blocks, and inline-styled spans */
+[data-theme="dark"] .wFormContainer .wFormTitle,
+[data-theme="dark"] .wFormContainer .htmlContent,
+[data-theme="dark"] .wFormContainer .htmlContent b,
+[data-theme="dark"] .wFormContainer span[style*="font-size"],
+[data-theme="dark"] .wFormContainer span[style*="text-align"] {
+    color: #e0e0e0 !important;
+}
+
+/* ============================================================
+   === ACADEMICS SECTION — colleges, departments, programs ===
+   ============================================================ */
+
+/* ── Breadcrumbs ── */
+.academics-breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.4em;
+    list-style: none;
+    margin: 1.25rem 0 2rem;
+    padding: 0;
+    font-size: 0.85rem;
+    color: var(--wp--preset--color--umbc-dark-gray, #636466);
+}
+.academics-breadcrumbs li + li::before {
+    content: "›";
+    margin-right: 0.4em;
+    color: var(--wp--preset--color--umbc-dark-gray, #636466);
+}
+.academics-breadcrumbs a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+}
+.academics-breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+/* ── Term intro: guide-style two-column (content + contact sidebar) ── */
+.academics-term-intro.guide-entry-block {
+    margin: 0 0 0.5rem;
+    padding: 0;
+    gap: 2rem;
+    align-items: flex-start;
+}
+.academics-term-intro .guide-entry-content {
+    flex: 3 1 400px;
+    min-width: 0;
+}
+.academics-term-intro .guide-entry-contact {
+    flex: 0 0 260px;
+    position: sticky;
+    top: 1.5rem;
+    align-self: flex-start;
+}
+.academics-term-intro .guide-entry-url {
+    margin-bottom: 0;
+}
+.academics-term-intro .information-img svg {
+    color: var(--guide-text-secondary, #636466);
+}
+@media (max-width: 768px) {
+    .academics-term-intro.guide-entry-block {
+        flex-direction: column;
+    }
+    .academics-term-intro .guide-entry-contact {
+        position: static;
+        flex: 1 1 auto;
+        width: 100%;
+    }
+}
+
+/* ── Term page hero ── */
+.academics-term-hero {
+    width: 100%;
+    max-height: 320px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+.academics-term-hero__img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── Term page body ── */
+.academics-term-body,
+.academics-index-body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+    box-sizing: border-box;
+}
+
+/* ── Term header ── */
+.academics-term-title,
+.academics-index-header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin: 0 0 0.5rem;
+    color: var(--wp--preset--color--umbc-black, #000);
+}
+.academics-term-website a,
+.academics-term-contact a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-weight: 600;
+}
+.academics-term-college {
+    font-size: 0.9rem;
+    color: var(--wp--preset--color--umbc-dark-gray, #636466);
+    margin: 0.25rem 0 0;
+}
+.academics-term-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    margin: 0.5rem 0 1rem;
+    font-size: 0.9rem;
+}
+.academics-term-meta p {
+    margin: 0;
+}
+.academics-term-description {
+    max-width: 72ch;
+    color: #333;
+    margin: 1rem 0 0;
+}
+
+/* ── Section headings — departments-by-college index pages ── */
+.departments-by-college__title {
+    font-size: 1.35rem;
+    margin: 0 0 1.25rem;
+    color: var(--wp--preset--color--umbc-black, #000);
+}
+
+/* ── Card grid (colleges index + departments in college) ── */
+.academics-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.academics-card {
+    border: 1px solid var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    transition: box-shadow 0.2s;
+}
+.academics-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.academics-card__image-link {
+    display: block;
+}
+.academics-card__img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+}
+.academics-card__body {
+    padding: 1.1rem 1.25rem 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.academics-card__title {
+    font-size: 1.05rem;
+    margin: 0;
+    line-height: 1.3;
+}
+.academics-card__title a {
+    color: var(--wp--preset--color--umbc-black, #000);
+    text-decoration: none;
+}
+.academics-card__title a:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+.academics-card__desc {
+    font-size: 0.875rem;
+    color: #555;
+    margin: 0;
+    flex: 1;
+}
+.academics-card__website {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+}
+.academics-card__website a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+
+/* ── Programs list (department page) ── */
+.dept-programs-group {
+    margin-bottom: 2rem;
+}
+.dept-programs-group h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--wp--preset--color--umbc-dark-gray, #636466);
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+}
+.dept-program-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.dept-program-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+}
+.dept-program-item__link {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-weight: 600;
+    text-decoration: none;
+}
+.dept-program-item__link:hover {
+    text-decoration: underline;
+}
+.dept-program-item__type {
+    font-size: 0.8rem;
+    color: var(--wp--preset--color--umbc-dark-gray, #636466);
+}
+.dept-programs-all {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+.dept-programs-all a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+
+/* ── Stories feed ── */
+.academics-stories-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+.academics-story-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.academics-story-item__img-link {
+    display: block;
+}
+.academics-story-item__img-link img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    border-radius: 3px;
+}
+.academics-story-item__title {
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.35;
+}
+.academics-story-item__title a {
+    color: var(--wp--preset--color--umbc-black, #000);
+    text-decoration: none;
+}
+.academics-story-item__title a:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+.academics-story-item__excerpt {
+    font-size: 0.85rem;
+    color: #555;
+    margin: 0;
+}
+.academics-stories-more {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.academics-stories-more a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+
+/* ── Departments index grouped by college ── */
+.departments-index-page .academics-index-header {
+    margin-bottom: 2.5rem;
+}
+.departments-by-college {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+}
+.departments-by-college:last-child {
+    border-bottom: none;
+}
+.departments-by-college__title a {
+    color: var(--wp--preset--color--umbc-black, #000);
+    text-decoration: none;
+}
+.departments-by-college__title a:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+.departments-by-college__list {
+    columns: 2;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1.5rem;
+}
+.departments-by-college__list li {
+    break-inside: avoid;
+    padding: 0.2rem 0;
+}
+.departments-by-college__list a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+.departments-by-college__list a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .departments-by-college__list {
+        columns: 1;
+    }
+    .academics-card-grid {
+        grid-template-columns: 1fr;
+    }
+    .academics-stories-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Colleges index specific ── */
+.colleges-index-intro {
+    font-size: 1.05rem;
+    max-width: 72ch;
+    margin: 0.75rem 0 2.5rem;
+    color: #333;
+    line-height: 1.6;
+}
+.colleges-index-intro a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-weight: 600;
+}
+
+.colleges-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.college-card {
+    display: flex;
+    flex-direction: column;
+}
+.college-card .academics-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.college-card .academics-card__desc {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+.college-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+}
+.college-card__cta {
+    display: inline-block;
+    background: var(--wp--preset--color--umbc-gold, #fdb515);
+    color: #1a1a1a !important;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    border-radius: 3px;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.15s;
+}
+.college-card__cta:hover {
+    background: #e8a200;
+}
+.college-card__website {
+    font-size: 0.8rem;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-align: center;
+    text-decoration: none;
+}
+.college-card__website:hover {
+    text-decoration: underline;
+}
+
+.colleges-index-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+    text-align: center;
+    font-size: 0.95rem;
+}
+.colleges-index-footer a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-weight: 600;
+}
+
+.colleges-index-about {
+    max-width: 72ch;
+    margin: 2rem auto 0;
+    text-align: center;
+    color: var(--wp--preset--color--umbc-dark-gray, #636466);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* ── Dark mode — academics ── */
+[data-theme="dark"] .academics-card {
+    background: #1a1a1a;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-card__title a {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-card__title a:hover {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .academics-card__desc,
+[data-theme="dark"] .academics-story-item__excerpt,
+[data-theme="dark"] .academics-term-description {
+    color: #bbb;
+}
+[data-theme="dark"] .academics-term-title,
+[data-theme="dark"] .academics-index-header h1,
+[data-theme="dark"] .departments-by-college__title a,
+[data-theme="dark"] .academics-story-item__title a {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .departments-by-college {
+    border-color: #333;
+}
+[data-theme="dark"] .academics-breadcrumbs,
+[data-theme="dark"] .academics-breadcrumbs ol,
+[data-theme="dark"] .academics-breadcrumbs li + li::before,
+[data-theme="dark"] .academics-term-college {
+    color: #999;
+}
+[data-theme="dark"] .dept-programs-group h3 {
+    color: #999;
+    border-color: #333;
+}
+[data-theme="dark"] .college-card__actions {
+    border-color: #333;
+}
+[data-theme="dark"] .college-card__cta {
+    background: var(--wp--preset--color--umbc-gold, #fdb515);
+    color: #1a1a1a !important;
+}
+[data-theme="dark"] .colleges-index-intro,
+[data-theme="dark"] .colleges-index-about {
+    color: #bbb;
+}
+[data-theme="dark"] .colleges-index-footer {
+    border-color: #333;
+    color: #bbb;
+}
+[data-theme="dark"] .colleges-index-intro a,
+[data-theme="dark"] .colleges-index-footer a,
+[data-theme="dark"] .college-card__website {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .academics-breadcrumbs a,
+[data-theme="dark"] .academics-term-website a,
+[data-theme="dark"] .academics-term-contact a,
+[data-theme="dark"] .academics-term-college a,
+[data-theme="dark"] .academics-term-description a,
+[data-theme="dark"] .academics-term-intro a,
+[data-theme="dark"] .academics-term-section p a,
+[data-theme="dark"] .dept-program-item__link,
+[data-theme="dark"] .dept-programs-all a,
+[data-theme="dark"] .academics-stories-more a,
+[data-theme="dark"] .academics-card__title a:hover,
+[data-theme="dark"] .academics-story-item__title a:hover,
+[data-theme="dark"] .departments-by-college__list a {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .departments-by-college__title a:hover {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+
+/* ── Academics term hero: image + title overlay ── */
+/* max-height comes from the inline style set in the editor panel (umbc_hero_max_height),
+   same as normal pages — no hardcoded height here. */
+.academics-term-hero-header {
+    overflow: hidden;
+}
+.academics-term-hero-header .hero-overlay__image,
+.academics-term-hero-header > img.wp-post-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+}
+/* hero-overlay__content constraints live in umbc-nav.css for all hero types */
+
+/* Type icon beside the hero title on college / department / program pages.
+   Same inline SVG (umbc_type_icon_svg) the quick-search dropdown uses. */
+.academics-term-icon {
+    margin-right: 0.45em;
+    font-size: 0.8em;
+    width: 1.15em;
+    height: 1em;
+    fill: currentColor;
+    opacity: 0.9;
+    vertical-align: baseline;
+}
+
+/* ── Academics section-nav layout (manual wrapper from templates) ──
+   Used by taxonomy-college/department, faculty single/archive, and the
+   colleges/departments index pages — contexts that don't run the_content
+   so the automatic injection never fires. Constrains the nav+content row
+   and lets the inner academics containers fill the main column instead of
+   re-centering at their own max-width. */
+/* The Astra leftover .ast-container caps these archive/page contexts at 1200px,
+   which would squeeze the content column once the 290px section nav is added.
+   Widen it to match the section-layout wrapper so content keeps ~its original
+   width beside the nav. Body-scoped selectors out-specify .archive .ast-container. */
+body.tax-college .ast-container,
+body.tax-academic-department .ast-container,
+body.post-type-archive-faculty .ast-container,
+body.single-faculty .ast-container,
+body.page-template-page-academics-colleges .ast-container,
+body.page-template-page-academics-departments .ast-container {
+    max-width: 100%;
+}
+
+.section-layout-wrapper--academics {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+/* Sticky parity with the About section nav: position:sticky can only pin
+   inside its wrapper, and several academics pages have content shorter than
+   a screen, so the sidebar's sticky range ended hundreds of px before the
+   footer and it appeared "not to lock". Guarantee the content column spans
+   at least a viewport so the sidebar stays pinned until the footer arrives. */
+@media (min-width: 768px) {
+    .section-layout-wrapper--academics > .section-main-content {
+        min-height: calc(100vh - 4rem);
+    }
+}
+.section-main-content > .academics-term-body,
+.section-main-content > .academics-index-body,
+.section-main-content > .faculty-archive,
+.section-main-content > .faculty-profile {
+    max-width: none;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* ── Mobile: restore a horizontal gutter for section-nav page content ──
+   Below 1100px the sidebar is hidden and .section-layout-wrapper drops its
+   padding to 0 (umbc-nav.css) so heroes / full-bleed blocks can run to the
+   viewport edge. That also pushed normal in-flow content (text, headings,
+   columns, cards) flush against the screen edge on college, academics, and
+   any in-section content page (e.g. About → Accreditation). Re-inset the
+   in-flow content while keeping heroes, covers, and any alignfull block
+   edge-to-edge. The academics body wrappers are single containers that hold
+   all of a page's content, so they get padded directly. */
+@media (max-width: 1099px) {
+    .section-main-content > .academics-term-body,
+    .section-main-content > .academics-index-body,
+    .section-main-content > .faculty-archive,
+    .section-main-content > .faculty-profile {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+    .section-main-content
+        > :not(.section-hero-image):not(.wp-block-cover):not(.alignfull):not([class*="hero"]):not(.academics-term-body):not(.academics-index-body):not(.faculty-archive):not(.faculty-profile) {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        box-sizing: border-box;
+    }
+}
+
+/* College hero: full-bleed image edge-to-edge, title centered over the
+   1200px content column. Scoped to .college-term-page so other heroes
+   (departments, pages) keep their default bottom-left title. */
+.college-term-page .academics-term-hero-header {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+}
+.college-term-page .academics-term-hero-header .entry-title {
+    position: static;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    left: auto;
+    bottom: auto;
+}
+
+/* ── Academics news feed ── */
+.academics-news-feed {
+    margin-top: 3rem;
+}
+
+.academics-news-featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+}
+.academics-news-featured__img-link {
+    display: block;
+}
+.academics-news-featured__img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+}
+.academics-news-featured__eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    margin: 0 0 0.5rem;
+}
+.academics-news-featured__title {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    margin: 0 0 0.75rem;
+    line-height: 1.25;
+}
+.academics-news-featured__title a {
+    color: var(--wp--preset--color--umbc-black, #000);
+    text-decoration: none;
+}
+.academics-news-featured__title a:hover {
+    text-decoration: underline;
+}
+.academics-news-featured__excerpt {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 0.5rem;
+}
+.academics-news-featured__date {
+    font-size: 0.8rem;
+    color: #888;
+    margin: 0;
+}
+
+.academics-news-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+}
+.academics-news-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+}
+.academics-news-card__img-link {
+    display: block;
+}
+.academics-news-card__img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+}
+.academics-news-card__body {
+    padding: 0.9rem 1rem 1rem;
+    flex: 1;
+}
+.academics-news-card__title {
+    font-size: 0.95rem;
+    margin: 0 0 0.4rem;
+    line-height: 1.35;
+}
+.academics-news-card__title a {
+    color: var(--wp--preset--color--umbc-black, #000);
+    text-decoration: none;
+}
+.academics-news-card__title a:hover {
+    text-decoration: underline;
+}
+.academics-news-card__date {
+    font-size: 0.78rem;
+    color: #888;
+    margin: 0;
+}
+
+.academics-news-links {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    border-top: 1px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+}
+.academics-news-link-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid
+        var(--wp--preset--color--umbc-extra-light-gray, #efefef);
+    font-size: 0.95rem;
+}
+.academics-news-link-item a {
+    color: var(--wp--preset--color--umbc-black, #000);
+    text-decoration: none;
+    flex: 1;
+}
+.academics-news-link-item a:hover {
+    text-decoration: underline;
+}
+.academics-news-link-item__date {
+    font-size: 0.78rem;
+    color: #888;
+    white-space: nowrap;
+}
+
+.academics-news-more {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+.academics-news-more a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-weight: 600;
+}
+
+@media (max-width: 700px) {
+    .academics-news-featured {
+        grid-template-columns: 1fr;
+    }
+    .academics-news-link-item {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    .academics-news-link-item__date {
+        align-self: flex-start;
+    }
+}
+
+/* ── Dark mode — academics news feed ── */
+[data-theme="dark"] .academics-news-featured {
+    border-color: #333;
+}
+[data-theme="dark"] .academics-news-featured__eyebrow {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-news-featured__title a,
+[data-theme="dark"] .academics-news-card__title a,
+[data-theme="dark"] .academics-news-link-item a {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-news-featured__excerpt {
+    color: #bbb;
+}
+[data-theme="dark"] .academics-news-featured__date,
+[data-theme="dark"] .academics-news-card__date,
+[data-theme="dark"] .academics-news-link-item__date {
+    color: #c2c2c2;
+}
+[data-theme="dark"] .academics-news-card {
+    background: #2d2e2d;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-news-links,
+[data-theme="dark"] .academics-news-link-item {
+    border-color: #333;
+}
+[data-theme="dark"] .academics-news-more a {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+
+/* =============================================================
+   Academics term pages — sidebar wireframe layout
+   Applies to taxonomy-college.php and taxonomy-academic-department.php
+   ============================================================= */
+
+/* 2/3 + 1/3 sidebar layout */
+.academics-term-sidebar-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    margin-top: 2rem;
+}
+@media (max-width: 900px) {
+    .academics-term-sidebar-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.academics-term-main {
+    min-width: 0;
+}
+.academics-term-sidebar {
+    min-width: 0;
+}
+
+/* Section headings */
+.academics-term-section {
+    margin-bottom: 2.5rem;
+}
+.academics-term-section__heading {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #636466;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e6e7e8;
+}
+
+/* College/university name subtitle */
+.academics-term-college {
+    font-size: 0.9rem;
+    color: #444;
+    margin: 0.25rem 0 0;
+}
+.academics-term-college a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+}
+.academics-term-college a:hover {
+    text-decoration: underline;
+}
+
+.academics-term-website {
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+.academics-term-website a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+}
+.academics-term-website a:hover {
+    text-decoration: underline;
+}
+
+/* Featured video (click-to-play YouTube facade) */
+.academics-video {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.academics-video__play {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    background: none;
+}
+.academics-video__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.academics-video__play:hover .academics-video__thumb,
+.academics-video__play:focus-visible .academics-video__thumb {
+    transform: scale(1.03);
+    opacity: 0.9;
+}
+.academics-video__icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 68px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    transition: background 0.2s ease;
+}
+.academics-video__play:hover .academics-video__icon,
+.academics-video__play:focus-visible .academics-video__icon {
+    background: var(--wp--preset--color--umbc-spirit-gold, #ffc20e);
+}
+.academics-video__icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 52%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 11px 0 11px 18px;
+    border-color: transparent transparent transparent #fff;
+}
+.academics-video__play:hover .academics-video__icon::after,
+.academics-video__play:focus-visible .academics-video__icon::after {
+    border-left-color: #1a1a1a;
+}
+.academics-video__iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+/* Image gallery (captions from the Media Library) */
+.academics-gallery {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.academics-gallery__figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+.academics-gallery__img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+    background: #f1f1f1;
+}
+.academics-gallery__caption {
+    font-size: 0.8rem;
+    line-height: 1.35;
+    color: #636466;
+    margin-top: 0.4rem;
+}
+[data-theme="dark"] .academics-gallery__caption {
+    color: #b8b9bb;
+}
+
+/* Department accent cards (≤6 depts) */
+.academics-dept-cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.academics-dept-card {
+    border: 1px solid #e6e7e8;
+    border-left: 3px solid var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-radius: 0 6px 6px 0;
+    background: #fff;
+}
+.academics-dept-card__inner {
+    padding: 0.7rem 1rem;
+}
+.academics-dept-card__name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+}
+.academics-dept-card__name a {
+    color: #1a1a1a;
+    text-decoration: none;
+}
+.academics-dept-card__name a:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: underline;
+}
+.academics-dept-card__meta {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0.15rem 0 0;
+}
+
+/* Department list (>6 depts) */
+.academics-dept-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.academics-dept-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid #e6e7e8;
+    font-size: 0.95rem;
+}
+.academics-dept-list li:last-child {
+    border-bottom: none;
+}
+.academics-dept-list li a {
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: 500;
+}
+.academics-dept-list li a:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: underline;
+}
+.academics-dept-list__count {
+    font-size: 0.78rem;
+    color: #888;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.academics-dept-list li.academics-dept-list__item--hidden {
+    display: none;
+}
+
+/* Show/hide toggle button */
+.academics-dept-toggle {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+.academics-dept-toggle:hover {
+    color: #005559;
+}
+
+/* Programs filter pills */
+/* Degree type tabs */
+.academics-degree-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 2px solid #e6e7e8;
+    margin-bottom: 1rem;
+}
+.academics-degree-tab {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    color: #636466;
+    cursor: pointer;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+    white-space: nowrap;
+}
+.academics-degree-tab:hover {
+    color: #1a1a1a;
+}
+.academics-degree-tab.is-active {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-bottom-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+
+/* Programs simple list */
+.academics-programs-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+}
+.academics-programs-list li {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0.45rem 0;
+}
+.academics-programs-list li:last-child {
+    border-bottom: none;
+}
+.academics-programs-list a {
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    font-weight: 700;
+    text-decoration: none;
+}
+.academics-programs-list a:hover,
+.academics-programs-list a:focus-visible {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: underline;
+}
+
+.academics-term-all-link {
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0;
+}
+.academics-term-all-link a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-weight: 600;
+    text-decoration: none;
+}
+.academics-term-all-link a:hover {
+    text-decoration: underline;
+}
+
+/* News list */
+.academics-news-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.academics-news-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #e6e7e8;
+}
+.academics-news-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.academics-news-item__date {
+    font-size: 0.75rem;
+    color: #888;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 0.15rem;
+    min-width: 3.5rem;
+}
+.academics-news-item__content {
+    flex: 1;
+    min-width: 0;
+}
+.academics-news-item__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-decoration: none;
+    display: block;
+    line-height: 1.4;
+}
+.academics-news-item__title:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: underline;
+}
+.academics-news-item__excerpt {
+    font-size: 0.82rem;
+    color: #555;
+    margin: 0.2rem 0 0;
+    line-height: 1.5;
+}
+
+/* Sidebar blocks */
+.academics-sidebar-block {
+    margin-bottom: 1.75rem;
+}
+.academics-sidebar-block__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #636466;
+    margin: 0 0 0.6rem;
+}
+
+/* Tour block */
+.academics-tour-block {
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.academics-tour-block__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+.academics-tour-block__text strong {
+    font-size: 0.95rem;
+}
+.academics-tour-block__text span {
+    font-size: 0.82rem;
+    color: #555;
+}
+.academics-tour-block__desc {
+    font-size: 0.82rem;
+    color: #555;
+    margin: 0;
+}
+.academics-tour-block__cta {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    background: #fff;
+    border: 1px solid #d0d3d4;
+    border-radius: 4px;
+    color: #1a1a1a;
+    text-decoration: none;
+    align-self: flex-start;
+}
+.academics-tour-block__cta:hover {
+    background: var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    color: #fff;
+}
+
+/* Contact block */
+.academics-contact-block {
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fff;
+}
+.academics-contact-block__office {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 0 0 0.6rem;
+}
+.academics-contact-block__details {
+    font-size: 0.85rem;
+    margin: 0 0 0.75rem;
+    border-top: 1px solid #e6e7e8;
+    padding-top: 0.6rem;
+}
+.academics-contact-block__row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+.academics-contact-block__row dd {
+    margin: 0;
+    color: #444;
+    line-height: 1.5;
+}
+.academics-contact-block__row dd a {
+    color: #444;
+    text-decoration: none;
+}
+.academics-contact-block__row dd a:hover {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: underline;
+}
+.academics-contact-block__map {
+    display: inline-block;
+    font-size: 0.78rem;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176) !important;
+    font-weight: 600;
+}
+.academics-contact-block__website {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+}
+.academics-contact-block__website:hover {
+    text-decoration: underline;
+}
+
+/* Stats grid */
+.academics-stats-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+.academics-stat {
+    background: #f8f9fa;
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+.academics-stat__value {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+.academics-stat__label {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/* Parent college card */
+.academics-parent-college-card {
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.academics-parent-college-card__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+    display: block;
+    line-height: 1.35;
+}
+.academics-parent-college-card__name:hover {
+    text-decoration: underline;
+}
+.academics-parent-college-card__meta {
+    font-size: 0.78rem;
+    color: #666;
+    margin: 0.15rem 0 0;
+}
+.academics-parent-college-card__link {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.academics-parent-college-card__link:hover {
+    text-decoration: underline;
+}
+
+/* Dark mode */
+[data-theme="dark"] .academics-term-section__heading {
+    color: #a0a0a0;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-term-college a {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-term-website a {
+    color: #4db8bc;
+}
+
+[data-theme="dark"] .academics-dept-card {
+    background: #1e1e1e;
+    border-color: #333;
+    border-left-color: #4db8bc;
+}
+[data-theme="dark"] .academics-dept-card__name a {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-dept-card__name a:hover {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-dept-card__meta {
+    color: #888;
+}
+
+[data-theme="dark"] .academics-dept-list li {
+    border-color: #333;
+}
+[data-theme="dark"] .academics-dept-list li a {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-dept-list li a:hover {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-dept-list__count {
+    color: #c2c2c2;
+}
+
+[data-theme="dark"] .academics-degree-tabs {
+    border-bottom-color: #333;
+}
+[data-theme="dark"] .academics-degree-tab {
+    color: #888;
+}
+[data-theme="dark"] .academics-degree-tab:hover {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-degree-tab.is-active {
+    color: #4db8bc;
+    border-bottom-color: #4db8bc;
+}
+[data-theme="dark"] .academics-programs-list li {
+    border-bottom-color: #2a2a2a;
+}
+[data-theme="dark"] .academics-programs-list a {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-programs-list a:hover {
+    color: #4db8bc;
+}
+
+[data-theme="dark"] .academics-news-item {
+    border-color: #333;
+}
+[data-theme="dark"] .academics-news-item__date {
+    color: #c2c2c2;
+}
+[data-theme="dark"] .academics-news-item__title {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-news-item__title:hover {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-news-item__excerpt {
+    color: #999;
+}
+
+[data-theme="dark"] .academics-tour-block,
+[data-theme="dark"] .academics-contact-block,
+[data-theme="dark"] .academics-parent-college-card {
+    background: #1e1e1e;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-contact-block__details {
+    border-color: #333;
+}
+[data-theme="dark"] .academics-contact-block__office {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-contact-block__row dd {
+    color: #bbb;
+}
+[data-theme="dark"] .academics-contact-block__row dd a {
+    color: #bbb;
+}
+[data-theme="dark"] .academics-contact-block__row dd a:hover {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-contact-block__website {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-tour-block__text strong {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-tour-block__text span {
+    color: #999;
+}
+[data-theme="dark"] .academics-tour-block__desc {
+    color: #999;
+}
+[data-theme="dark"] .academics-tour-block__cta {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-tour-block__cta:hover {
+    background: #007176;
+    border-color: #007176;
+    color: #fff;
+}
+
+[data-theme="dark"] .academics-stat {
+    background: #1e1e1e;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-stat__value {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .academics-stat__label {
+    color: #888;
+}
+
+[data-theme="dark"] .academics-parent-college-card__name {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-parent-college-card__meta {
+    color: #c2c2c2;
+}
+[data-theme="dark"] .academics-parent-college-card__link {
+    color: #4db8bc;
+}
+[data-theme="dark"] .academics-term-all-link a {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .academics-dept-toggle {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+
+/* Sidebar featured news card */
+.academics-news-feature-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    text-decoration: none;
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    gap: 0;
+}
+.academics-news-feature-card__image {
+    display: block;
+    width: 110px;
+    flex-shrink: 0;
+    align-self: stretch;
+    object-fit: cover;
+}
+.academics-news-feature-card__body {
+    display: flex;
+    flex-direction: column;
+    padding: 0.65rem 0.75rem;
+    min-width: 0;
+}
+.academics-news-feature-card__title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #1a1a1a;
+    margin-bottom: 0.3rem;
+}
+.academics-news-feature-card:hover .academics-news-feature-card__title {
+    text-decoration: underline;
+}
+.academics-news-feature-card__date {
+    display: block;
+    font-size: 0.75rem;
+    color: #636466;
+    margin-top: auto;
+}
+.academics-sidebar-block__more {
+    display: block;
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: #007a7c;
+    text-decoration: none;
+}
+.academics-sidebar-block__more:hover {
+    text-decoration: underline;
+}
+[data-theme="dark"] .academics-news-feature-card {
+    background: #1e1e1e;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-news-feature-card__title {
+    color: #e8e8e8;
+}
+[data-theme="dark"] .academics-news-feature-card__date {
+    color: #c2c2c2;
+}
+[data-theme="dark"] .academics-sidebar-block__more {
+    color: #4db8bc;
+}
+
+/* Dark mode contrast fixes — meta/label/date text that defaults to
+   umbc-dark-gray (#636466) had no dark override and failed contrast on the
+   dark page (~2.9:1). Lift to #b0b0b0 to match the faculty dark convention. */
+[data-theme="dark"] .academics-term-intro .guide-entry-url,
+[data-theme="dark"] .dept-program-item__type,
+[data-theme="dark"] .academics-sidebar-block__label,
+[data-theme="dark"] .faculty-pager__gap {
+    color: #b0b0b0;
+}
+
+/* Campus tour sidebar block */
+.academics-campus-tour-block {
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fff;
+}
+.academics-campus-tour-block__date {
+    margin: 0 0 0.4rem;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+.academics-campus-tour-block__date span {
+    color: #636466;
+    font-size: 0.82rem;
+}
+.academics-campus-tour-block__title {
+    font-size: 0.88rem;
+    color: #444;
+    margin: 0 0 0.75rem;
+}
+.academics-campus-tour-block__link {
+    display: inline-block;
+    background: #007a7c;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+}
+.academics-campus-tour-block__link:hover {
+    background: #005f61;
+}
+[data-theme="dark"] .academics-campus-tour-block {
+    background: #1e1e1e;
+    border-color: #333;
+}
+[data-theme="dark"] .academics-campus-tour-block__date span {
+    color: #c2c2c2;
+}
+[data-theme="dark"] .academics-campus-tour-block__title {
+    color: #bbb;
+}
+
+/* =============================================================
+   Pagination — applies sitewide (archive, query blocks, anywhere)
+   ============================================================= */
+.ast-pagination {
+    margin: 2rem 0 3rem;
+}
+.ast-pagination .nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.ast-pagination .page-numbers {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.6rem;
+    border: 1px solid #d0d3d4;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-decoration: none;
+    background: #fff;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+    line-height: 1;
+}
+.ast-pagination .page-numbers:hover {
+    background: #007176;
+    border-color: #007176;
+    color: #fff;
+}
+.ast-pagination .page-numbers.current {
+    background: #007176;
+    border-color: #007176;
+    color: #fff;
+    pointer-events: none;
+}
+.ast-pagination .page-numbers.dots {
+    border-color: transparent;
+    background: transparent;
+    pointer-events: none;
+    color: #666;
+}
+.ast-pagination .prev.page-numbers,
+.ast-pagination .next.page-numbers {
+    font-size: 13px;
+    padding: 0 0.85rem;
+    gap: 0.25rem;
+}
+.ast-pagination .prev.page-numbers span,
+.ast-pagination .next.page-numbers span {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.wp-block-query-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 2rem 0 3rem;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
+.wp-block-query-pagination-numbers {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.wp-block-query-pagination-numbers li {
+    display: contents;
+}
+.wp-block-query-pagination-numbers .page-numbers,
+.wp-block-query-pagination-previous,
+.wp-block-query-pagination-next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.6rem;
+    border: 1px solid #d0d3d4;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    font-style: normal;
+    color: #1a1a1a;
+    text-decoration: none;
+    background: #fff;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+    line-height: 1;
+}
+.wp-block-query-pagination-numbers .page-numbers:hover,
+.wp-block-query-pagination-previous:hover,
+.wp-block-query-pagination-next:hover {
+    background: #007176;
+    border-color: #007176;
+    color: #fff;
+}
+.wp-block-query-pagination-numbers .page-numbers.current {
+    background: #007176;
+    border-color: #007176;
+    color: #fff;
+    pointer-events: none;
+}
+.wp-block-query-pagination-numbers .page-numbers.dots {
+    border-color: transparent;
+    background: transparent;
+    pointer-events: none;
+    color: #666;
+}
+.wp-block-query-pagination-previous,
+.wp-block-query-pagination-next {
+    padding: 0 0.85rem;
+    font-size: 13px;
+}
+
+[data-theme="dark"] .ast-pagination .page-numbers,
+[data-theme="dark"] .wp-block-query-pagination-numbers .page-numbers,
+[data-theme="dark"] .wp-block-query-pagination-previous,
+[data-theme="dark"] .wp-block-query-pagination-next {
+    background: #1a1a1a;
+    border-color: #3a3a3a;
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .ast-pagination .page-numbers:hover,
+[data-theme="dark"] .ast-pagination .page-numbers.current,
+[data-theme="dark"] .wp-block-query-pagination-numbers .page-numbers:hover,
+[data-theme="dark"] .wp-block-query-pagination-numbers .page-numbers.current,
+[data-theme="dark"] .wp-block-query-pagination-previous:hover,
+[data-theme="dark"] .wp-block-query-pagination-next:hover {
+    background: #2e2e2e;
+    border-color: #fdb515;
+    color: #fff;
+}
+[data-theme="dark"] .ast-pagination .page-numbers.dots,
+[data-theme="dark"] .wp-block-query-pagination-numbers .page-numbers.dots {
+    color: #8f8f8f;
+}
+
+/* Pagination inside a Cover block sits on an always-dark image band, so the
+   default teal "current" pill and light/dark box styles read poorly there.
+   Force a legible translucent-on-dark treatment in both color modes. */
+.wp-block-cover .wp-block-query-pagination-numbers .page-numbers,
+.wp-block-cover .wp-block-query-pagination-previous,
+.wp-block-cover .wp-block-query-pagination-next,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-numbers .page-numbers,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-previous,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-next {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #fff !important;
+}
+.wp-block-cover .wp-block-query-pagination-numbers .page-numbers:hover,
+.wp-block-cover .wp-block-query-pagination-previous:hover,
+.wp-block-cover .wp-block-query-pagination-next:hover,
+.wp-block-cover .wp-block-query-pagination-numbers .page-numbers.current,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-numbers .page-numbers:hover,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-previous:hover,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-next:hover,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-numbers .page-numbers.current {
+    background: var(--wp--preset--color--umbc-spirit-gold, #ffc20e);
+    border-color: var(--wp--preset--color--umbc-spirit-gold, #ffc20e);
+    color: #1a1a1a !important;
+}
+.wp-block-cover .wp-block-query-pagination-numbers .page-numbers.dots,
+[data-theme="dark"] .wp-block-cover .wp-block-query-pagination-numbers .page-numbers.dots {
+    background: transparent;
+    border-color: transparent;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme="dark"] .umbc-breadcrumbs-wrap,
+[data-theme="dark"] .umbc-breadcrumbs {
+    color: #aaa;
+}
+[data-theme="dark"] .umbc-breadcrumbs-wrap a,
+[data-theme="dark"] .umbc-breadcrumbs a,
+[data-theme="dark"] .umbc-breadcrumbs-wrap .rank-math-breadcrumb a {
+    color: #b0c4c4;
+}
+
+/* ── /stories/class-of/ child index grid ──────────────────────────
+   Auto-appended via the_content filter when the Class Of page is
+   rendered. Lists each year (Class of 2026, 2025, …) as a card. */
+.class-of-index-grid {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.class-of-index-item {
+    margin: 0;
+}
+
+.class-of-index-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.class-of-index-link:hover,
+.class-of-index-link:focus {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+}
+
+.class-of-index-thumb {
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+}
+
+.class-of-index-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.class-of-index-title {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #007176;
+}
+
+[data-theme="dark"] .class-of-index-link {
+    background: #1f1f1f;
+    border-color: #333;
+}
+
+[data-theme="dark"] .class-of-index-title {
+    color: #4dd0d6;
+}
+
+/* ── Breadcrumb alignment inside the section-nav content column ──
+   .umbc-breadcrumbs-wrap globally has a 1.75rem horizontal padding
+   so it sits inside its own max-width: 1200px centered container.
+   When the section-nav inject filter renders it inside .section-
+   main-content (which is already a column inside a flex layout),
+   that padding pushes the breadcrumb right of the title beside it.
+   Reset the wrap to flow with the column's own edges. */
+.section-main-content .umbc-breadcrumbs-wrap,
+.section-main-content .umbc-breadcrumbs {
+    margin: 0 0 1rem;
+    padding: 0;
+    max-width: none;
+}
+
+/* =============================================================
+   === FACULTY ================================================
+   Single profile, archive, and faculty section on college /
+   department taxonomy pages. Uses UMBC palette tokens; dark
+   mode at the bottom.
+   ============================================================= */
+
+/* ── Section heading helper (count chip) ─────────────────── */
+.academics-term-section__heading .academics-term-section__count {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    background: #efefef;
+    color: #444;
+    font-size: 0.7rem;
+    letter-spacing: 0;
+    text-transform: none;
+    vertical-align: 1px;
+}
+.academics-term-section__cta {
+    margin: 1rem 0 0;
+    font-size: 0.95rem;
+}
+.academics-term-section__cta-link {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+    font-weight: 600;
+}
+.academics-term-section__cta-link:hover {
+    text-decoration: underline;
+}
+
+/* ── Faculty row list (shared: archive + taxonomy sections) ──
+   Single column, name-leading, small avatar on the right (blank slot
+   when no photo so rows stay aligned). Easy to scan a long alphabetical
+   list — no "which column is the name in?" problem. */
+.faculty-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.faculty-list__row {
+    margin: 0;
+}
+.faculty-list__row[hidden] {
+    display: none;
+}
+.faculty-list__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.7rem 0.5rem;
+    border-bottom: 1px solid #e6e7e8;
+    transition: background-color 0.12s ease;
+}
+.faculty-list__link:hover,
+.faculty-list__link:focus-visible {
+    background: #f7f7f7;
+}
+.faculty-list__link:focus-visible {
+    outline: 2px solid var(--wp--preset--color--umbc-aok-teal, #007176);
+    outline-offset: -2px;
+}
+.faculty-list__text {
+    min-width: 0;
+}
+.faculty-list__name {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.3;
+    color: var(--wp--preset--color--umbc-black, #000);
+}
+.faculty-list__meta {
+    display: block;
+    font-size: 0.82rem;
+    color: #636466;
+    line-height: 1.3;
+    margin-top: 0.1rem;
+}
+.faculty-list__avatar {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: transparent; /* blank slot when no photo — keeps rows aligned */
+}
+.faculty-list__avatar-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+/* Initials fallback when a faculty member has no headshot */
+.faculty-list__avatar-initials {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--wp--preset--color--umbc-gold, #fdb515);
+    color: var(--wp--preset--color--umbc-black, #000);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+/* Compact variant for the in-page taxonomy sections */
+.faculty-list--compact .faculty-list__name {
+    font-size: 0.95rem;
+}
+.faculty-list--compact .faculty-list__avatar,
+.faculty-list--compact .faculty-list__avatar-img,
+.faculty-list--compact .faculty-list__avatar-initials {
+    width: 40px;
+    height: 40px;
+}
+.faculty-list--compact .faculty-list__avatar-initials {
+    font-size: 0.9rem;
+}
+
+/* ── Single faculty profile ──────────────────────────────── */
+.faculty-profile {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 4rem;
+}
+.faculty-profile .academics-breadcrumbs {
+    margin-bottom: 1.5rem;
+}
+
+/* Optional 200px photo, then the identity/contact pair splits the remainder
+   70/30. The body below runs full width. */
+.faculty-profile__header {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 0.7fr) minmax(0, 0.3fr);
+    gap: 1.75rem;
+    align-items: start;
+    margin-bottom: 2rem;
+}
+/* Drop the slot rather than leave an empty column beside the identity. */
+.faculty-profile__header--no-photo {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 0.3fr);
+}
+.faculty-profile__header--no-contact {
+    grid-template-columns: 200px minmax(0, 1fr);
+}
+.faculty-profile__header--no-photo.faculty-profile__header--no-contact {
+    grid-template-columns: 1fr;
+}
+.faculty-profile__photo-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #e0e0e0;
+}
+/* Too tight for three columns: the contact card drops under the identity. */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .faculty-profile__header {
+        grid-template-columns: 200px minmax(0, 1fr);
+    }
+    .faculty-profile__header .faculty-profile__contact-card {
+        grid-column: 2;
+    }
+    .faculty-profile__header--no-photo {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .faculty-profile__header--no-photo .faculty-profile__contact-card {
+        grid-column: 1;
+    }
+}
+.faculty-profile__identity > * {
+    margin: 0 0 0.5rem;
+}
+.faculty-profile__name {
+    font-size: 2rem;
+    line-height: 1.15;
+    margin-bottom: 0.35rem;
+    color: var(--wp--preset--color--umbc-black, #000);
+}
+.faculty-profile__rank {
+    font-size: 1.05rem;
+    color: #444;
+    font-weight: 500;
+}
+.faculty-profile__depts,
+.faculty-profile__colleges {
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+}
+.faculty-profile__depts a,
+.faculty-profile__colleges a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+    margin-right: 0.6rem;
+}
+.faculty-profile__depts a:hover,
+.faculty-profile__colleges a:hover {
+    text-decoration: underline;
+}
+.faculty-profile__colleges a {
+    font-size: 0.85rem;
+    color: #636466;
+}
+/* Affiliations Digital Measures reports that have no taxonomy term (Goddard,
+   JCET, the space-science centres). Same rhythm as the linked ones, but in body
+   colour with no link affordance — there is no archive page to send them to. */
+.faculty-profile__dept-text,
+.faculty-profile__college-text {
+    color: #3f4043;
+    margin-right: 0.6rem;
+}
+.faculty-profile__college-text {
+    font-size: 0.85rem;
+    color: #636466;
+}
+/* ── Scholarship sections pulled from Digital Measures ──────────────────── */
+.faculty-scholarship {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.faculty-scholarship__item {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.faculty-scholarship__item:last-child {
+    border-bottom: 0;
+}
+.faculty-scholarship__title {
+    display: block;
+    font-weight: 600;
+    line-height: 1.4;
+}
+.faculty-scholarship__title a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+}
+.faculty-scholarship__title a:hover {
+    text-decoration: underline;
+}
+.faculty-scholarship__year {
+    font-weight: 400;
+    color: #636466;
+    margin-left: 0.35rem;
+}
+.faculty-scholarship__meta,
+.faculty-scholarship__authors {
+    display: block;
+    font-size: 0.9rem;
+    color: #636466;
+    line-height: 1.45;
+    margin-top: 0.15rem;
+}
+.faculty-scholarship__authors {
+    font-size: 0.85rem;
+    font-style: italic;
+}
+[data-theme="dark"] .faculty-scholarship__item {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .faculty-scholarship__title a {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .faculty-scholarship__year,
+[data-theme="dark"] .faculty-scholarship__meta,
+[data-theme="dark"] .faculty-scholarship__authors {
+    color: #b0b0b0;
+}
+.faculty-profile__center {
+    font-size: 0.9rem;
+    color: #636466;
+    font-style: italic;
+}
+.faculty-profile__pronouns {
+    display: inline-block;
+    font-size: 0.78rem;
+    background: #efefef;
+    color: #444;
+    padding: 0.12rem 0.55rem;
+    border-radius: 999px;
+}
+.faculty-profile__media-badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+    background: var(--wp--preset--color--umbc-gold, #fdb515);
+    color: #1a1a1a;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+}
+
+/* Full width: the prose gets the whole measure now that contact sits in the
+   header. */
+.faculty-profile__body {
+    display: block;
+}
+
+.faculty-profile__contact-card {
+    background: #f7f7f7;
+    border-radius: 8px;
+    padding: 1.25rem 1.25rem 0.5rem;
+}
+.faculty-profile__contact-card dl {
+    margin: 0;
+    font-size: 0.9rem;
+}
+/* Stack label above value so long values (email, URLs) don't break awkwardly
+   in a cramped right column. */
+.faculty-profile__contact-card dt {
+    color: #636466;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 0.85rem;
+}
+.faculty-profile__contact-card dt:first-child {
+    margin-top: 0;
+}
+.faculty-profile__contact-card dd {
+    margin: 0.15rem 0 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.faculty-profile__contact-card a {
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+}
+.faculty-profile__contact-card a:hover {
+    text-decoration: underline;
+}
+
+.faculty-profile__main section {
+    margin-bottom: 2rem;
+}
+.faculty-profile__main h2 {
+    font-size: 1.05rem;
+    color: var(--wp--preset--color--umbc-black, #000);
+    margin: 0 0 0.65rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid #e6e7e8;
+}
+.faculty-profile__main p {
+    margin: 0 0 0.65rem;
+    line-height: 1.55;
+}
+.faculty-profile__education ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.faculty-profile__education li {
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+.faculty-profile__dissertation {
+    font-size: 0.85rem;
+    color: #636466;
+    margin-top: 0.2rem;
+}
+
+/* ── Faculty archive (/academics/faculty/) ───────────────── */
+.faculty-archive {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 4rem;
+}
+.faculty-archive__header {
+    margin-bottom: 1.5rem;
+}
+.faculty-archive__header h1 {
+    font-size: 2rem;
+    margin: 0.25rem 0 0.5rem;
+    color: var(--wp--preset--color--umbc-black, #000);
+}
+.faculty-archive__intro {
+    font-size: 1rem;
+    color: #444;
+    max-width: 60ch;
+    margin: 0;
+}
+.faculty-filters {
+    margin-bottom: 1.25rem;
+}
+.faculty-filters__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+.faculty-filters__row--secondary {
+    margin-top: 0.85rem;
+    align-items: center;
+}
+.faculty-filters__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1 1 220px;
+}
+.faculty-filters__label {
+    color: #636466;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.faculty-filters__search,
+.faculty-filters select {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid #c7c8ca;
+    border-radius: 6px;
+    background: #fff;
+    width: 100%;
+}
+.faculty-filters__search:focus,
+.faculty-filters select:focus {
+    outline: 2px solid var(--wp--preset--color--umbc-aok-teal, #007176);
+    outline-offset: 1px;
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+.faculty-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #c7c8ca;
+    border-radius: 999px;
+    background: #fff;
+    color: #444;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.12s ease,
+        border-color 0.12s ease,
+        color 0.12s ease;
+}
+.faculty-chip:hover {
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+.faculty-chip.is-active {
+    background: var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    color: #fff;
+}
+.faculty-filters__clear {
+    margin-left: auto;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.faculty-filters__clear:hover {
+    text-decoration: underline;
+}
+.faculty-archive__count {
+    font-size: 0.9rem;
+    color: #636466;
+    margin: 0 0 0.5rem;
+}
+
+.faculty-archive__empty {
+    padding: 2rem;
+    text-align: center;
+    color: #636466;
+    background: #f7f7f7;
+    border-radius: 8px;
+}
+
+/* Client-side pager (50/page) */
+.faculty-archive__pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.75rem;
+}
+.faculty-pager__btn {
+    min-width: 2.25rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #c7c8ca;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.12s ease,
+        border-color 0.12s ease,
+        color 0.12s ease;
+}
+.faculty-pager__btn:hover:not(:disabled) {
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+}
+.faculty-pager__btn.is-active {
+    background: var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    color: #fff;
+    cursor: default;
+}
+.faculty-pager__btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+.faculty-pager__gap {
+    padding: 0 0.25rem;
+    color: #636466;
+}
+
+/* ── Mobile ──────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    .faculty-profile__header,
+    .faculty-profile__header--no-photo,
+    .faculty-profile__header--no-contact {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.25rem;
+    }
+    /* Everything sits in the one column, flush left with the sections below. */
+    .faculty-profile__header > * {
+        grid-column: 1;
+        min-width: 0;
+    }
+    .faculty-profile__photo {
+        width: 200px;
+        max-width: 100%;
+    }
+    .faculty-filters__field {
+        flex-basis: 100%;
+    }
+    .faculty-filters__clear {
+        margin-left: 0;
+    }
+}
+
+/* ── Dark mode ───────────────────────────────────────────── */
+[data-theme="dark"]
+    .academics-term-section__heading
+    .academics-term-section__count {
+    background: #2a2a2a;
+    color: #e0e0e0;
+}
+[data-theme="dark"] .faculty-list {
+    border-top-color: #333;
+}
+[data-theme="dark"] .faculty-list__link {
+    border-bottom-color: #333;
+}
+[data-theme="dark"] .faculty-list__link:hover,
+[data-theme="dark"] .faculty-list__link:focus-visible {
+    background: #1f1f1f;
+}
+[data-theme="dark"] .faculty-list__name {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .faculty-list__meta {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .faculty-profile__name {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .faculty-profile__rank {
+    color: #c0c0c0;
+}
+[data-theme="dark"] .faculty-profile__colleges a,
+[data-theme="dark"] .faculty-profile__center {
+    color: #b0b0b0;
+}
+[data-theme="dark"] .faculty-profile__depts a {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .faculty-profile__dept-text {
+    color: #d0d0d0;
+}
+[data-theme="dark"] .faculty-profile__college-text {
+    color: #b0b0b0;
+}
+[data-theme="dark"] .faculty-profile__pronouns {
+    background: #2a2a2a;
+    color: #e0e0e0;
+}
+/* Gold media badge: never flip — keep dark text on gold. */
+
+[data-theme="dark"] .faculty-profile__contact-card {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+[data-theme="dark"] .faculty-profile__contact-card dt {
+    color: #b0b0b0;
+}
+[data-theme="dark"] .faculty-profile__contact-card a {
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+
+[data-theme="dark"] .faculty-profile__main h2 {
+    color: #e0e0e0;
+    border-bottom-color: #333;
+}
+[data-theme="dark"] .faculty-profile__dissertation {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .faculty-archive__header h1 {
+    color: #e0e0e0;
+}
+[data-theme="dark"] .faculty-archive__intro,
+[data-theme="dark"] .faculty-archive__count {
+    color: #c0c0c0;
+}
+[data-theme="dark"] .faculty-filters__label {
+    color: #b0b0b0;
+}
+[data-theme="dark"] .faculty-filters__search,
+[data-theme="dark"] .faculty-filters select {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+}
+[data-theme="dark"] .faculty-chip {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+}
+[data-theme="dark"] .faculty-chip.is-active {
+    background: var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    color: #fff;
+}
+[data-theme="dark"] .faculty-archive__empty {
+    background: #1a1a1a;
+    color: #b0b0b0;
+}
+[data-theme="dark"] .faculty-pager__btn {
+    background: #2a2a2a;
+    border-color: #444;
+    color: var(--wp--preset--color--umbc-gold, #fdb515);
+}
+[data-theme="dark"] .faculty-pager__btn.is-active {
+    background: var(--wp--preset--color--umbc-aok-teal, #007176);
+    border-color: var(--wp--preset--color--umbc-aok-teal, #007176);
+    color: #fff;
+}
+
+/* =============================================================
+   WCAG 2.5.8 (AA) — Target Size (Minimum)
+   Small, clustered interactive links — story/event term links
+   (rel="tag") and the degree-level program filters — are given a
+   >=24px target in both dimensions. A target that is at least
+   24x24 CSS px satisfies 2.5.8 regardless of spacing, so bumping
+   the height (these were ~15-22px tall) clears the audit without
+   needing to re-space the surrounding layout.
+   ============================================================= */
+a[rel="tag"],
+a[href*="degree_level="] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    line-height: 1.2;
+    vertical-align: middle;
+}
+
+/* Tag links cluster tightly; a small bottom margin keeps the 24px
+   targets from sitting flush when the list wraps to multiple rows. */
+a[rel="tag"] {
+    margin-bottom: 2px;
+}
+
+/* ================================================================
+   Touch devices — eliminate the iOS "tap-to-hover" two-tap.
+   On a touch screen, a :hover that MOVES a link or card (transform,
+   translate, top) makes the first tap only trigger the hover state,
+   so the link needs a second tap to activate. Neutralizing the
+   movement on touch makes the first tap navigate. Mouse/hover devices
+   are unaffected. (Paint-only hover changes like box-shadow/color do
+   not trigger the two-tap, so they're intentionally left alone.)
+   This is the site-wide fix; individual blocks need no change.
+   ================================================================ */
+@media (hover: none) {
+    a:hover,
+    .has-link:hover,
+    [class*="card"]:hover,
+    [class*="card"]:hover img,
+    .class-of-index-link:hover {
+        transform: none !important;
+        translate: none !important;
+    }
+
+    .has-link:hover,
+    [class*="card"]:hover {
+        top: auto !important;
+    }
+
+    /* No hover transition on touch. With a transition present, iOS Safari
+       animates the :hover state on the FIRST tap and waits for a SECOND tap to
+       fire the click — the "tap once to hover, tap again to go" bug on content
+       links/buttons. Removing the transition (touch only) makes the first tap
+       navigate. Pairs with the theme.json link-hover color fix (hover color now
+       equals resting) so the hover produces no visible change at all. */
+    a, a:hover,
+    button, button:hover,
+    input[type="submit"], input[type="submit"]:hover,
+    .wp-element-button, .wp-element-button:hover,
+    .wp-block-button__link, .wp-block-button__link:hover {
+        transition: none !important;
+    }
+}

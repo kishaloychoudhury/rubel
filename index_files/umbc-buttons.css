@@ -1,0 +1,566 @@
+/* =============================================================
+   UMBC Button System
+   Extracted from umbc-style.css 2026-04-29.
+
+   Loaded globally via wp_enqueue_style( 'umbc-buttons' ).
+   Design tokens here are the single source of truth — do not
+   duplicate them in style.css or umbc-style.css.
+   ============================================================= */
+
+/* Design tokens consolidated into :root in style.css — 2026-04-29 */
+
+/* ------------------------------------------------------------
+   Shared structural foundation — every .wp-block-button__link
+   ------------------------------------------------------------ */
+.wp-block-button__link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-family: inherit;
+	line-height: 1.4;
+	text-decoration: none;
+	padding: 0.6rem 1.25rem;
+	min-height: 44px;
+	border: 2px solid transparent;
+	border-radius: var(--umbc-btn-radius);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+	box-shadow: none !important;
+}
+
+.wp-block-button__link:focus-visible {
+	outline: 3px solid var(--umbc-btn-gold);
+	outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------
+   1. Fill – Gold  (default / is-style-fill)
+   Applied when no explicit editor colour is set.
+   ------------------------------------------------------------ */
+.wp-block-button:not([class*="is-style-"]) > .wp-block-button__link:not(.has-background),
+.wp-block-button.is-style-fill > .wp-block-button__link:not(.has-background) {
+	background-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+	border-color: transparent;
+}
+
+.wp-block-button:not([class*="is-style-"]) > .wp-block-button__link:not(.has-background):hover,
+.wp-block-button.is-style-fill > .wp-block-button__link:not(.has-background):hover {
+	background-color: var(--umbc-btn-gold-hover);
+	color: var(--umbc-btn-black);
+}
+
+.wp-block-button:not([class*="is-style-"]) > .wp-block-button__link:not(.has-background):active,
+.wp-block-button.is-style-fill > .wp-block-button__link:not(.has-background):active {
+	background-color: var(--umbc-btn-gold-active);
+	color: var(--umbc-btn-black);
+}
+
+.wp-block-button:not([class*="is-style-"]) > .wp-block-button__link:not(.has-background):focus-visible,
+.wp-block-button.is-style-fill > .wp-block-button__link:not(.has-background):focus-visible {
+	outline-color: var(--umbc-btn-black);
+}
+
+/* ------------------------------------------------------------
+   2. Ghost – Gold  (is-style-ghost-gold)
+   Transparent bg with gold border; fills gold on hover.
+   ------------------------------------------------------------ */
+.wp-block-button.is-style-ghost-gold > .wp-block-button__link {
+	background-color: transparent;
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-gold);
+}
+
+.wp-block-button.is-style-ghost-gold > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-gold);
+}
+
+.wp-block-button.is-style-ghost-gold > .wp-block-button__link:active {
+	background-color: var(--umbc-btn-gold-active);
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-gold-active);
+}
+
+/* On dark backgrounds the ghost keeps gold accents with black pairing */
+.dark-bg .wp-block-button.is-style-ghost-gold > .wp-block-button__link,
+.has-ast-global-color-1-background-color .wp-block-button.is-style-ghost-gold > .wp-block-button__link {
+	color: var(--umbc-btn-gold);
+	border-color: var(--umbc-btn-gold);
+}
+
+.dark-bg .wp-block-button.is-style-ghost-gold > .wp-block-button__link:hover,
+.has-ast-global-color-1-background-color .wp-block-button.is-style-ghost-gold > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-gold);
+}
+
+/* ------------------------------------------------------------
+   3. Fill – Black  (is-style-fill-black)
+   ------------------------------------------------------------ */
+.wp-block-button.is-style-fill-black > .wp-block-button__link {
+	background-color: var(--umbc-btn-black);
+	color: #fff;
+	border-color: transparent;
+}
+
+.wp-block-button.is-style-fill-black > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-black-hover);
+	color: #fff;
+}
+
+.wp-block-button.is-style-fill-black > .wp-block-button__link:active {
+	background-color: var(--umbc-btn-black-active);
+	color: #fff;
+}
+
+.wp-block-button.is-style-fill-black > .wp-block-button__link:focus-visible {
+	outline-color: var(--umbc-btn-gold);
+}
+
+/* ------------------------------------------------------------
+   4. Ghost – Black  (is-style-ghost-black)
+   Transparent bg with black border; fills black on hover.
+   ------------------------------------------------------------ */
+.wp-block-button.is-style-ghost-black > .wp-block-button__link {
+	background-color: transparent;
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-black);
+}
+
+.wp-block-button.is-style-ghost-black > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-black);
+	color: #fff;
+	border-color: var(--umbc-btn-black);
+}
+
+.wp-block-button.is-style-ghost-black > .wp-block-button__link:active {
+	background-color: var(--umbc-btn-black-active);
+	color: #fff;
+	border-color: var(--umbc-btn-black-active);
+}
+
+.wp-block-button.is-style-ghost-black > .wp-block-button__link:focus-visible {
+	outline-color: var(--umbc-btn-black);
+}
+
+/* is-style-umbc-dark-gray — unregistered legacy style, alias to ghost-black */
+.wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link {
+	background-color: transparent;
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-black);
+}
+.wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-black);
+	color: #fff;
+	border-color: var(--umbc-btn-black);
+}
+.wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link:active {
+	background-color: var(--umbc-btn-black-active);
+	color: #fff;
+	border-color: var(--umbc-btn-black-active);
+}
+.wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link:focus-visible {
+	outline-color: var(--umbc-btn-black);
+}
+
+/* ------------------------------------------------------------
+   5. Pill – Gold  (is-style-pill-gold)
+   Fully rounded, gold fill.
+   ------------------------------------------------------------ */
+.wp-block-button.is-style-pill-gold > .wp-block-button__link {
+	background-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+	border-color: transparent;
+	border-radius: var(--umbc-btn-radius-pill);
+	padding-left: 1.75rem;
+	padding-right: 1.75rem;
+}
+
+.wp-block-button.is-style-pill-gold > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold-hover);
+	color: var(--umbc-btn-black);
+}
+
+.wp-block-button.is-style-pill-gold > .wp-block-button__link:active {
+	background-color: var(--umbc-btn-gold-active);
+}
+
+.wp-block-button.is-style-pill-gold > .wp-block-button__link:focus-visible {
+	outline-color: var(--umbc-btn-black);
+}
+
+/* ------------------------------------------------------------
+   6. Pill – Black  (is-style-pill-black)
+   Fully rounded, black fill.
+   ------------------------------------------------------------ */
+.wp-block-button.is-style-pill-black > .wp-block-button__link {
+	background-color: var(--umbc-btn-black);
+	color: #fff;
+	border-color: transparent;
+	border-radius: var(--umbc-btn-radius-pill);
+	padding-left: 1.75rem;
+	padding-right: 1.75rem;
+}
+
+.wp-block-button.is-style-pill-black > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-black-hover);
+	color: #fff;
+}
+
+.wp-block-button.is-style-pill-black > .wp-block-button__link:active {
+	background-color: var(--umbc-btn-black-active);
+}
+
+.wp-block-button.is-style-pill-black > .wp-block-button__link:focus-visible {
+	outline-color: var(--umbc-btn-gold);
+}
+
+/* ------------------------------------------------------------
+   Editor colour overrides
+   When an editor picks a custom background/text colour those
+   classes win — just make sure contrast is enforced.
+   ------------------------------------------------------------ */
+
+/* Gold background → black text */
+.wp-block-button > .wp-block-button__link.has-ast-global-color-0-background-color {
+	color: var(--umbc-btn-black) !important;
+}
+.wp-block-button > .wp-block-button__link.has-ast-global-color-0-background-color:hover {
+	background-color: var(--umbc-btn-gold-hover) !important;
+}
+
+/* Black/dark background → white text */
+.wp-block-button > .wp-block-button__link.has-ast-global-color-1-background-color,
+.wp-block-button > .wp-block-button__link.has-ast-global-color-7-background-color {
+	background-color: var(--umbc-btn-black) !important;
+	color: #fff !important;
+}
+.wp-block-button > .wp-block-button__link.has-ast-global-color-1-background-color:hover,
+.wp-block-button > .wp-block-button__link.has-ast-global-color-7-background-color:hover {
+	background-color: var(--umbc-btn-black-hover) !important;
+}
+
+/* Light gray background (#F3F3F3) → dark text (readable on light surfaces / inside cover blocks) */
+.wp-block-button > .wp-block-button__link.has-ast-global-color-8-background-color {
+	color: var(--umbc-btn-black) !important;
+}
+.wp-block-button > .wp-block-button__link.has-ast-global-color-8-background-color:hover {
+	background-color: #e0e0e0 !important;
+	color: var(--umbc-btn-black) !important;
+}
+
+/* White text class always white */
+.wp-block-button > .wp-block-button__link.has-ast-global-color-5-color {
+	color: #fff !important;
+}
+
+/* Outline (legacy core style) — keep working for old content */
+.wp-block-button.is-style-outline > .wp-block-button__link {
+	background-color: transparent;
+	color: var(--umbc-btn-black);
+	border-color: currentColor;
+}
+
+.wp-block-button.is-style-outline > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold);
+	border-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+}
+
+/* is-style-umbc-gold — ghost button for use on dark/photo backgrounds.
+   Gold border, transparent bg, white text. Hover: gold fill, black text.
+   Never pair white text on gold — hover always uses black text. */
+.wp-block-button.is-style-umbc-gold > .wp-block-button__link {
+	background-color: transparent;
+	color: #fff;
+	border-color: var(--umbc-btn-gold);
+}
+
+.wp-block-button.is-style-umbc-gold > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold);
+	border-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+}
+
+/* button-outline wrapper class paired with is-style-umbc-gold — same treatment */
+.button-outline .wp-block-button.is-style-umbc-gold > .wp-block-button__link {
+	background-color: transparent;
+	color: #fff;
+	border-color: var(--umbc-btn-gold);
+}
+
+.button-outline .wp-block-button.is-style-umbc-gold > .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold);
+	border-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+}
+
+/* ------------------------------------------------------------
+   Legacy wrapper utility classes (old content support)
+   These live on a parent wrapping div, not on the button itself.
+   ------------------------------------------------------------ */
+
+/* .button-outline-gold-black-text-grey-bg — gold border, grey bg */
+.button-outline-gold-black-text-grey-bg .wp-block-button__link {
+	background-color: #f3f3f3;
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-gold);
+}
+.button-outline-gold-black-text-grey-bg .wp-block-button__link:hover {
+	background-color: #fff;
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-gold);
+}
+
+/* .button-outline-black-black-text-white-bg — black border, white bg */
+.button-outline-black-black-text-white-bg .wp-block-button__link {
+	background-color: #fff;
+	color: var(--umbc-btn-black);
+	border-color: var(--umbc-btn-black);
+}
+.button-outline-black-black-text-white-bg .wp-block-button__link:hover {
+	background-color: #f3f3f3;
+	color: var(--umbc-btn-black);
+}
+
+/* .button-outline-gold — thin gold border on outline buttons */
+.button-outline-gold .wp-block-button.is-style-outline .wp-block-button__link {
+	border-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+}
+.button-outline-gold .wp-block-button.is-style-outline .wp-block-button__link:hover {
+	background-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+}
+
+/* ------------------------------------------------------------
+   Dark mode — outline buttons on dark surfaces
+   button-outline-gold and is-style-outline on dark bg need light text
+   ------------------------------------------------------------ */
+/* Outline buttons on the default dark page background. The base outline style
+   is black border + black text — invisible on the dark page. This catches every
+   outline button, including default ones with no .has-text-color class; the
+   white-surface guard below re-exempts buttons that sit on a light card. */
+[data-theme="dark"] .entry-content .wp-block-button.is-style-outline > .wp-block-button__link {
+    color: #e0e0e0 !important;
+    border-color: var(--umbc-btn-gold);
+}
+[data-theme="dark"] .entry-content .wp-block-button.is-style-outline > .wp-block-button__link:hover {
+    background-color: var(--umbc-btn-gold);
+    color: var(--umbc-btn-black) !important;
+}
+
+/* Guard: gold is the only surface that stays light in dark mode (token
+   policy in css/style.css) — outline buttons on gold keep black border +
+   black text. The old white-surface guard was removed 2026-06 when white
+   surfaces started flipping to dark cards. */
+[data-theme="dark"] .entry-content :is(.has-umbc-gold-background-color, .has-ast-global-color-0-background-color, .has-luminous-vivid-amber-background-color, [style*="background-color:#fdb515"], [style*="background-color:#fcb900"]) .wp-block-button.is-style-outline > .wp-block-button__link {
+    color: var(--umbc-btn-black) !important;
+    border-color: currentColor;
+}
+[data-theme="dark"] .entry-content :is(.has-umbc-gold-background-color, .has-ast-global-color-0-background-color, .has-luminous-vivid-amber-background-color, [style*="background-color:#fdb515"], [style*="background-color:#fcb900"]) .wp-block-button.is-style-outline > .wp-block-button__link:hover {
+    background-color: var(--umbc-btn-black);
+    color: var(--umbc-btn-gold) !important;
+}
+
+/* Outline buttons on light-gray (color-8) dark surfaces */
+[data-theme="dark"] .has-ast-global-color-8-background-color .button-outline-gold .wp-block-button.is-style-outline .wp-block-button__link,
+[data-theme="dark"] .has-ast-global-color-8-background-color .wp-block-button.is-style-outline > .wp-block-button__link {
+    color: #e0e0e0;
+    border-color: var(--umbc-btn-gold);
+}
+[data-theme="dark"] .has-ast-global-color-8-background-color .button-outline-gold .wp-block-button.is-style-outline .wp-block-button__link:hover,
+[data-theme="dark"] .has-ast-global-color-8-background-color .wp-block-button.is-style-outline > .wp-block-button__link:hover {
+    background-color: var(--umbc-btn-gold);
+    color: var(--umbc-btn-black);
+}
+
+/* Outline buttons inside non-light cover blocks — light text, gold border */
+[data-theme="dark"] .wp-block-cover:not(.is-light) .button-outline-gold .wp-block-button.is-style-outline .wp-block-button__link,
+[data-theme="dark"] .wp-block-cover:not(.is-light) .wp-block-button.is-style-outline > .wp-block-button__link {
+    color: #e0e0e0 !important;
+    border-color: var(--umbc-btn-gold);
+}
+[data-theme="dark"] .wp-block-cover:not(.is-light) .button-outline-gold .wp-block-button.is-style-outline .wp-block-button__link:hover,
+[data-theme="dark"] .wp-block-cover:not(.is-light) .wp-block-button.is-style-outline > .wp-block-button__link:hover {
+    background-color: var(--umbc-btn-gold);
+    color: var(--umbc-btn-black) !important;
+}
+
+/* Outline buttons inside is-light cover blocks — keep white text, gold border */
+[data-theme="dark"] .wp-block-cover.is-light .wp-block-button.is-style-outline > .wp-block-button__link {
+    color: #fff !important;
+    border-color: #fff;
+}
+[data-theme="dark"] .wp-block-cover.is-light .wp-block-button.is-style-outline > .wp-block-button__link:hover {
+    background-color: #fff;
+    color: var(--umbc-btn-black) !important;
+}
+
+/* Dark mode — all gold-background buttons must have black text, never white-on-gold.
+   Covers fill, pill-gold, and any button with a gold background class. */
+[data-theme="dark"] .wp-block-button:not([class*="is-style-"]) > .wp-block-button__link:not(.has-background),
+[data-theme="dark"] .wp-block-button.is-style-fill > .wp-block-button__link:not(.has-background),
+[data-theme="dark"] .wp-block-button.is-style-pill-gold > .wp-block-button__link,
+[data-theme="dark"] .wp-block-button > .wp-block-button__link.has-ast-global-color-0-background-color {
+    color: var(--umbc-btn-black) !important;
+}
+
+/* Dark mode — Fill-Black and Pill-Black buttons.
+   The #252525 fill is nearly indistinguishable from the #1a1a1a page, so
+   lift it to charcoal and give the button a lighter border to read its edge. */
+[data-theme="dark"] .wp-block-button.is-style-fill-black > .wp-block-button__link,
+[data-theme="dark"] .wp-block-button.is-style-pill-black > .wp-block-button__link {
+    background-color: #3a3a3a;
+    color: #fff;
+    border-color: #5a5a5a;
+}
+[data-theme="dark"] .wp-block-button.is-style-fill-black > .wp-block-button__link:hover,
+[data-theme="dark"] .wp-block-button.is-style-pill-black > .wp-block-button__link:hover {
+    background-color: #4a4a4a;
+    color: #fff;
+    border-color: #6a6a6a;
+}
+[data-theme="dark"] .wp-block-button.is-style-fill-black > .wp-block-button__link:active,
+[data-theme="dark"] .wp-block-button.is-style-pill-black > .wp-block-button__link:active {
+    background-color: #2d2d2d;
+}
+
+/* Dark mode — Ghost-Gold: the near-black text is invisible on the dark page.
+   Switch text to gold (border is already gold); hover keeps the gold fill. */
+[data-theme="dark"] .wp-block-button.is-style-ghost-gold > .wp-block-button__link {
+    background-color: transparent;
+    color: var(--umbc-btn-gold);
+    border-color: var(--umbc-btn-gold);
+}
+[data-theme="dark"] .wp-block-button.is-style-ghost-gold > .wp-block-button__link:hover {
+    background-color: var(--umbc-btn-gold);
+    color: var(--umbc-btn-black);
+    border-color: var(--umbc-btn-gold);
+}
+[data-theme="dark"] .wp-block-button.is-style-ghost-gold > .wp-block-button__link:active {
+    background-color: var(--umbc-btn-gold-active);
+    color: var(--umbc-btn-black);
+    border-color: var(--umbc-btn-gold-active);
+}
+
+/* Dark mode — Ghost-Black: black border and text both vanish on the dark page.
+   Flip both to light; hover fills light with dark text. */
+[data-theme="dark"] .wp-block-button.is-style-ghost-black > .wp-block-button__link {
+    background-color: transparent;
+    color: #e0e0e0;
+    border-color: #e0e0e0;
+}
+[data-theme="dark"] .wp-block-button.is-style-ghost-black > .wp-block-button__link:hover {
+    background-color: #e0e0e0;
+    color: #1a1a1a;
+    border-color: #e0e0e0;
+}
+[data-theme="dark"] .wp-block-button.is-style-ghost-black > .wp-block-button__link:active {
+    background-color: #c8c8c8;
+    color: #1a1a1a;
+    border-color: #c8c8c8;
+}
+[data-theme="dark"] .wp-block-button.is-style-ghost-black > .wp-block-button__link:focus-visible {
+    outline-color: #e0e0e0;
+}
+
+/* Dark mode — light-gray (color-8) buttons: keep light bg and dark text.
+   The global dark mode rule shifts color-8 surfaces to #2d2d2d; buttons need the original light gray. */
+[data-theme="dark"] .wp-block-button > .wp-block-button__link.has-ast-global-color-8-background-color {
+    background-color: #e0e0e0 !important;
+    color: var(--umbc-btn-black) !important;
+}
+[data-theme="dark"] .wp-block-button > .wp-block-button__link.has-ast-global-color-8-background-color:hover {
+    background-color: #c8c8c8 !important;
+    color: var(--umbc-btn-black) !important;
+}
+
+/* is-style-umbc-gold dark mode — hover must always be black text on gold,
+   never white-on-gold. Covers both cover blocks and page backgrounds. */
+[data-theme="dark"] .wp-block-button.is-style-umbc-gold > .wp-block-button__link:hover,
+[data-theme="dark"] .button-outline .wp-block-button.is-style-umbc-gold > .wp-block-button__link:hover {
+    background-color: var(--umbc-btn-gold) !important;
+    border-color: var(--umbc-btn-gold) !important;
+    color: var(--umbc-btn-black) !important;
+}
+
+/* is-style-umbc-teal — teal fill, white text; hover: light teal bg, black text */
+.wp-block-button.is-style-umbc-teal > .wp-block-button__link {
+    background-color: #007176;
+    color: #fff !important;
+    border-color: transparent;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.8rem 1.625rem;
+    border-radius: 4px;
+}
+
+.wp-block-button.is-style-umbc-teal > .wp-block-button__link:hover {
+    background-color: #c6e1e2;
+    color: #000 !important;
+    border-color: transparent;
+}
+
+/* Dark mode — keep white text on teal; any broad has-text-color override must not win */
+[data-theme="dark"] .wp-block-button.is-style-umbc-teal > .wp-block-button__link,
+[data-theme="dark"] .wp-block-button.is-style-umbc-teal > .wp-block-button__link.has-text-color {
+    color: #fff !important;
+}
+[data-theme="dark"] .wp-block-button.is-style-umbc-teal > .wp-block-button__link:hover {
+    background-color: #c6e1e2 !important;
+    color: #000 !important;
+}
+
+/* Dark mode — is-style-umbc-dark-gray: flip border/text to white, fill to white on hover */
+[data-theme="dark"] .wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link {
+    color: #e0e0e0 !important;
+    border-color: #e0e0e0 !important;
+    background-color: transparent !important;
+}
+[data-theme="dark"] .wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link:hover {
+    background-color: #e0e0e0 !important;
+    color: #000 !important;
+    border-color: #e0e0e0 !important;
+}
+[data-theme="dark"] .wp-block-button.is-style-umbc-dark-gray > .wp-block-button__link:focus-visible {
+    outline-color: #e0e0e0 !important;
+}
+
+/* ------------------------------------------------------------
+   Legacy native button/input elements (WP forms, plugins)
+   ------------------------------------------------------------ */
+a.button.button-primary,
+button.button-primary,
+input[type="submit"].button-primary {
+	background-color: var(--umbc-btn-gold);
+	color: var(--umbc-btn-black);
+	border: none;
+	border-radius: var(--umbc-btn-radius);
+	font-weight: 700;
+	padding: 0.6rem 1.25rem;
+	min-height: 44px;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+}
+
+a.button.button-primary:hover,
+button.button-primary:hover,
+input[type="submit"].button-primary:hover {
+	background-color: var(--umbc-btn-gold-hover);
+	color: var(--umbc-btn-black);
+	text-decoration: none;
+}
+
+a.button.button-primary:focus-visible,
+button.button-primary:focus-visible,
+input[type="submit"].button-primary:focus-visible {
+	outline: 3px solid var(--umbc-btn-black);
+	outline-offset: 2px;
+}

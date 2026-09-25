@@ -1,0 +1,133 @@
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.umbc-horizontal-tabs').forEach(function (tabsBlock) {
+	const tabPanels = tabsBlock.querySelectorAll('.umbc-tab-panel');
+	const tabList = document.createElement('ul');
+	tabList.classList.add('umbc-tab-list');
+	tabList.setAttribute('role', 'tablist');
+	tabList.setAttribute('aria-label', 'Tabs');
+	tabsBlock.prepend(tabList);
+	
+	const isMobile = window.matchMedia('(max-width: 767px)').matches;
+	
+	const mobilePanelsMap = [];
+	
+	tabPanels.forEach(function (panel, index) {
+	  const titleEl = panel.querySelector('h3');
+	  const title = titleEl ? titleEl.textContent.trim() : `Tab ${index + 1}`;
+	  const tabId = `tab-${index}`;
+	  const panelId = `panel-${index}`;
+	  panel.id = panelId;
+	  
+	  const li = document.createElement('li');
+	  li.setAttribute('role', 'presentation');
+	  
+	  const button = document.createElement('button');
+	  button.classList.add('umbc-tab');
+	  button.setAttribute('role', 'tab');
+	  button.setAttribute('id', tabId);
+	  button.setAttribute('aria-controls', panelId);
+	  button.setAttribute('tabindex', index === 0 ? '0' : '-1');
+	  button.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+	  button.innerText = title;
+	  
+	  if (index === 0) {
+		button.classList.add('active');
+		panel.classList.add('active');
+		panel.removeAttribute('hidden');
+	  } else {
+		panel.setAttribute('hidden', '');
+	  }
+	  
+	  li.appendChild(button);
+	  tabList.appendChild(li);
+	  
+	  if (isMobile) {
+		const mobileWrapper = document.createElement('div');
+		mobileWrapper.classList.add('mobile-tab-panel');
+		mobileWrapper.hidden = index !== 0;
+		
+		// Move the actual content instead of copying HTML
+		while (panel.firstChild) {
+		  mobileWrapper.appendChild(panel.firstChild);
+		}
+		
+		li.appendChild(mobileWrapper);
+		mobilePanelsMap.push({ li, mobilePanel: mobileWrapper, button, originalPanel: panel });
+	  }
+	  
+	  button.addEventListener('click', function () {
+		const isActive = button.classList.contains('active');
+		
+		// Collapse on mobile if already active
+		if (isMobile && isActive) {
+		  button.classList.remove('active');
+		  button.setAttribute('aria-selected', 'false');
+		  button.setAttribute('tabindex', '-1');
+		  panel.classList.remove('active');
+		  panel.setAttribute('hidden', '');
+		  
+		  const activeMobilePanel = li.querySelector('.mobile-tab-panel');
+		  if (activeMobilePanel) activeMobilePanel.hidden = true;
+		  return;
+		}
+		
+		// Activate tab
+		tabList.querySelectorAll('.umbc-tab').forEach(btn => {
+		  btn.classList.remove('active');
+		  btn.setAttribute('aria-selected', 'false');
+		  btn.setAttribute('tabindex', '-1');
+		});
+		
+		tabPanels.forEach(p => {
+		  p.classList.remove('active');
+		  p.setAttribute('hidden', '');
+		});
+		
+		if (isMobile) {
+		  mobilePanelsMap.forEach(pair => pair.mobilePanel.hidden = true);
+		}
+		
+		button.classList.add('active');
+		button.setAttribute('aria-selected', 'true');
+		button.setAttribute('tabindex', '0');
+		panel.classList.add('active');
+		panel.removeAttribute('hidden');
+		
+		if (isMobile) {
+		  const activeMobilePanel = li.querySelector('.mobile-tab-panel');
+		  if (activeMobilePanel) {
+			activeMobilePanel.hidden = false;
+			
+			// Trigger chart reinitialization after making visible
+			setTimeout(() => {
+			  const charts = activeMobilePanel.querySelectorAll('canvas[data-chart-type]');
+			  charts.forEach(chart => {
+				// Dispatch a custom event to trigger chart re-render
+				chart.dispatchEvent(new Event('chartVisible'));
+				
+				// Or if you're using Chart.js, you might need to call resize
+				if (chart.chart) {
+				  chart.chart.resize();
+				}
+			  });
+			}, 50);
+		  }
+		}
+		
+		button.focus();
+	  });
+	});
+	
+	if (isMobile) {
+	  const mainPanelsContainer = tabsBlock.querySelector('.umbc-tab-panels');
+	  if (mainPanelsContainer) {
+		mainPanelsContainer.style.display = 'none';
+	  }
+	  
+	  mobilePanelsMap.forEach((pair, idx) => {
+		pair.mobilePanel.classList.remove('active');
+		pair.mobilePanel.hidden = idx !== 0;
+	  });
+	}
+  });
+});

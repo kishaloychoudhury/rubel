@@ -1,0 +1,527 @@
+/* ==============================================
+   UMBC Mosaic Block
+   style.css
+   ============================================== */
+
+/* ── Shared block shell ─────────────────────────────── */
+.umbc-mosaic-block {
+  --mosaic-gold:        var(--umbc-btn-gold, #fdb515);
+  --mosaic-black:       #000;
+  --mosaic-white:       #fff;
+  --mosaic-bg:          transparent;
+  --mosaic-text:        #111;
+  --mosaic-subtext:     #555;
+  --mosaic-tag-bg:      var(--mosaic-gold);
+  --mosaic-tag-text:    #000;
+  --mosaic-overlay-bg:  rgba(0,0,0,0.82);
+  --mosaic-card-bg:     #fff;
+  --mosaic-card-text:   #111;
+  --mosaic-card-sub:    #555;
+  --mosaic-card-border: #e8e8e8;
+
+  width: 100%;
+  background-color: var(--mosaic-bg);
+  color: var(--mosaic-text);
+}
+
+/* ── Dark theme ─────────────────────────────────────── */
+[data-theme="dark"] .umbc-mosaic-block {
+  --mosaic-bg:          transparent;
+  --mosaic-text:        #fff;
+  --mosaic-subtext:     rgba(255,255,255,0.72);
+  --mosaic-overlay-bg:  rgba(0,0,0,0.88);
+  --mosaic-card-bg:     #1e1e1e;
+  --mosaic-card-text:   #e8e8e8;
+  --mosaic-card-sub:    rgba(232,232,232,0.6);
+  --mosaic-card-border: rgba(255,255,255,0.1);
+}
+
+/* ── Section header ─────────────────────────────────── */
+.mosaic-header {
+  max-width: 800px;
+  margin: 0 auto clamp(2rem, 4vw, 3rem);
+  text-align: center;
+}
+
+.mosaic-header__title {
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--mosaic-text);
+  margin: 0 0 0.75rem;
+}
+
+.mosaic-header__sub {
+  font-size: 1rem;
+  color: var(--mosaic-subtext);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   IDENTITY MOSAIC MODE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.mosaic-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  gap: var(--mosaic-gap, 8px);
+}
+
+/* Uniform fill grid (Columns set to a number). Every tile is an equal
+   cell, so a few tiles fill the row cleanly with no empty space. The
+   per-tile sm/md/tall/lg spans are intentionally overridden here. */
+.mosaic-grid--uniform {
+  grid-template-columns: repeat(var(--mosaic-cols, 2), 1fr);
+  grid-auto-rows: auto;
+}
+
+.mosaic-grid--uniform .mosaic-tile {
+  aspect-ratio: 4 / 3;
+}
+
+.mosaic-grid--uniform .mosaic-tile--sm,
+.mosaic-grid--uniform .mosaic-tile--md,
+.mosaic-grid--uniform .mosaic-tile--tall,
+.mosaic-grid--uniform .mosaic-tile--lg {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* Tile sizing */
+.mosaic-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--umbc-radius-sm, 4px);
+  background: #1a1a1a;
+}
+
+.mosaic-tile.has-link {
+  cursor: pointer;
+}
+
+/* Full-tile click target — covers the whole tile so a single
+   tap/click anywhere navigates. Sits above the decorative
+   face / overlay / tag layers. */
+.mosaic-tile__cover-link {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: block;
+  text-decoration: none;
+  /* keep the text caption inside the focus ring */
+  border-radius: inherit;
+}
+
+.mosaic-tile__cover-link:focus-visible {
+  outline: 3px solid var(--mosaic-gold);
+  outline-offset: -3px;
+}
+
+.mosaic-tile--sm {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.mosaic-tile--md {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.mosaic-tile--tall {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+.mosaic-tile--lg {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* will-animate: same pattern as stories cards */
+.mosaic-tile.will-animate {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.mosaic-tile.will-animate.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mosaic-tile.will-animate {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Face image */
+.mosaic-tile__face {
+  position: absolute;
+  inset: 0;
+}
+
+.mosaic-tile__face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mosaic-tile__face img {
+    transition: none;
+  }
+}
+
+/* Expand overlay — hidden by default */
+.mosaic-tile__expand {
+  position: absolute;
+  inset: 0;
+  background: var(--mosaic-overlay-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.1rem 1rem 1rem;
+  gap: 0.3rem;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  /* hidden from screen readers when collapsed */
+}
+
+/* Brand-theme tag — identity mosaic only */
+.mosaic-tile__tag {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.7rem;
+  z-index: 3;
+  pointer-events: none; /* decorative; never block the link beneath it */
+  display: inline-block;
+  background: var(--mosaic-tag-bg);
+  color: var(--mosaic-tag-text);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2em 0.6em;
+  border-radius: var(--umbc-radius-pill, 999px);
+  transition: opacity 0.25s ease;
+}
+
+/* Persistent title + tagline — grid mode.
+   Pre-hover overlay covers more of the tile and starts darker so the
+   white title/sub read against any underlying image. */
+.mosaic-tile__label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none; /* decorative; never block the link beneath it */
+  padding: 1rem 1rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0.25rem;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.7) 55%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  transition: opacity 0.25s ease;
+}
+
+.mosaic-tile__label-title,
+.mosaic-tile__label-sub {
+  text-align: left;
+  margin: 0;
+  color: #fff;
+}
+
+.mosaic-tile__label-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mosaic-tile__label-sub {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.3;
+}
+
+/* Desktop hover */
+@media (hover: hover) {
+  .mosaic-tile:hover .mosaic-tile__face img {
+    transform: scale(1.04);
+  }
+
+  .mosaic-tile:hover .mosaic-tile__expand {
+    opacity: 1;
+  }
+
+  .mosaic-tile:hover .mosaic-tile__tag,
+  .mosaic-tile:hover .mosaic-tile__label {
+    opacity: 0;
+  }
+}
+
+/* Touch / keyboard open state (JS adds .is-open) */
+.mosaic-tile.is-open .mosaic-tile__expand {
+  opacity: 1;
+}
+
+.mosaic-tile.is-open .mosaic-tile__tag,
+.mosaic-tile.is-open .mosaic-tile__label {
+  opacity: 0;
+}
+
+.mosaic-tile.is-open .mosaic-tile__face img {
+  transform: scale(1.04);
+}
+
+/* Keyboard focus ring on tile */
+.mosaic-tile:focus-visible {
+  outline: 3px solid var(--mosaic-gold);
+  outline-offset: 2px;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mosaic-tile__expand,
+  .mosaic-tile__tag,
+  .mosaic-tile__label,
+  .mosaic-tile__face img {
+    transition: none;
+  }
+}
+
+/* Expand content */
+.mosaic-tile__name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.mosaic-tile__descriptor {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.mosaic-tile__story {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.85);
+  margin: 0.25rem 0 0;
+}
+
+.mosaic-tile__link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mosaic-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.mosaic-tile__link:focus-visible {
+  outline: 2px solid var(--mosaic-gold);
+  outline-offset: 2px;
+}
+
+/* Mosaic responsive — Auto (span-based) mode only. The :not() guard keeps
+   the uniform-fill grid on its own author-chosen column counts. */
+@media (max-width: 960px) {
+  .mosaic-grid:not(.mosaic-grid--uniform) {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 180px;
+  }
+}
+
+/* At ~768px and down, tall portrait crops start to read poorly inside a
+   landscape grid. Switch the whole grid to uniform 1×1 squares in 2
+   columns so every tile shares the same crop shape. */
+@media (max-width: 768px) {
+  .mosaic-grid:not(.mosaic-grid--uniform) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .mosaic-grid:not(.mosaic-grid--uniform) .mosaic-tile--sm,
+  .mosaic-grid:not(.mosaic-grid--uniform) .mosaic-tile--md,
+  .mosaic-grid:not(.mosaic-grid--uniform) .mosaic-tile--tall,
+  .mosaic-grid:not(.mosaic-grid--uniform) .mosaic-tile--lg {
+    grid-column: span 1;
+    grid-row: span 1;
+    aspect-ratio: 1 / 1;
+  }
+
+  /* Uniform mode: honor the block's "Columns on mobile" setting. */
+  .mosaic-grid--uniform {
+    grid-template-columns: repeat(var(--mosaic-cols-mobile, 1), 1fr);
+  }
+}
+
+/* Stack to a single column at narrow phone widths (Auto mode only). */
+@media (max-width: 360px) {
+  .mosaic-grid:not(.mosaic-grid--uniform) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CATEGORY GRID MODE
+   Uses the same mosaic-grid and mosaic-tile layout.
+   Only difference: .mosaic-tile__tag shows tile_name
+   instead of a brand theme (handled in PHP).
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* ══════════════════════════════════════════════
+   RESEARCH-GRID MODE — 5-tile editorial grid
+   Mirrors lp-rgrid from the brand landing page,
+   namespaced for reuse as a block.
+══════════════════════════════════════════════ */
+.mosaic-rgrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: clamp(150px, 17vw, 230px);
+  gap: 6px;
+}
+
+.mosaic-rgrid__tile--a { grid-column: span 5; grid-row: span 2; }
+.mosaic-rgrid__tile--b { grid-column: span 4; grid-row: span 2; }
+.mosaic-rgrid__tile--c { grid-column: span 3; grid-row: span 2; }
+.mosaic-rgrid__tile--d { grid-column: span 7; grid-row: span 2; }
+.mosaic-rgrid__tile--e { grid-column: span 5; grid-row: span 2; }
+
+@media (max-width: 900px) {
+  .mosaic-rgrid { grid-template-columns: repeat(6, 1fr); }
+  .mosaic-rgrid__tile--a { grid-column: span 6; }
+  .mosaic-rgrid__tile--b { grid-column: span 3; }
+  .mosaic-rgrid__tile--c { grid-column: span 3; }
+  .mosaic-rgrid__tile--d { grid-column: span 6; }
+  .mosaic-rgrid__tile--e { grid-column: span 6; }
+}
+@media (max-width: 560px) {
+  .mosaic-rgrid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: clamp(220px, 60vw, 300px);
+  }
+  .mosaic-rgrid__tile--a,
+  .mosaic-rgrid__tile--b,
+  .mosaic-rgrid__tile--c,
+  .mosaic-rgrid__tile--d,
+  .mosaic-rgrid__tile--e {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+.mosaic-rgrid__tile {
+  position: relative;
+  overflow: hidden;
+  background: #1a1a1a;
+  display: block;
+  text-decoration: none;
+  outline: none;
+}
+.mosaic-rgrid__tile:focus-visible {
+  box-shadow: 0 0 0 3px var(--wp--preset--color--gold, #fdb515);
+}
+
+.mosaic-rgrid__face {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mosaic-rgrid__tile:hover .mosaic-rgrid__face,
+.mosaic-rgrid__tile:focus-visible .mosaic-rgrid__face { transform: scale(1.05); }
+
+.mosaic-rgrid__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.45) 45%, rgba(0,0,0,.05) 100%);
+}
+.mosaic-rgrid--pos-top .mosaic-rgrid__scrim {
+  background: linear-gradient(to bottom, rgba(0,0,0,.9) 0%, rgba(0,0,0,.45) 45%, rgba(0,0,0,.05) 100%);
+}
+.mosaic-rgrid--pos-center .mosaic-rgrid__scrim {
+  background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 50%, rgba(0,0,0,.82) 100%);
+}
+
+.mosaic-rgrid__body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.1rem, 2vw, 1.75rem);
+  gap: 0.875rem;
+  border-top: 3px solid transparent;
+}
+.mosaic-rgrid--pos-bottom .mosaic-rgrid__body { justify-content: flex-end; }
+.mosaic-rgrid--pos-top    .mosaic-rgrid__body { justify-content: flex-start; }
+.mosaic-rgrid--pos-center .mosaic-rgrid__body { justify-content: center; }
+.mosaic-rgrid__tile:hover .mosaic-rgrid__body,
+.mosaic-rgrid__tile:focus-visible .mosaic-rgrid__body {
+  border-top-color: var(--wp--preset--color--gold, #fdb515);
+}
+
+.mosaic-rgrid__text {
+  font-size: clamp(0.8125rem, 1.15vw, 0.9375rem);
+  line-height: 1.5;
+  color: #fff;
+  max-width: 46ch;
+}
+
+.mosaic-rgrid__link {
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wp--preset--color--gold, #fdb515);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+  align-self: flex-start;
+  transition: color 0.12s;
+}
+.mosaic-rgrid__tile:hover .mosaic-rgrid__link { color: #fff; }
+
+.mosaic-rgrid__footer {
+  text-align: right;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.mosaic-rgrid__cta {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wp--preset--color--gold, #fdb515);
+  border: 2px solid currentColor;
+  padding: 0.875em 1.75em;
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+.mosaic-rgrid__cta:hover,
+.mosaic-rgrid__cta:focus-visible {
+  background: var(--wp--preset--color--gold, #fdb515);
+  color: #000;
+  outline: none;
+}

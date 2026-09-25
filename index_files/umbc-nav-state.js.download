@@ -1,0 +1,181 @@
+/**
+ * UMBC Nav State — role-personalized utility strip
+ *
+ * Reads the `umbc_roles` cookie set by myUMBC (30-day, refreshed on login).
+ * Format: comma-separated, priority-ordered, e.g. "faculty,staff"
+ *
+ * Replaces the server-rendered anonymous utility strip with a role-specific
+ * one client-side. PHP always renders the anonymous state; this upgrades it
+ * when a known role is detected. No WP login required.
+ *
+ * Role priority (first match wins, people can have multiple):
+ *   1. faculty
+ *   2. staff
+ *   3. graduate-student | undergraduate-student
+ *   4. cookie present, no recognised role → generic logged-in nav
+ *   5. no cookie → anonymous nav (PHP default, no JS change)
+ *
+ * To add this to another UMBC-family site, change COOKIE_NAME if needed.
+ * Everything else is self-contained.
+ */
+
+(function () {
+  "use strict";
+
+  var COOKIE_NAME = "umbc_roles";
+
+  /* ------------------------------------------------------------------
+   * Link definitions per role
+   * Each entry: [label, url, mobile-only-cta?]
+   * Shared by both desktop (.uh-utility-strip) and mobile (.mobile-utility-strip)
+   * so links only need updating in one place.
+   * ------------------------------------------------------------------ */
+  var LINKS = {
+    "undergraduate-student": [
+      { label: "myUMBC", url: "https://my.umbc.edu", cta: true },
+      { label: "Directory", url: "/directory/" },
+      {
+        label: "Undergrad Programs",
+        url: "/programs/?degree_level=undergraduate",
+      },
+    ],
+    "graduate-student": [
+      { label: "myUMBC", url: "https://my.umbc.edu", cta: true },
+      { label: "Directory", url: "/directory/" },
+      { label: "Graduate Programs", url: "/programs/?degree_level=graduate" },
+    ],
+    faculty: [
+      { label: "myUMBC", url: "https://my.umbc.edu", cta: true },
+      { label: "Directory", url: "/directory/" },
+      { label: "Make a Gift", url: "https://give.umbc.edu/campaigns/41278/donations/new?a=7548658&utm_source=umbc.edu&utm_medium=utility-nav&utm_campaign=make-a-gift" },
+      {
+        label: "Faculty Research",
+        url: "https://umbc.discovery.academicanalytics.com",
+      },
+    ],
+    staff: [
+      { label: "myUMBC", url: "https://my.umbc.edu", cta: true },
+      { label: "Directory", url: "/directory/" },
+      { label: "Make a Gift", url: "https://give.umbc.edu/campaigns/41278/donations/new?a=7548658&utm_source=umbc.edu&utm_medium=utility-nav&utm_campaign=make-a-gift" },
+    ],
+    member: [
+      { label: "myUMBC", url: "https://my.umbc.edu", cta: true },
+      { label: "Directory", url: "/directory/" },
+      { label: "Make a Gift", url: "https://give.umbc.edu/campaigns/41278/donations/new?a=7548658&utm_source=umbc.edu&utm_medium=utility-nav&utm_campaign=make-a-gift" },
+    ],
+  };
+
+  /* Build HTML for the desktop strip (.uh-utility-strip).
+       Non-CTA links render as plain utility links; the CTA entry
+       becomes the gold button at the end of the strip. */
+  function buildDesktop(links) {
+    var plain = links.filter(function (l) {
+      return !l.cta;
+    });
+    var cta = links.filter(function (l) {
+      return l.cta;
+    })[0];
+    var html = plain
+      .map(function (l) {
+        return (
+          '<a href="' + l.url + '" class="uh-utility-link">' + l.label + "</a>"
+        );
+      })
+      .join("\n");
+    if (cta) {
+      html +=
+        '\n<a href="' +
+        cta.url +
+        '" class="uh-utility-cta">' +
+        cta.label +
+        "</a>";
+    }
+    return html;
+  }
+
+  /* Build HTML for the mobile strip (.mobile-utility-strip) */
+  function buildMobile(links) {
+    return links
+      .map(function (l) {
+        var cls = l.cta
+          ? "mobile-utility-link mobile-utility-link--cta"
+          : "mobile-utility-link";
+        return (
+          '<a href="' + l.url + '" class="' + cls + '">' + l.label + "</a>"
+        );
+      })
+      .join("\n");
+  }
+
+  /* ------------------------------------------------------------------
+   * Helpers
+   * ------------------------------------------------------------------ */
+  function getCookie(name) {
+    var match = document.cookie.match(
+      new RegExp(
+        "(?:^|;)\\s*" +
+          name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+          "=([^;]*)",
+      ),
+    );
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+
+  function resolveRole(cookieValue) {
+    // Priority order — first match wins (cookie is already ordered by myUMBC)
+    var roles = cookieValue.split(",").map(function (r) {
+      return r.trim();
+    });
+    if (roles.indexOf("faculty") !== -1) return "faculty";
+    if (roles.indexOf("staff") !== -1) return "staff";
+    if (roles.indexOf("graduate-student") !== -1) return "graduate-student";
+    if (roles.indexOf("undergraduate-student") !== -1)
+      return "undergraduate-student";
+    return "member"; // authenticated but unrecognised role
+  }
+
+  function applyNav(role) {
+    var links = LINKS[role];
+    if (!links) return;
+
+    var desktop = document.querySelector(".uh-utility-strip");
+    if (desktop) {
+      // The dark-mode toggle lives inside the strip — detach it before
+      // replacing the links, then re-append the SAME node so its click
+      // listener (bound in header.php) survives the rebuild.
+      var toggle = desktop.querySelector(".dark-mode-toggle");
+      desktop.innerHTML = buildDesktop(links);
+      if (toggle) desktop.appendChild(toggle);
+    }
+
+    var mobile = document.querySelector(".mobile-utility-strip");
+    if (mobile) mobile.innerHTML = buildMobile(links);
+  }
+
+  /* ------------------------------------------------------------------
+   * Boot
+   * ------------------------------------------------------------------ */
+  function boot() {
+    var cookieValue = getCookie(COOKIE_NAME);
+    if (!cookieValue) return; // no cookie → anonymous/prospective; leave PHP nav as-is + affiliation unset
+
+    var role = resolveRole(cookieValue);
+
+    // Expose affiliation to analytics as a user-scoped dimension (read by GTM
+    // as the `user_affiliation` Data Layer Variable). Pushed client-side from
+    // the umbc_roles cookie — NOT server-rendered — so it is never baked into
+    // Pantheon's page cache. Anonymous visitors get no push (correct: they
+    // read as "prospective" / unset in GA4). See plan §11.4.
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ user_affiliation: role });
+
+    applyNav(role);
+  }
+
+  // Runs in footer so DOM is already ready — but guard anyway
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();

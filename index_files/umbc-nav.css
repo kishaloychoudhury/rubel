@@ -1,0 +1,4609 @@
+/* =============================================================
+   UMBC Navigation — Section sidebar nav, alumni/section interior
+   layout, section nav footer block, and deferred header
+   interaction states.
+
+   Extracted from umbc-style.css 2026-04-29.
+
+   NOTE — Deferred header states (approx last third of this file):
+   header.css handles initial closed-state paint (render-blocking).
+   This file handles open/interactive states and loads async via
+   umbc-style.css preload chain — do not move those rules to
+   header.css.
+   ============================================================= */
+
+/* =============================================================
+   Section Left-Rail Sidebar Navigation
+   Used by page-section-interior.php (and referenced by
+   page-alumni-interior.php during transition).
+   ============================================================= */
+
+/* ── Layout wrapper (shared by all section interior pages) ──── */
+
+/*
+ * Outer shell: 1200px wide — sidebar (260px) + gap + content (~1080px).
+ * Content stays near its comfortable 1100px reading width; the sidebar
+ * occupies the extra 200px without squeezing the main column.
+ * Full-bleed blocks inside .section-main-content use negative margins to
+ * escape the column and reach the viewport edge as before.
+ */
+.section-body-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section-layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.75rem;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .section-layout-wrapper {
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 2rem 2rem;
+        gap: 2rem;
+    }
+}
+
+/* ── Sidebar container ──────────────────────────────────────── */
+.section-sidebar {
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+@media (min-width: 768px) {
+    .section-sidebar {
+        width: 320px;
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+        /* Keep wheel/touch scrolling inside the nav instead of chaining to the
+           page, so expanding many sub-menus past the viewport stays scrollable
+           within the rail. */
+        overscroll-behavior: contain;
+        /* Reserve gutter space so the rail width doesn't jump when the
+           scrollbar appears on expand. */
+        scrollbar-gutter: stable;
+        /* Visible scrollbar (Firefox) so the overflow is discoverable. */
+        scrollbar-width: thin;
+        scrollbar-color: #9a9a9a #e6e7e8;
+    }
+
+    /* Visible slim scrollbar (WebKit/Chrome/Safari). macOS overlay scrollbars
+       stay hidden until you scroll, which made the extra nav items below the
+       fold look unreachable — force a persistent track when content overflows. */
+    .section-sidebar::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .section-sidebar::-webkit-scrollbar-track {
+        background: #e6e7e8;
+        border-radius: 5px;
+    }
+
+    .section-sidebar::-webkit-scrollbar-thumb {
+        background: #9a9a9a;
+        border-radius: 5px;
+        border: 2px solid #e6e7e8;
+    }
+
+    .section-sidebar::-webkit-scrollbar-thumb:hover {
+        background: #6e6e6e;
+    }
+
+    /* Bottom fade cue — OS-independent signal that the rail scrolls. Only added
+       when JS detects the expanded nav actually overflows the cap (.has-overflow),
+       so short navs that fit are unaffected. Sticky pseudo pins to the visible
+       bottom of the scroll-port; negative margin keeps it from adding scroll. */
+    .section-sidebar.has-overflow::after {
+        content: "";
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        display: block;
+        height: 40px;
+        margin-top: -40px;
+        pointer-events: none;
+        background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0) 0%,
+            #ffffff 92%
+        );
+    }
+
+    .section-nav-not-sticky .section-sidebar {
+        position: relative;
+        top: auto;
+        max-height: none;
+        overflow-y: visible;
+    }
+}
+
+/* Fade bottom edge when sidebar content is taller than viewport */
+@media (min-width: 768px) {
+    .section-nav-box {
+        position: relative;
+        /* Top-right wedge — mirrors the utility strip's 46px angled corner,
+           but cut from the right side of the section nav (2026-06 feedback). */
+        clip-path: polygon(
+            0 0,
+            calc(100% - 46px) 0,
+            100% 46px,
+            100% 100%,
+            0 100%
+        );
+    }
+}
+
+/* ── Mobile toggle button ───────────────────────────────────── */
+.section-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background-color: #e6e7e8;
+    color: #000;
+    border: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.95rem 1rem 0.95rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    gap: 0.5rem;
+    /* WCAG 2.4.7: explicit focus — never outline:none */
+}
+
+.section-menu-toggle:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+.section-menu-toggle:hover,
+.section-menu-toggle.is-active {
+    background-color: #f3f3f3;
+}
+
+.section-toggle-icon {
+    flex-shrink: 0;
+    fill: currentColor;
+    transition: transform 0.25s ease;
+}
+
+.section-menu-toggle.is-active .section-toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* ── Nav box ────────────────────────────────────────────────── */
+/* JS removes [hidden] on load; CSS then controls visibility.
+   On mobile: hidden by default, shown via .is-open.
+   On desktop: always shown via media query. */
+.section-nav-box {
+    display: none;
+    overflow: visible;
+}
+
+.section-nav-box.is-open {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .section-menu-toggle {
+        display: none !important;
+    }
+
+    .section-nav-box {
+        display: block !important;
+        overflow: visible;
+    }
+}
+
+/* ── Section title link ─────────────────────────────────────── */
+.section-nav-title {
+    margin: 0;
+    padding: 1rem 1.5rem 0.85rem;
+    background-color: #f4f4f4;
+    border-bottom: 0;
+}
+
+.section-nav-title a {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #000;
+    text-decoration: none;
+    text-align: left;
+}
+
+.section-nav-title a:hover {
+    text-decoration: underline;
+}
+
+.section-nav-title a:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+/* ── Primary nav menu ───────────────────────────────────────── */
+.section-section-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #f4f4f4;
+    overflow: visible;
+}
+
+.section-section-menu li {
+    list-style: none;
+    margin: 0;
+}
+
+/* Top-level rows: flex so toggle button aligns to the right edge */
+.section-section-menu > li {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+/* Top-level link/span fills available width, toggle takes the rest */
+.section-section-menu > li > a,
+.section-section-menu > li > .section-nav-empty-link {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    padding: 1rem 1rem 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+    text-decoration: none;
+    min-width: 0;
+}
+
+.section-section-menu > li > a:hover {
+    text-decoration: underline;
+}
+
+/* Focus ring on the focused control only, keyboard only (:focus-visible).
+   The old li:focus-within ring lingered after mouse clicks and wrapped the
+   entire branch — including its open submenu — drawing nested black boxes. */
+.section-section-menu > li > a:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: -2px;
+}
+
+/* Active top-level highlight */
+.section-section-menu > li.current-menu-item > a,
+.section-section-menu > li.current_page_item > a {
+    background-color: #d9dadb;
+}
+
+/* Divider lines around top-level sections that contain a subnav, to separate
+   the groups visually (2026-06 feedback). Adjacent/edge borders collapse so
+   each boundary draws a single line. */
+.section-section-menu > li.menu-item-has-children {
+    border-top: 1px solid #d9dadb;
+    border-bottom: 1px solid #d9dadb;
+}
+
+.section-section-menu > li.menu-item-has-children + li.menu-item-has-children {
+    border-top: 0;
+}
+
+.section-section-menu > li:first-child {
+    border-top: 0;
+}
+
+.section-section-menu > li:last-child {
+    border-bottom: 0;
+}
+
+/* Sub-menu sits full-width below the flex row */
+.section-section-menu > li > .section-sub-menu {
+    flex: 0 0 100%;
+}
+
+/* Sub-menu (levels 2 & 3) — base styles; collapsed state set further below */
+.section-section-menu .section-sub-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Sub-menu rows also flex so nested toggles can push right */
+.section-section-menu .section-sub-menu li {
+    margin: 0;
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+/* Sub-menu links/spans fill available width */
+.section-section-menu .section-sub-menu li > a,
+.section-section-menu .section-sub-menu li > .section-nav-empty-link {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    padding: 0.55rem 1rem 0.55rem 1.5rem;
+    min-height: 44px;
+    box-sizing: border-box;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #000;
+    text-decoration: none;
+    min-width: 0;
+}
+
+.section-section-menu .section-sub-menu li > .section-sub-menu {
+    flex: 0 0 100%;
+}
+
+.section-section-menu .section-sub-menu li a:hover {
+    text-decoration: underline;
+}
+
+.section-section-menu .section-sub-menu li a:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: -2px;
+}
+
+/* Current page highlight — applied to the li so it spans the full row including toggle */
+.section-section-menu .section-sub-menu li.current-menu-item,
+.section-section-menu .section-sub-menu li.current_page_item {
+    background-color: #d9dadb;
+}
+.section-section-menu .section-sub-menu li.current-menu-item > a,
+.section-section-menu .section-sub-menu li.current_page_item > a {
+    font-weight: 700;
+}
+
+/* Sub-level items indent under their parent */
+.section-section-menu .section-sub-depth-0 > li > a,
+.section-section-menu .section-sub-depth-0 > li > .section-nav-empty-link {
+    padding-left: 2.2rem;
+}
+
+.section-section-menu .section-sub-depth-1 > li > a,
+.section-section-menu .section-sub-depth-1 > li > .section-nav-empty-link {
+    padding-left: 3.3rem;
+}
+
+.section-section-menu .section-sub-depth-2 > li > a,
+.section-section-menu .section-sub-depth-2 > li > .section-nav-empty-link {
+    padding-left: 4.4rem;
+}
+
+/* Items with children: flex row so link + toggle button sit side by side */
+.section-section-menu li.menu-item-has-children {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.section-section-menu li.menu-item-has-children > a {
+    flex: 1;
+}
+
+/* +/- toggle button — right-edge of each row */
+.section-sub-toggle {
+    flex-shrink: 0;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    background: none;
+    border: none;
+    border-left: 1px solid #d9dadb;
+    cursor: pointer;
+    padding: 0;
+    color: #000;
+}
+
+.section-sub-toggle:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: -2px;
+}
+
+.section-sub-toggle-icon {
+    display: block;
+    width: 14px;
+    height: 14px;
+    position: relative;
+}
+
+/* + bar (horizontal always visible) */
+.section-sub-toggle-icon::before,
+.section-sub-toggle-icon::after {
+    content: "";
+    position: absolute;
+    background: currentColor;
+    border-radius: 1px;
+}
+
+.section-sub-toggle-icon::before {
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    margin-top: -1px;
+}
+
+/* vertical bar — hidden when expanded */
+.section-sub-toggle-icon::after {
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.section-sub-toggle[aria-expanded="true"] .section-sub-toggle-icon::after {
+    transform: scaleY(0);
+    opacity: 0;
+}
+
+/* Sub-menus collapsed by default; JS removes hidden attr, CSS controls visibility */
+.section-section-menu .section-sub-menu {
+    display: none;
+    width: 100%;
+}
+
+.section-section-menu .section-sub-menu.is-open {
+    display: block;
+}
+
+/* Active branch opened by JS via is-open; no CSS auto-expand needed */
+
+/* ── CTA menu (e.g. Graduate student types) ─────────────────── */
+.section-cta-menu {
+    list-style: none;
+    padding: 0.75rem 1rem;
+    margin: 0;
+    background-color: #f4f4f4;
+}
+
+.section-cta-menu li {
+    list-style: none;
+    margin: 0.4rem 0;
+}
+
+.section-nav-cta-button {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background-color: #fdb515;
+    color: #252525;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.section-nav-cta-button:hover {
+    background-color: #e0a10e;
+}
+
+.section-nav-cta-button:focus-visible {
+    outline: 2px solid #252525;
+    outline-offset: 2px;
+}
+
+/* ── Student-type dropdown ──────────────────────────────────── */
+.section-nav-dropdown-wrap {
+    margin-top: 1.25rem;
+    border-top: 1px solid #d9dadb;
+    padding-top: 1rem;
+}
+
+.section-nav-dropdown-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #535455;
+    margin-bottom: 0.4rem;
+}
+
+.section-nav-dropdown {
+    width: 100%;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 0.9rem;
+    color: #252525;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10'%3E%3Cpath d='M1 1l7 7 7-7' stroke='%23535455' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 12px;
+}
+
+.section-nav-dropdown:focus-visible {
+    outline: 2px solid #252525;
+    outline-offset: 2px;
+    border-color: #252525;
+}
+
+/* ── [section_nav_links] shortcode — inline/hero use ───────── */
+/*
+ * Use [section_nav_links style="light"] on dark hero images.
+ * Use [section_nav_links style="dark"]  on light backgrounds.
+ * No toggle button, no sidebar chrome — just the links.
+ */
+.section-nav-links {
+    display: inline-block;
+}
+
+.section-nav-links .section-nav-links__title a {
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.section-nav-links .section-section-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.section-nav-links .section-section-menu li {
+    margin: 0;
+}
+
+.section-nav-links .section-section-menu a {
+    display: block;
+    padding: 0.3rem 0;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* Light variant — white text for dark hero images */
+.section-nav-links--light .section-nav-links__title a,
+.section-nav-links--light .section-section-menu a {
+    color: #fff;
+}
+
+.section-nav-links--light .section-section-menu a:hover,
+.section-nav-links--light .section-nav-links__title a:hover {
+    color: #f5a800;
+    text-decoration: underline;
+}
+
+.section-nav-links--light .section-section-menu a:focus-visible,
+.section-nav-links--light .section-nav-links__title a:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ── Section navigation dark mode ───────────────────────────── */
+[data-theme="dark"] .section-menu-toggle {
+    background-color: #242424;
+    color: #fff;
+}
+
+[data-theme="dark"] .section-menu-toggle:focus-visible {
+    outline-color: #fdb515;
+}
+
+[data-theme="dark"] .section-menu-toggle:hover,
+[data-theme="dark"] .section-menu-toggle.is-active {
+    background-color: #2f2f2f;
+}
+
+[data-theme="dark"] .section-nav-title,
+[data-theme="dark"] .section-section-menu,
+[data-theme="dark"] .section-cta-menu {
+    background-color: #2d2d2d;
+}
+
+[data-theme="dark"] .section-nav-title a,
+[data-theme="dark"] .section-section-menu > li > a,
+[data-theme="dark"] .section-section-menu > li > a:visited,
+[data-theme="dark"] .section-section-menu > li > .section-nav-empty-link,
+[data-theme="dark"] .section-section-menu .section-sub-menu li > a,
+[data-theme="dark"] .section-section-menu .section-sub-menu li > a:visited,
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li
+    > .section-nav-empty-link {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .section-nav-title a:hover,
+[data-theme="dark"] .section-section-menu > li > a:hover,
+[data-theme="dark"] .section-section-menu .section-sub-menu li > a:hover {
+    color: #fff;
+    background-color: #242424;
+    text-decoration: none;
+}
+
+[data-theme="dark"] .section-nav-title a:focus-visible,
+[data-theme="dark"] .section-sub-toggle:focus-visible,
+[data-theme="dark"] .section-nav-dropdown:focus-visible {
+    outline-color: #fdb515;
+    border-color: #fdb515;
+}
+
+[data-theme="dark"] .section-section-menu > li > a:focus-visible,
+[data-theme="dark"] .section-section-menu .section-sub-menu li a:focus-visible {
+    outline-color: #fdb515;
+}
+
+[data-theme="dark"] .section-section-menu > li.current-menu-item > a,
+[data-theme="dark"] .section-section-menu > li.current_page_item > a,
+[data-theme="dark"] .section-section-menu > li.current-menu-ancestor > a,
+[data-theme="dark"] .section-section-menu > li.current_page_ancestor > a,
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li.current-menu-item,
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li.current_page_item {
+    background-color: #242424;
+}
+
+[data-theme="dark"] .section-section-menu > li.current-menu-item > a,
+[data-theme="dark"] .section-section-menu > li.current_page_item > a,
+[data-theme="dark"] .section-section-menu > li.current-menu-ancestor > a,
+[data-theme="dark"] .section-section-menu > li.current_page_ancestor > a,
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li.current-menu-item
+    > a,
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li.current_page_item
+    > a {
+    color: #fff;
+}
+
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li.current-menu-item
+    > a,
+[data-theme="dark"]
+    .section-section-menu
+    .section-sub-menu
+    li.current_page_item
+    > a {
+    color: #fdb515;
+}
+
+[data-theme="dark"] .section-sub-toggle {
+    border-left-color: #333;
+    color: #fdb515;
+}
+
+[data-theme="dark"] .section-section-menu > li.menu-item-has-children {
+    border-top-color: #3d3d3d;
+    border-bottom-color: #3d3d3d;
+}
+
+[data-theme="dark"] .section-nav-dropdown-wrap {
+    border-top-color: #333;
+}
+
+[data-theme="dark"] .section-nav-dropdown-label {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .section-nav-dropdown {
+    background-color: #242424;
+    border-color: #444;
+    color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 10'%3E%3Cpath d='M1 1l7 7 7-7' stroke='%23fdb515' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .section-nav-links--light .section-section-menu a:hover,
+[data-theme="dark"]
+    .section-nav-links--light
+    .section-nav-links__title
+    a:hover {
+    color: #fdb515;
+}
+
+/* Dark variant — dark text for light backgrounds */
+.section-nav-links--dark .section-nav-links__title a,
+.section-nav-links--dark .section-section-menu a {
+    color: #252525;
+}
+
+.section-nav-links--dark .section-section-menu a:hover,
+.section-nav-links--dark .section-nav-links__title a:hover {
+    color: #007176;
+    text-decoration: underline;
+}
+
+/* ── Main content column ────────────────────────────────────── */
+.section-main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Force wp-block-columns to stack inside the section sidebar layout.
+   WP Core emits an inline <style> with flex-wrap:nowrap on the generated
+   .wp-container-core-columns-is-layout-* class — external CSS cannot beat
+   inline styles without !important. Sidebar is 290px + 2rem gap ~= 330px,
+   so usable content width at 1250px viewport is only ~930px — not enough
+   for 3 equal columns. Stack at 1250px to clear that threshold. */
+@media (max-width: 1250px) {
+    .section-layout-wrapper .section-main-content .wp-block-columns {
+        flex-wrap: wrap !important;
+    }
+    .section-layout-wrapper
+        .section-main-content
+        .wp-block-columns
+        > .wp-block-column {
+        flex-basis: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ── Entry header hero — image-height driven, text left-aligned ── */
+/* Applies to: section-nav pages and any page with the hero overlay toggle on */
+.section-main-content .entry-header,
+.entry-header--hero-overlay {
+    position: relative;
+    overflow: hidden;
+    background: #252525;
+    margin-bottom: 2rem;
+    /* Override style-before-min.css .entry-header max-width:1200px */
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Image fills width, height is natural (no forced min-height) */
+.section-main-content .entry-header > img.wp-post-image,
+.section-main-content .entry-header > .post-thumbnail img,
+.section-main-content .entry-header > img.attachment-post-thumbnail,
+.entry-header--hero-overlay > img.wp-post-image,
+.entry-header--hero-overlay > .post-thumbnail img,
+.entry-header--hero-overlay > img.attachment-post-thumbnail {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Dark gradient over image */
+.section-main-content .entry-header::after,
+.entry-header--hero-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.18) 0%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    pointer-events: none;
+}
+
+/* hero-overlay__content: constrain to align with page body content */
+.entry-header--hero-overlay .hero-overlay__content {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    z-index: 2;
+}
+body.has-section-nav .entry-header--hero-overlay .hero-overlay__content {
+    max-width: 1400px;
+}
+
+/* Title overlays bottom-left of the image */
+.section-main-content .entry-header .entry-title,
+.entry-header--hero-overlay .entry-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    color: #fff;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.05;
+    margin: 0;
+    padding: 1.5rem;
+    text-align: left;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.section-main-content .entry-header .umbc-breadcrumbs-wrap,
+.section-main-content .entry-header .umbc-breadcrumbs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    padding: 2rem 1.5rem 0;
+    margin: 0;
+    color: #fff;
+}
+
+.section-main-content .entry-header .umbc-breadcrumbs-wrap a,
+.section-main-content .entry-header .umbc-breadcrumbs a,
+.section-main-content .entry-header .rank-math-breadcrumb a {
+    color: #fff;
+}
+
+.section-main-content .entry-header .umbc-breadcrumbs-wrap p,
+.section-main-content .entry-header .umbc-breadcrumbs .breadcrumb,
+.section-main-content .entry-header .umbc-breadcrumbs .breadcrumbs,
+.section-main-content
+    .entry-header
+    .umbc-breadcrumbs-wrap
+    .rank-math-breadcrumb
+    p {
+    color: #fff;
+}
+
+/* ── Section hero image — lives inside .section-main-content ── */
+.section-hero-image {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    background: #252525;
+}
+
+.section-hero-image img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.section-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.12) 0%,
+        rgba(0, 0, 0, 0.65) 100%
+    );
+    pointer-events: none;
+}
+
+.section-hero-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    color: #fff;
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+    line-height: 1.1;
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.section-main-content .entry-content > *:first-child {
+    margin-top: 0;
+}
+
+/* =============================================================
+   Alumni / Section Interior — hero and layout
+   Used by page-alumni-interior.php and page-section-interior.php
+   ============================================================= */
+
+/* Bust the #primary max-width for full-bleed hero on section-interior pages */
+.page-template-page-section-interior #primary,
+.page-template-page-section-interior #main {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.alumni-hero-wrapper,
+.section-hero-wrapper {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    width: 100%;
+}
+
+.alumni-hero-wrapper:not(.alumni-hero-no-image)::before,
+.section-hero-wrapper:not(.section-hero-no-image)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0) 60%
+    );
+}
+
+.alumni-hero-container,
+.section-hero-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.75rem;
+    min-height: 300px;
+    display: flex;
+    align-items: flex-end;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .alumni-hero-container,
+    .section-hero-container {
+        padding: 2.75rem 1.75rem;
+        min-height: 340px;
+    }
+}
+
+.alumni-hero-title,
+.section-hero-title {
+    color: #fff;
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    font-weight: 900;
+    margin: 0;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.alumni-hero-no-image,
+.section-hero-no-image {
+    background-color: #f4f4f4;
+}
+
+.alumni-hero-no-image .alumni-hero-container,
+.section-hero-no-image .section-hero-container {
+    min-height: unset;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    align-items: center;
+}
+
+.alumni-hero-title--plain,
+.section-hero-title--plain {
+    color: #000;
+    text-shadow: none;
+}
+
+/* ── Body container ─────────────────────────────────────────── */
+.alumni-body-container {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── Two-column layout wrapper ──────────────────────────────── */
+.alumni-layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.75rem;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .alumni-layout-wrapper {
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 2rem 2rem;
+        gap: 2.5rem;
+    }
+}
+
+/* Content column inside alumni/section layouts */
+.alumni-main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.alumni-entry .entry-content > *:first-child {
+    margin-top: 0;
+}
+
+/* Button system moved to css/umbc-buttons.css — 2026-04-29 */
+
+.entry-content > .wp-block-group:not(.alignwide):not(.alignfull),
+.entry-content > .wp-block-columns:not(.alignwide):not(.alignfull),
+.entry-content > .wp-block-cover:not(.alignwide):not(.alignfull),
+.entry-content > .wp-block-media-text:not(.alignwide):not(.alignfull) {
+    max-width: 700px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.entry-content > .alignwide,
+.entry-content > .wp-block-group.alignwide,
+.entry-content > .wp-block-columns.alignwide,
+.entry-content > .wp-block-cover.alignwide,
+.entry-content > .wp-block-media-text.alignwide {
+    max-width: 1200px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.entry-content > .wp-block-group.alignfull,
+.entry-content > .wp-block-columns.alignfull,
+.entry-content > .wp-block-cover.alignfull,
+.entry-content > .wp-block-media-text.alignfull {
+    max-width: 100vw;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+}
+
+.entry-content > .wp-block-group.alignfull > .wp-block-group__inner-container,
+.entry-content > .wp-block-cover.alignfull > .wp-block-cover__inner-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Wide-aligned cover inner container needs padding when a side nav is present —
+   without it, content sits flush against the image edge. */
+.section-main-content
+    .entry-content
+    > .wp-block-cover.alignwide
+    > .wp-block-cover__inner-container,
+.alumni-main-content
+    .entry-content
+    > .wp-block-cover.alignwide
+    > .wp-block-cover__inner-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.entry-content
+    > .wp-block-group.alignfull
+    > .wp-block-group__inner-container
+    > .wp-block-columns,
+.entry-content
+    > .wp-block-group.alignfull
+    > .wp-block-group__inner-container
+    > .wp-block-group,
+.entry-content
+    > .wp-block-cover.alignfull
+    > .wp-block-cover__inner-container
+    > .wp-block-columns,
+.entry-content
+    > .wp-block-cover.alignfull
+    > .wp-block-cover__inner-container
+    > .wp-block-group {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* wp-block-group padding and responsive alignment rules moved to style.css */
+
+/* ── Desktop sidebar layout: roomier, uniform padding for full-width blocks ──
+   In the section-nav (and alumni) layout the content column runs ~1024–1200px
+   beside the rail. A leading cover or a full-width group fills that column, but
+   its content was only inset by the block's small default padding, which read as
+   cramped so close to the nav. Pad each block to ~100px so content sits ~100px
+   from every edge (≈1000px wide inside a 1200px column); min() eases it back on
+   narrower desktops so a hero is never over-squeezed. Vertical % padding resolves
+   against width too, so all four sides stay equal at any column width.
+
+   Backgrounds stay edge-to-edge: a cover's image is absolutely positioned, and a
+   group's background color fills its whole border-box — only the content moves.
+
+   "Default padding, unless overridden by the editor" — done in two layers because
+   the block defaults reach these blocks two different ways:
+
+   LAYER 1 (no !important) normalizes the THEME defaults, which are low-specificity
+   rules, not inline: .wp-block-cover { padding: 1em } and
+   .wp-block-group { padding: 2rem }. A normal rule out-specifies those but loses
+   to ANY inline style, so an editor's inline padding — the 0px of a deliberately
+   edge-to-edge band, a spacing--70 top/bottom, a custom value — always wins,
+   untouched. The `padding` shorthand only claims the sides the editor left alone.
+
+   LAYER 2 (!important, per axis) handles the two inline values WordPress patterns
+   stamp on as their own "default" — spacing--50 and 1rem. Those are inline, so
+   only !important can lift them to 100px. Matched per side, so a block that is
+   default on some sides and overridden on others (e.g. spacing--50 sides + a
+   spacing--70 top) gets 100px only where it is still default; any non-listed
+   inline value simply isn't matched, and the editor's choice stands.
+
+   Scoped to top-level blocks (direct children of the content column, or of the
+   article/.entry-content the standard template wraps them in) so nested covers
+   and columns keep their own spacing. Below 1100px the sidebar is gone and blocks
+   run to the gutter as before. */
+@media (min-width: 1100px) {
+    /* Layer 1 — beat the theme defaults (1em / 2rem); yield to any inline value.
+       The academics index/term and faculty templates wrap their whole page in a
+       single body div (some carry .wp-block-group.alignwide, so they'd match here)
+       that is meant to fill the column flush — a card grid, not a banner. They are
+       zeroed by the reset in umbc-style.css (.section-main-content > .academics-*
+       / .faculty-*), so this rule must skip them or it re-indents the grid. */
+    :is(.section-main-content, .alumni-main-content)
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):not(
+            :is(
+                .academics-index-body,
+                .academics-term-body,
+                .faculty-archive,
+                .faculty-profile
+            )
+        ),
+    :is(.section-main-content, .alumni-main-content)
+        > article
+        > .entry-content
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):not(
+            :is(
+                .academics-index-body,
+                .academics-term-body,
+                .faculty-archive,
+                .faculty-profile
+            )
+        ) {
+        padding: min(100px, 9%);
+    }
+
+    /* Layer 2 — lift the inline pattern-defaults (spacing--50, 1rem), per side. */
+    :is(.section-main-content, .alumni-main-content)
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-left:var(--wp--preset--spacing--50)"],
+            [style*="padding-left:1rem"]
+        ),
+    :is(.section-main-content, .alumni-main-content)
+        > article
+        > .entry-content
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-left:var(--wp--preset--spacing--50)"],
+            [style*="padding-left:1rem"]
+        ) {
+        padding-left: min(100px, 9%) !important;
+    }
+    :is(.section-main-content, .alumni-main-content)
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-right:var(--wp--preset--spacing--50)"],
+            [style*="padding-right:1rem"]
+        ),
+    :is(.section-main-content, .alumni-main-content)
+        > article
+        > .entry-content
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-right:var(--wp--preset--spacing--50)"],
+            [style*="padding-right:1rem"]
+        ) {
+        padding-right: min(100px, 9%) !important;
+    }
+    :is(.section-main-content, .alumni-main-content)
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-top:var(--wp--preset--spacing--50)"],
+            [style*="padding-top:1rem"]
+        ),
+    :is(.section-main-content, .alumni-main-content)
+        > article
+        > .entry-content
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-top:var(--wp--preset--spacing--50)"],
+            [style*="padding-top:1rem"]
+        ) {
+        padding-top: min(100px, 9%) !important;
+    }
+    :is(.section-main-content, .alumni-main-content)
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-bottom:var(--wp--preset--spacing--50)"],
+            [style*="padding-bottom:1rem"]
+        ),
+    :is(.section-main-content, .alumni-main-content)
+        > article
+        > .entry-content
+        > :is(.wp-block-cover, .wp-block-group):is(.alignfull, .alignwide):is(
+            [style*="padding-bottom:var(--wp--preset--spacing--50)"],
+            [style*="padding-bottom:1rem"]
+        ) {
+        padding-bottom: min(100px, 9%) !important;
+    }
+}
+
+/* STORIES INTERIOR */
+
+.big-image-news a img {
+    height: 400px;
+    width: 100%;
+}
+
+.ast-related-post-content .cat-links a,
+.entry-category-meta a,
+.cat-tag a,
+.taxonomy-category a,
+.cat-tag .wp-block-button__link {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px !important;
+    /* Invisible vertical padding makes the click area taller without
+       changing the visual tag size — meets 24px min touch target */
+    margin-top: 6px;
+    margin-bottom: 6px;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    background: #007176;
+    color: #fff !important;
+    border-radius: 2px;
+    text-decoration: none !important;
+    transition: background-color 0.15s ease;
+}
+
+.ast-related-post-content .cat-links a:hover,
+.entry-category-meta a:hover,
+.cat-tag a:hover,
+.taxonomy-category a:hover,
+.cat-tag .wp-block-button__link:hover {
+    background: #005558;
+    color: #fff !important;
+    text-decoration: none !important;
+}
+
+.ast-related-post-content .cat-links a:focus-visible,
+.entry-category-meta a:focus-visible,
+.cat-tag a:focus-visible,
+.taxonomy-category a:focus-visible {
+    outline: 2px solid #007176;
+    outline-offset: 2px;
+    background: #005558;
+}
+
+.archive .ast-container {
+    max-width: 1200px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ast-blog-layout-4-grid .ast-article-inner {
+    border: 1px solid #eee;
+}
+
+.ast-advanced-headers-vertical-center {
+    height: auto !important;
+}
+
+.category-links ul {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 1rem !important;
+}
+
+.category-links li {
+    display: flex;
+    border: 1px solid teal !important;
+    margin-right: 2px !important;
+    padding: 2px 8px !important;
+    color: white !important;
+    font-size: 12px !important;
+    line-height: 1.1em;
+    border-radius: 8px !important;
+}
+
+@media only screen and (max-width: 600px) {
+    .category-links ul {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 1rem !important;
+    }
+
+    .category-links li {
+        padding: 2px 8px !important;
+        width: auto;
+        flex: 0 !important;
+    }
+}
+
+/* =============================================================
+   Expertise section — component-specific (moved from style.css)
+   ============================================================= */
+.expertise-section p {
+    font-size: 20px !important;
+    line-height: 28px;
+    text-align: center;
+}
+
+/* =============================================================
+   Category Archive Images (moved from style.css)
+   ============================================================= */
+.wp-block-post-featured-image {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+}
+
+.post-content .wp-block-post-featured-image img,
+.post-content .wp-block-post-featured-image img a,
+.post-content .ast-grid-common-col a img,
+.post-content .mag-img-home-side a img {
+    display: block;
+    overflow: hidden;
+    width: 300px;
+    height: 200px;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.big-images img {
+    display: block;
+    overflow: hidden;
+    width: 100% !important;
+    height: 300px;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.huge-images img {
+    display: block;
+    overflow: hidden;
+    width: 100% !important;
+    height: 400px;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.regular-images img {
+    display: block;
+    overflow: hidden;
+    width: 100% !important;
+    height: 200px;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.ast-related-posts-inner-section .post-thumb-img-content a img {
+    display: block;
+    overflow: hidden;
+    width: 383px;
+    height: 300px;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.wp-block-post-template.is-flex-container,
+.wp-block-query-loop.is-flex-container {
+    margin-left: 0;
+}
+
+.ast-row .entry-content {
+    display: none;
+}
+
+.sticky-image {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+}
+
+.sticky-image img {
+    object-fit: cover;
+    min-height: 300px;
+}
+
+.wp-block-post-date {
+    padding-top: 10px;
+    text-transform: uppercase;
+}
+
+.entry-meta {
+    text-transform: uppercase;
+}
+
+.ast-blog-featured-section {
+    margin-bottom: 1rem !important;
+}
+
+.archive .entry-title a {
+    margin-bottom: 0 !important;
+    line-height: 1.2rem !important;
+}
+
+/* added by bryan 8/2/23 */
+.archive .ast-archive-description {
+    padding-left: 0 !important;
+}
+
+.ast-archive-description .ast-archive-title {
+    font-weight: 900 !important;
+}
+
+.ast-blog-layout-4-grid .ast-article-inner {
+    border: 1px solid #eee;
+}
+
+.ast-archive-description p {
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.ast-archive-description p a {
+    text-decoration: underline;
+}
+
+/* =============================================================
+   Magazine Homepage (moved from style.css)
+   ============================================================= */
+.mag-current {
+    margin-top: 5px;
+}
+
+.mag-current,
+.mag-feature-first {
+    margin-right: 5px !important;
+    margin-left: 0;
+}
+
+.mag-current-last {
+    margin-top: 5px;
+    margin-right: 0;
+}
+
+.mag-feature h2 a,
+.mag-current h3 a,
+.mag-current-last h3 a {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    color: #fff !important;
+}
+
+.mag-feature .wp-block-query .wp-block-post-title {
+    font-size: 30px !important;
+}
+
+.mag-feature .mag-tag,
+.mag-current .wp-block-button__link,
+.mag-current-last .wp-block-button__link {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+}
+
+.mag-home-on-white .wp-block-query .wp-block-post-title a {
+    color: #000 !important;
+    padding-top: 1rem !important;
+}
+
+.mag-home-on-white .wp-block-query .wp-block-post-date {
+    color: #636466 !important;
+    font-size: 12px;
+}
+
+.mag-home-on-white .wp-block-post-excerpt__excerpt {
+    font-size: 14px;
+    line-height: 1.2rem;
+}
+
+.mag-tag {
+    border: 0 !important;
+}
+
+.mag-tag .wp-block-button__link {
+    color: #fff !important;
+    background: #636466 !important;
+    padding: 4px 8px !important;
+    font-size: 12px;
+    border-radius: 0;
+}
+
+.wp-block-post-excerpt__excerpt {
+    font-size: 14px !important;
+    padding: 0.5rem 0;
+}
+
+.black-link a {
+    color: #000 !important;
+}
+
+/* =============================================================
+   SIX PACK component (moved from style.css)
+   ============================================================= */
+.ugrad-six-pack .button.button-primary,
+.acf-block-preview
+    .ugrad-six-pack
+    #main
+    ul.page-numbers
+    li
+    .button-primary.page-numbers,
+#main
+    ul.page-numbers
+    li
+    .acf-block-preview
+    .ugrad-six-pack
+    .button-primary.page-numbers {
+    background-color: #fdb515;
+    color: #000;
+    border: none;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.ugrad-six-pack h3 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.ugrad-six-pack-blurb {
+    font-size: 15px !important;
+    font-weight: 500;
+    line-height: 22px;
+}
+
+.ugrad-six-pack-link-wrapper a::after,
+.ugrad-six-pack-content ul li:after {
+    content: "→";
+    color: #007176;
+    display: inline-block;
+    position: relative;
+    left: 1px;
+    width: 1em;
+    height: 1em;
+    margin-right: 0.25rem;
+}
+
+.ugrad-six-pack-link .arrow {
+    display: none;
+}
+
+.ugrad-six-pack-link,
+.ugrad-six-pack-content ul li {
+    font-weight: 700;
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+.ugrad-six-pack-content ul li {
+    list-style: none;
+    margin-bottom: 4px;
+}
+
+.ugrad-six-pack-content ul {
+    margin-left: 0;
+}
+
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .wp-block-group__inner-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: auto;
+        gap: 2rem 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack + .ugrad-six-pack {
+        margin-top: 0;
+    }
+}
+
+.ugrad-six-pack-container .wp-block {
+    width: 100%;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-title {
+    padding: 0.5rem 0;
+    margin: 0.5rem 0 0;
+    display: flex;
+    align-items: center;
+    text-align: left;
+}
+
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack-title {
+        cursor: auto;
+        background-color: transparent;
+        padding: 0;
+        display: block;
+        margin: 0 0 0.5rem;
+    }
+
+    .ugrad-six-pack-container .ugrad-six-pack-title::before {
+        display: none;
+    }
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-content {
+    padding: 0.5rem 0;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-content :first-child {
+    margin-top: 0;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-content :last-child {
+    margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack-content {
+        border: none;
+        padding: 0;
+    }
+}
+
+.ugrad-six-pack-container .acf-block-component .ugrad-six-pack {
+    width: 100%;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack .ugrad-six-pack-content {
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack .ugrad-six-pack-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-link-wrapper {
+    margin-top: 1rem;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-link {
+    color: #007176;
+    text-decoration: underline;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-link::after {
+    content: "→";
+    color: #007176;
+    display: inline-block;
+    margin-left: 0.25rem;
+    text-decoration: none;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-link:hover {
+    color: #00595d;
+    text-decoration: underline;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-link:focus,
+.ugrad-six-pack-container .ugrad-six-pack-link:active {
+    color: #000;
+    text-decoration: none;
+}
+
+/* ── Dark mode: six-pack link chrome ──────────────────────────────
+   The link text itself already flips to gold — umbc-style.css loads
+   after this file and its `[data-theme="dark"] .entry-content a` rule
+   wins on source order at equal specificity. But the trailing "→" is a
+   ::after pseudo-element with a hardcoded aOK Teal (#007176) that no
+   dark rule touches, so it stayed teal on the dark card. Match it to
+   the link color (var(--dm-link) so gold-on-teal surfaces still get the
+   lighter gold), and fix :focus/:active, which forced #000 — black text
+   on a near-black background.
+   Scoped with [data-theme="dark"] (0,3,x) so it beats the light-mode
+   rules above regardless of which stylesheet loads last. ── */
+[data-theme="dark"] .ugrad-six-pack-link-wrapper a::after,
+[data-theme="dark"] .ugrad-six-pack-content ul li::after,
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-link::after {
+    color: var(--dm-link, #fdb515);
+}
+
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-link,
+[data-theme="dark"] .ugrad-six-pack-content ul li a {
+    color: var(--dm-link, #fdb515);
+}
+
+[data-theme="dark"] .ugrad-six-pack-link-wrapper a:hover::after,
+[data-theme="dark"] .ugrad-six-pack-content ul li:hover::after,
+[data-theme="dark"]
+    .ugrad-six-pack-container
+    .ugrad-six-pack-link:hover::after {
+    color: var(--dm-link-hover, #ffd36a);
+}
+
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-link:hover,
+[data-theme="dark"] .ugrad-six-pack-content ul li a:hover {
+    color: var(--dm-link-hover, #ffd36a);
+}
+
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-link:focus,
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-link:active {
+    color: #fff;
+}
+
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-link:focus::after,
+[data-theme="dark"]
+    .ugrad-six-pack-container
+    .ugrad-six-pack-link:active::after {
+    color: #fff;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-blurb {
+    margin-bottom: auto;
+    font-weight: 500;
+    color: #535455;
+}
+
+#main .main-content .ugrad-six-pack-container .ugrad-six-pack-title,
+.editor-styles-wrapper
+    .landing-page-section
+    .acf-block-preview
+    .ugrad-six-pack-title {
+    font-size: 20px;
+    color: #000;
+    font-weight: 900;
+}
+
+.ugrad-six-pack-container h3 {
+    font-size: 22px;
+}
+
+.ugrad-six-pack-container p {
+    font-size: 15px !important;
+}
+
+/* =============================================================
+   Font Awesome block icons — gold on dark backgrounds
+   The plugin sets color via the SVG `color` attribute using a
+   CSS variable that resolves to black; override for our palette.
+   ============================================================= */
+.wp-block-font-awesome-icon .svg-inline--fa,
+.wp-font-awesome-icon .svg-inline--fa {
+    color: #fdb515;
+}
+
+/* If the column has a dark background (ast-global-color-7 is dark),
+   ensure the path fill follows currentColor */
+.has-ast-global-color-7-background-color
+    .wp-block-font-awesome-icon
+    .svg-inline--fa,
+.has-ast-global-color-7-background-color .wp-font-awesome-icon .svg-inline--fa {
+    color: #fdb515;
+}
+
+/* =============================================================
+   Query Loop / Post Template — grid cards
+   ============================================================= */
+
+/* Consistent image height — crops to fill regardless of aspect ratio */
+.wp-block-post-template .wp-block-post-featured-image img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+/* Smaller post title in grid cards */
+.wp-block-post-template .wp-block-post-title {
+    font-size: 1.25rem; /* ~20px */
+    line-height: 1.3;
+    margin-top: 0.75rem;
+}
+
+.wp-block-post-template .wp-block-post-title a {
+    font-size: inherit;
+    text-decoration: none;
+    color: inherit;
+}
+
+.wp-block-post-template .wp-block-post-title a:hover {
+    text-decoration: underline;
+}
+
+/* =============================================================
+   Heading links — no underline globally; hover uses a bottom
+   border so the indicator is non-color-only (WCAG 1.4.1)
+   ============================================================= */
+.wp-block-heading a,
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+    text-decoration: none;
+}
+
+.wp-block-heading a:hover,
+h1 a:hover,
+h2 a:hover,
+h3 a:hover,
+h4 a:hover,
+h5 a:hover,
+h6 a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
+    text-decoration-color: currentColor;
+}
+
+.wp-block-heading a:focus-visible,
+h1 a:focus-visible,
+h2 a:focus-visible,
+h3 a:focus-visible,
+h4 a:focus-visible,
+h5 a:focus-visible,
+h6 a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* =============================================================
+   Whole-card links — white cards on dark bg. The entire card
+   is a visual link unit (heading + body both go same URL).
+   Hovering anywhere on the card shifts the background so the
+   whole thing is the interactive affordance, not just the text.
+   ============================================================= */
+.wp-block-column.has-ast-global-color-5-background-color {
+    transition: background-color 0.15s ease;
+}
+
+.wp-block-column.has-ast-global-color-5-background-color:hover {
+    background-color: #f0f0f0 !important;
+}
+
+/* Dark mode: the ast-5 card flips to --umbc-surface-card (#2d2d2d) via the
+   token policy in css/style.css; without this the light hover above forces a
+   near-white card under light text. Lighten instead, matching the card flip. */
+[data-theme="dark"]
+    .wp-block-column.has-ast-global-color-5-background-color:hover {
+    background-color: #3a3a3a !important;
+}
+
+.wp-block-column.has-ast-global-color-5-background-color .wp-block-heading a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.wp-block-column.has-ast-global-color-5-background-color
+    .wp-block-heading
+    a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
+}
+
+/* Body-copy links inside the cards */
+.wp-block-column.has-ast-global-color-5-background-color p a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.wp-block-column.has-ast-global-color-5-background-color p a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+/* =============================================================
+   Content utility classes used in block editor
+   ============================================================= */
+.no-underline a,
+.no-underline {
+    text-decoration: none !important;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+.mb-1 {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Stats row on dark bg — ensure gold numbers and white labels show */
+.black-bg {
+    background-color: #252525;
+}
+
+.black-bg a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.black-bg a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+/* Honour WP colour classes as link colours — prevents browser/theme default
+   blue from overriding editor-set text colours on <a> elements */
+a.has-ast-global-color-0-color,
+.has-ast-global-color-0-color a {
+    color: #fdb515;
+}
+
+a.has-ast-global-color-1-color,
+.has-ast-global-color-1-color a {
+    color: #252525;
+}
+
+a.has-ast-global-color-5-color,
+.has-ast-global-color-5-color a {
+    color: #ffffff;
+}
+
+a.has-ast-global-color-0-color:hover,
+.has-ast-global-color-0-color a:hover {
+    color: #fdb515;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+a.has-ast-global-color-5-color:hover,
+.has-ast-global-color-5-color a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+/* === UNDERGRADUATE SECTION ===
+ * Migrated from undergrad/css/style-interior-undergraduate.css.
+ * Supports the .undergrad-layout-wrapper sidebar layout used by
+ * the Undergraduate Interior Template (page-interior-undergraduate.php).
+ * ================================================================== */
+
+.undergrad-layout-wrapper {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.undergrad-left-sidebar {
+    line-height: 1.2;
+}
+
+.section-menu-toggle {
+    width: 100%;
+    text-align: left;
+    background-color: #e6e7e8;
+    color: #000;
+    text-decoration: none;
+    font-weight: 700;
+    border: 0;
+    font-size: 0.95rem;
+    line-height: 1;
+    padding: 0.95rem 1rem 0.95rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    padding-right: 1rem;
+}
+
+.section-menu-toggle:hover,
+.section-menu-toggle.active {
+    background-color: #f3f3f3;
+}
+
+.section-menu-toggle:focus {
+    background-color: #f3f3f3;
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+.chevron-right {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+}
+
+.chevron-down {
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+}
+
+.menu-box {
+    margin-bottom: 24px;
+}
+
+.custom-left-menu {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.custom-left-menu li {
+    margin-bottom: 10px;
+    list-style-type: none;
+}
+
+.custom-left-menu li.highlighted-parent > a {
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.custom-left-menu li.child-menu-item a {
+    padding-left: 2rem;
+}
+
+.custom-left-menu a {
+    text-decoration: none;
+    color: #000;
+    font-size: 14px;
+    font-weight: 400;
+    display: block;
+    padding: 16px;
+}
+
+.custom-left-menu a:hover,
+.custom-left-menu a:focus {
+    text-decoration: underline;
+}
+
+.custom-left-menu .current-menu-item > a,
+.custom-left-menu .current_page_item > a {
+    background-color: #d9dadb;
+    font-weight: 700;
+}
+
+.top-menu-box {
+    background-color: #f3f3f3;
+    display: none;
+}
+
+.top-menu-box.open {
+    display: block;
+}
+
+.top-menu-box a:hover,
+.top-menu-box .current-menu-item > a,
+.top-menu-box .current_page_item > a {
+    background-color: #d9dadb;
+}
+
+.bottom-menu-box {
+    background-color: #d9dadb;
+    display: none;
+}
+
+.bottom-menu-box a:hover,
+.bottom-menu-box .current-menu-item > a,
+.bottom-menu-box .current_page_item > a {
+    background-color: #c3c3c3;
+}
+
+.bottom-menu li {
+    font-weight: 600;
+}
+
+.undergrad-main-content {
+    flex: 1;
+    padding: 10px 0;
+}
+
+.menu-heading {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #003865;
+}
+
+.bottom-menu .info-for-label > a {
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: default;
+}
+
+.bottom-menu .info-for-label > a:hover {
+    background-color: transparent !important;
+    text-decoration: none;
+}
+
+@media (min-width: 768px) {
+    .undergrad-layout-wrapper {
+        padding: 1.75rem;
+    }
+
+    .undergrad-left-sidebar {
+        padding: 0 2rem 0 1rem;
+        width: 31%;
+    }
+
+    .section-menu-toggle {
+        display: none !important;
+    }
+
+    .top-menu-box {
+        display: block !important;
+    }
+
+    .bottom-menu-box {
+        display: block;
+    }
+}
+
+/* === UNDERGRADUATE LANDING PAGE — restored from legacy-undergraduate.css ===
+ * These rules support custom ACF blocks used on /admissions/undergraduate/
+ * and were not previously loaded after the page moved from /undergraduate/.
+ * ======================================================================== */
+
+/* landing-page-section white text: moved to style.css (render-blocking)
+   so specificity beats WP inline has-black-color / has-text-color rules */
+
+/* Fast-fact cards inside dark-overlay cover blocks get a dark semi-transparent
+   card instead of the solid white used on light-background sections */
+.wp-block-cover.landing-page-section:not(.is-light) .fact-wrapper {
+    background-color: rgba(0, 0, 0, 0.55);
+    border-left: 0;
+    box-shadow: -0.5rem 0 0 #fdb515;
+    border: none;
+}
+.wp-block-cover.landing-page-section:not(.is-light) .fast-fact-title,
+.wp-block-cover.landing-page-section:not(.is-light) .fast-fact-content {
+    color: #fff !important;
+}
+.wp-block-cover.landing-page-section:not(.is-light) .source-wrapper,
+.wp-block-cover.landing-page-section:not(.is-light) .source-wrapper a {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ── Video hero title ───────────────────────────────────────────── */
+.video-hero .video-hero-title {
+    margin-bottom: 0;
+    font-size: clamp(2rem, 3.5vw, 3.6rem);
+    text-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.75);
+    text-align: center;
+    color: #fff;
+}
+@media (min-width: 768px) {
+    .video-hero .video-hero-title {
+        text-align: left;
+    }
+}
+.video-hero .wp-block-columns {
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.video-hero .wp-block-columns .wp-block-column {
+    flex-basis: 100% !important;
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .video-hero .wp-block-columns {
+        padding-inline: 0;
+    }
+}
+
+/* ── Double-header section ──────────────────────────────────────── */
+/* Removed — canonical block is below at the ugrad-double-header section */
+
+/* ── Fast facts grid ────────────────────────────────────────────── */
+@media (min-width: 768px) {
+    #main .fast-facts-wrapper,
+    .acf-block-preview .fast-facts-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
+        gap: 2rem;
+        max-width: 100%;
+    }
+}
+#main .fast-facts-wrapper .fast-fact-wrapper,
+.acf-block-preview .fast-facts-wrapper .fast-fact-wrapper {
+    margin: 0 0 0 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+#main .fast-facts-wrapper .fast-fact-title,
+.acf-block-preview .fast-facts-wrapper .fast-fact-title {
+    margin-top: 0;
+    color: #636466;
+    font-weight: 800;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+}
+#main .fast-facts-wrapper .fast-fact-content,
+.acf-block-preview .fast-facts-wrapper .fast-fact-content {
+    margin-bottom: 0;
+    color: #000;
+}
+#main .fast-facts-wrapper .fact-wrapper,
+.acf-block-preview .fast-facts-wrapper .fact-wrapper {
+    padding: 1rem;
+    border: 0.0625rem solid #c4c4c4;
+    background-color: #fff;
+    border-left: 0;
+    box-shadow: -0.5rem 0 0 #fdb515;
+    height: 100%;
+    background-clip: padding-box;
+}
+#main .fast-facts-wrapper .source-wrapper,
+.acf-block-preview .fast-facts-wrapper .source-wrapper {
+    padding: 0.5rem 0;
+    text-align: right;
+    color: #000;
+    font-size: 0.625rem;
+}
+
+/* ── Six-pack accordion/grid ────────────────────────────────────── */
+.ugrad-six-pack-container {
+    padding: 0;
+}
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .wp-block-group__inner-container,
+    .ugrad-six-pack-container.is-layout-flow {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: auto;
+        gap: 3rem 4rem;
+    }
+    .ugrad-six-pack-container .ugrad-six-pack + .ugrad-six-pack {
+        margin-top: 0;
+    }
+}
+.ugrad-six-pack-container .wp-block {
+    width: 100%;
+}
+.ugrad-six-pack-container .ugrad-six-pack-title {
+    cursor: pointer;
+    background-color: #eeefef;
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem 0 0;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Mobile accordion title chrome in dark mode. The desktop
+   @media block below resets this border to none so it doesn't
+   leak a box around the heading in the borderless 3-col grid. */
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-title {
+    border: 2px #444 solid;
+    background-color: #252525;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-title::before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border: 0.5rem solid transparent;
+    border-left-color: #000;
+    margin-right: 0.25rem;
+}
+.ugrad-six-pack-container .ugrad-six-pack-title[aria-expanded="true"]::before {
+    border-left-color: transparent;
+    border-top-color: #000;
+    position: relative;
+    top: 0.25rem;
+}
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack-title {
+        cursor: auto;
+        background-color: transparent;
+        padding: 0;
+        display: block;
+        margin: 0 0 0.5rem !important;
+        text-align: left;
+    }
+    .ugrad-six-pack-container .ugrad-six-pack-title::before {
+        display: none;
+    }
+    /* Desktop is a borderless 3-col grid, not an accordion. The
+       dark-mode title fill/border above is unscoped (specificity
+       0,3,0) so it would otherwise leak past the light-mode reset
+       and box every heading. Clear it with matching dark-scoped
+       specificity here. (The matching content reset lives in the
+       content @media block below — it must come *after* the
+       unscoped dark content border rule to win on source order.) */
+    [data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-title {
+        border: none;
+        background-color: transparent;
+    }
+}
+.ugrad-six-pack-container .ugrad-six-pack-content {
+    border: 0.125rem solid #eeefef;
+    border-top: 0;
+    padding: 0.75rem 1rem;
+}
+
+[data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-content {
+    border: 0.125rem solid #444;
+}
+
+.ugrad-six-pack-container .ugrad-six-pack-content :first-child {
+    margin-top: 0;
+}
+.ugrad-six-pack-container .ugrad-six-pack-content :last-child {
+    margin-bottom: 0;
+}
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack-content {
+        border: none;
+        padding: 0;
+    }
+    /* Clear the unscoped dark content border above (same 0,3,0
+       specificity, so this must sit after it in source order). */
+    [data-theme="dark"] .ugrad-six-pack-container .ugrad-six-pack-content {
+        border: none;
+    }
+}
+.ugrad-six-pack-container .ugrad-six-pack {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.ugrad-six-pack-container .ugrad-six-pack .ugrad-six-pack-content {
+    margin-bottom: 2rem;
+}
+@media (min-width: 768px) {
+    .ugrad-six-pack-container .ugrad-six-pack .ugrad-six-pack-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+}
+/* ugrad-six-pack-link rules consolidated above */
+.ugrad-six-pack-container .ugrad-six-pack-link-wrapper {
+    margin-top: 1rem;
+}
+.ugrad-six-pack-container .ugrad-six-pack-blurb {
+    margin-bottom: auto;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #535455;
+}
+#main .main-content .ugrad-six-pack-container .ugrad-six-pack-title,
+.editor-styles-wrapper
+    .landing-page-section
+    .acf-block-preview
+    .ugrad-six-pack-title {
+    font-size: clamp(1rem, 5vw, 1.25rem);
+    color: #000;
+    font-weight: 900;
+}
+
+/* ── Spotlight / student profiles (3-up grid) ───────────────────── */
+.ugrad-spotlight-container > .wp-block-group__inner-container,
+.ugrad-spotlight-container.is-layout-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+@media (min-width: 768px) {
+    .ugrad-spotlight-container > .wp-block-group__inner-container,
+    .ugrad-spotlight-container.is-layout-flow {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+}
+
+/* Video spotlights: keep the 3-up grid inside its column at every width.
+   The oEmbed iframe ships fixed width="356" height="200"; with the grid item's
+   default min-width:auto, each track was pinned to 356px, so three tracks needed
+   ~1132px and the third overflowed the column (clipped by overflow-x:clip up the
+   tree) whenever the column was narrower. min-width:0 lets the 1fr tracks shrink;
+   the embed then scales fluidly at its native 16:9 ratio. */
+.ugrad-spotlight-container .ugrad-spotlight {
+    min-width: 0;
+}
+.ugrad-spotlight-container .ugrad-spotlight iframe {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+}
+
+.ugrad-spotlight {
+    text-align: center;
+    margin: 2rem 0;
+}
+@media (min-width: 768px) {
+    .ugrad-spotlight {
+        margin: 0;
+    }
+}
+.ugrad-spotlight .ugrad-spotlight-title {
+    font-weight: 900;
+    font-size: clamp(1.25rem, 2.5vw, 1.375rem);
+    margin: 2rem 0 1rem;
+}
+.ugrad-spotlight a {
+    color: #000;
+    text-decoration: none;
+}
+.ugrad-spotlight a .ugrad-spotlight-title:hover {
+    text-decoration: underline;
+}
+.ugrad-spotlight.is-style-round a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.ugrad-spotlight.is-style-round .ugrad-spotlight-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 0.1rem solid #c7c8ca;
+    background-color: #fff;
+    padding: 1rem;
+    padding-top: calc(50% / 2);
+}
+
+/* Spotlight buttons */
+.spotlight-button {
+    display: inline-block;
+    background-color: #fdb515;
+    color: #000;
+    text-decoration: none;
+    font-weight: 700;
+    border: 0;
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 0.8rem 1.625rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.spotlight-button:hover {
+    background-color: #fdc548;
+    color: #000;
+    text-decoration: none;
+}
+.spotlight-button:focus-visible {
+    background-color: #1c74bc;
+    color: #fff;
+    outline: 2px solid #1c74bc;
+    outline-offset: 2px;
+}
+.spotlight-button:active {
+    background-color: #fdbd2e;
+    color: #000;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5);
+}
+
+/* ── Stats with icons grid ──────────────────────────────────────── */
+.ugrad-stat-with-icon-container {
+    padding: 0;
+}
+.ugrad-stat-with-icon-container .wp-block-group__inner-container {
+    display: block;
+    padding: 1rem;
+}
+@media (min-width: 640px) {
+    .ugrad-stat-with-icon-container .wp-block-group__inner-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(calc(50% - 2rem), 1fr));
+        gap: 1rem;
+    }
+}
+@media (min-width: 768px) {
+    .ugrad-stat-with-icon-container .wp-block-group__inner-container {
+        grid-template-columns: repeat(auto-fit, minmax(calc(33% - 2rem), 1fr));
+    }
+}
+@media (min-width: 1024px) {
+    .ugrad-stat-with-icon-container .wp-block-group__inner-container {
+        grid-template-columns: repeat(auto-fit, minmax(calc(16% - 2rem), 1fr));
+    }
+}
+.ugrad-stat-with-icon-container .ugrad-stat-with-icon {
+    text-align: center;
+    margin-block: 1rem;
+}
+.ugrad-stat-with-icon-container .material-icons {
+    font-size: clamp(3.5rem, 5vw, 4.5rem);
+    margin: 0 auto;
+    display: block;
+    color: #fdb515;
+}
+.ugrad-stat-with-icon-container .ugrad-stat-with-icon-stat {
+    font-size: clamp(2rem, 7.5vw, 3rem);
+    font-weight: 900;
+    margin: 0.25rem 0;
+    line-height: 1.2;
+}
+.ugrad-stat-with-icon-container .ugrad-stat-with-icon-blurb {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ── Statistic icon + heading + paragraph tight spacing ────────── */
+.ug-statistic-heading {
+    margin-top: 10px !important;
+    margin-bottom: 0 !important;
+}
+.ug-statistic-paragraph {
+    margin-top: 0 !important;
+}
+.ug-statistic-icon-gold {
+    color: #fdb515;
+}
+.ug-statistic-icon-teal {
+    color: #007176;
+}
+
+/* ── ugrad-align-center: vertically center column children ─────── */
+.ugrad-align-center {
+    align-items: center;
+}
+
+/* ── is-style-ugrad-border: white card with gold left accent ────── */
+.is-style-ugrad-border,
+.is-style-ugrad-overlap {
+    border: 0.0625rem solid #c7c8ca;
+    border-left: 0.5rem solid #fdb515;
+    padding: 1rem;
+    margin: 1rem 0;
+    background-color: #fff;
+    color: #000;
+}
+.is-style-ugrad-border :first-child:not(blockquote),
+.is-style-ugrad-overlap :first-child:not(blockquote) {
+    margin-top: 0;
+}
+.is-style-ugrad-border :last-child:not(blockquote),
+.is-style-ugrad-overlap :last-child:not(blockquote) {
+    margin-bottom: 0;
+}
+/* Inside landing-page-section, h2 inside the border card stays small */
+.landing-page-section .is-style-ugrad-border h2,
+.landing-page-section .is-style-ugrad-overlap h2 {
+    font-size: clamp(1rem, 7vw, 1.25rem);
+    color: #000;
+}
+/* Dark mode: flip card surface */
+[data-theme="dark"] .is-style-ugrad-border,
+[data-theme="dark"] .is-style-ugrad-overlap {
+    background-color: #1e1e1e;
+    border-color: #444;
+    border-left-color: #fdb515;
+    color: #e0e0e0;
+}
+[data-theme="dark"] .landing-page-section .is-style-ugrad-border h2,
+[data-theme="dark"] .landing-page-section .is-style-ugrad-overlap h2 {
+    color: #e0e0e0;
+}
+
+/* ── is-left-overlap: pull a right-column callout left so it floats over the
+   adjacent left column (e.g. a card overlapping an image) on desktop.
+   The negative left margin extends the card leftward while its right edge
+   stays anchored in the right column; position + z-index lift it above the
+   image, and the shadow separates it visually. Only applies while the
+   columns are side-by-side (≥782px) — below that the columns stack and the
+   card returns to normal flow. Tune the margin/translate magnitude to
+   control how far the card reaches into the left column. ───────────────── */
+@media (min-width: 782px) {
+    .is-left-overlap {
+        position: relative;
+        z-index: 2;
+        margin-left: -35%;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* ── Instagram grid ─────────────────────────────────────────────── */
+.instagram-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+.instagram-wrapper .instagram-post {
+    width: calc(100% / 2);
+    position: relative;
+}
+@media (min-width: 768px) {
+    .instagram-wrapper .instagram-post {
+        width: calc(100% / 3);
+    }
+}
+@media (min-width: 1024px) {
+    .instagram-wrapper .instagram-post {
+        width: calc(100% / 6);
+        max-height: 250px;
+    }
+}
+.instagram-wrapper .instagram-post::before {
+    content: "";
+    padding-top: 100%;
+    display: block;
+}
+.instagram-wrapper .instagram-post img,
+.instagram-wrapper .instagram-post a {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.instagram-wrapper .instagram-post .instagram-link {
+    display: block;
+    height: 100%;
+}
+.instagram-wrapper .instagram-post-video {
+    background: #000;
+    display: flex;
+    position: static;
+}
+.instagram-wrapper .instagram-post-video video {
+    max-width: 100%;
+    height: 100%;
+}
+
+/* =============================================================
+   MIGRATED FROM legacy-undergraduate.css
+   "looks-like-hN" + is-style-left-line, fast-facts block,
+   ugrad-text-shadow. Migrated 2026-04-27.
+   ============================================================= */
+
+/* ── looks-like-h* utility headings ─────────────────────────── */
+.looks-like-h1 {
+    font-size: clamp(2.25rem, 5vw, 3.75rem) !important;
+    font-weight: 900 !important;
+    color: silver;
+}
+
+.looks-like-h2 {
+    font-size: clamp(2rem, 5vw, 3.125rem) !important;
+    font-weight: 900 !important;
+    color: gray;
+}
+
+.looks-like-h3 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem) !important;
+    font-weight: 900 !important;
+    color: #535353 !important;
+}
+
+.looks-like-h4 {
+    font-size: clamp(1rem, 5vw, 1.25rem) !important;
+    font-weight: 900 !important;
+    color: black;
+}
+
+.looks-like-h5 {
+    font-size: clamp(1rem, 5vw, 1.125rem) !important;
+    font-weight: 700 !important;
+    color: black;
+}
+
+.looks-like-h6 {
+    font-size: clamp(1rem, 5vw, 1rem) !important;
+    font-weight: 700 !important;
+    color: #757575 !important;
+}
+
+/* ── Left-line block style ──────────────────────────────────── */
+.is-style-left-line {
+    border-left: 0.35rem solid #fdb515;
+    padding: 0.5rem 1rem;
+}
+
+.looks-like-h1.is-style-left-line,
+.looks-like-h2.is-style-left-line,
+.looks-like-h3.is-style-left-line,
+.looks-like-h4.is-style-left-line,
+.looks-like-h5.is-style-left-line,
+.looks-like-h6.is-style-left-line {
+    font-weight: 400 !important;
+}
+
+/* On dark hero/cover backgrounds the left-line text inverts to white */
+.video-hero h1.looks-like-h2,
+.image-hero h1.looks-like-h2,
+.wp-block-cover .is-style-left-line {
+    color: #fff;
+}
+
+/* ── ugrad-text-shadow utility ──────────────────────────────── */
+.ugrad-text-shadow {
+    text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.8);
+}
+
+/* ── Fast Facts block ───────────────────────────────────────── */
+@media (min-width: 768px) {
+    .fast-facts-wrapper,
+    .acf-block-preview .fast-facts-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
+        gap: 2rem;
+        max-width: 100%;
+    }
+}
+
+.fast-facts-wrapper .fast-fact-wrapper,
+.acf-block-preview .fast-facts-wrapper .fast-fact-wrapper {
+    margin: 0 0 0 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.fast-facts-wrapper .fast-fact-title,
+.acf-block-preview .fast-facts-wrapper .fast-fact-title {
+    margin-top: 0;
+    color: #636466;
+    font-weight: 800;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+}
+
+.fast-facts-wrapper .fast-fact-content,
+.acf-block-preview .fast-facts-wrapper .fast-fact-content {
+    margin-bottom: 0;
+    color: #000;
+}
+
+.fast-facts-wrapper .fact-wrapper,
+.acf-block-preview .fast-facts-wrapper .fact-wrapper {
+    padding: 1rem;
+    border: 0.0625rem solid #c4c4c4;
+    background-color: #fff;
+    border-left: 0;
+    box-shadow: -0.5rem 0 0 #fdb515;
+    height: 100%;
+    background-clip: padding-box;
+}
+
+.fast-facts-wrapper .source-wrapper,
+.acf-block-preview .fast-facts-wrapper .source-wrapper {
+    padding: 0.5rem 0;
+    text-align: right;
+    min-height: 100%;
+    color: #000;
+    font-size: 0.625rem;
+}
+
+.fast-facts-wrapper .source-wrapper a,
+.acf-block-preview .fast-facts-wrapper .source-wrapper a {
+    font-weight: 400;
+}
+
+.fast-facts-single-column [class*="fast-facts-count-"] {
+    display: block;
+}
+
+/* Fast facts inside dark Cover backgrounds — title gray, content black */
+.wp-block-cover.has-umbc-aok-teal-background-color .fast-fact-title,
+.wp-block-cover.has-umbc-black-background-color .fast-fact-title,
+.wp-block-cover.has-umbc-dark-gray-background-color .fast-fact-title,
+.wp-block-cover.has-umbc-gold-background-color .fast-fact-title,
+.wp-block-cover.has-umbc-retriever-brown-background-color .fast-fact-title,
+.wp-block-cover.has-umbc-red-background-color .fast-fact-title {
+    color: gray !important;
+}
+
+.wp-block-cover.has-umbc-aok-teal-background-color .fast-fact-content,
+.wp-block-cover.has-umbc-black-background-color .fast-fact-content,
+.wp-block-cover.has-umbc-dark-gray-background-color .fast-fact-content,
+.wp-block-cover.has-umbc-gold-background-color .fast-fact-content,
+.wp-block-cover.has-umbc-retriever-brown-background-color .fast-fact-content,
+.wp-block-cover.has-umbc-red-background-color .fast-fact-content {
+    color: #000 !important;
+}
+
+/* Sidebar variant — single column, tighter spacing */
+.sidebar .fast-facts-wrapper {
+    display: block;
+    padding: 0;
+}
+
+.sidebar .fast-fact-wrapper {
+    margin: 0 0 0 0.5rem;
+}
+
+.sidebar .fast-fact-wrapper + .fast-fact-wrapper {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.sidebar .fast-fact-wrapper .source-wrapper {
+    margin-top: 0.25rem;
+}
+
+.sidebar .fast-fact-wrapper .fast-fact-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+}
+
+/* =============================================================
+   Section Nav Footer Block — full-width zone above the global footer
+   ============================================================= */
+.section-nav-footer-block {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* UAGB icon-list fallback — this block is pulled into the footer via
+   do_blocks(), so UAGB's per-post generated CSS never enqueues and the
+   social SVGs render unsized and unstacked. Restore a sane inline row.
+   Scoped to the footer block so UAGB icon lists elsewhere are untouched. */
+.section-nav-footer-block .wp-block-uagb-icon-list .uagb-icon-list__wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+.section-nav-footer-block .wp-block-uagb-icon-list svg {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+/* =============================================================
+   Dark Mode — section nav footer block
+   Renders in footer.php outside .entry-content, so the dark-mode
+   block rules in umbc-style.css never reach it. Re-create the
+   essentials: dark surface, light text, gold links/icons.
+   ============================================================= */
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-ast-global-color-8-background-color,
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-extra-light-gray-background-color,
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-light-gray-background-color {
+    background-color: #2d2d2d !important;
+}
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-ast-global-color-8-background-color
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label),
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-extra-light-gray-background-color
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label),
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-light-gray-background-color
+    :is(h1, h2, h3, h4, h5, h6, p, li, figcaption, label) {
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-ast-global-color-8-background-color
+    a:not([class*="wp-block-button"]),
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-extra-light-gray-background-color
+    a:not([class*="wp-block-button"]),
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-light-gray-background-color
+    a:not([class*="wp-block-button"]) {
+    color: #fdb515;
+}
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-ast-global-color-8-background-color
+    a:not([class*="wp-block-button"]):hover,
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-extra-light-gray-background-color
+    a:not([class*="wp-block-button"]):hover,
+[data-theme="dark"]
+    .section-nav-footer-block
+    .has-umbc-light-gray-background-color
+    a:not([class*="wp-block-button"]):hover {
+    color: #ffd36a;
+}
+
+/* Social SVG icons — <path> fill defaults to black, invisible on the dark
+   surface. fill is inherited, so setting it on <svg> cascades to the paths. */
+[data-theme="dark"] .section-nav-footer-block .wp-block-uagb-icon-list svg {
+    fill: #e0e0e0;
+}
+[data-theme="dark"]
+    .section-nav-footer-block
+    .wp-block-uagb-icon-list
+    a:hover
+    svg {
+    fill: #fdb515;
+}
+
+/* =============================================================
+   .ugrad-double-header — pairs an H2 with an H3.is-style-left-line
+   side-by-side on one row at ≥768px.
+   Supports both classic __inner-container and modern is-layout-flow
+   WP block output.
+   ============================================================= */
+.ugrad-double-header {
+    margin-bottom: clamp(1rem, 7vw, 2rem);
+}
+
+@media (min-width: 768px) {
+    .ugrad-double-header .wp-block-group__inner-container,
+    .ugrad-double-header.is-layout-flow {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.ugrad-double-header .wp-block-group__inner-container .wp-block,
+.ugrad-double-header.is-layout-flow > * {
+    margin: 0;
+}
+
+.ugrad-double-header .wp-block-group__inner-container h2,
+.ugrad-double-header.is-layout-flow > h2 {
+    color: gray;
+    font-weight: 900;
+    flex: 0 0 60%;
+    max-width: 60%;
+    margin-right: 0;
+}
+
+.ugrad-double-header .wp-block-group__inner-container .has-image,
+.ugrad-double-header.is-layout-flow .has-image {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ugrad-double-header .wp-block-group__inner-container .has-image img,
+.ugrad-double-header.is-layout-flow .has-image img {
+    margin-right: 0.25rem !important;
+    max-width: none;
+}
+
+.ugrad-double-header .wp-block-group__inner-container .is-style-left-line,
+.ugrad-double-header.is-layout-flow > .is-style-left-line {
+    margin-left: auto;
+    font-weight: 500;
+    color: #2a2a2a;
+    font-size: clamp(1rem, 5vw, 1.125rem);
+    font-style: italic;
+}
+
+@media (min-width: 768px) {
+    .ugrad-double-header .wp-block-group__inner-container .is-style-left-line,
+    .ugrad-double-header.is-layout-flow > .is-style-left-line {
+        flex: 0 0 35%;
+        max-width: 35%;
+        margin-left: auto;
+    }
+}
+
+.landing-page-section .ugrad-double-header {
+    padding: 0;
+}
+
+/* =============================================================
+   Dark Mode — ugrad-double-header
+   H2 uses color:gray (readable on dark bg); H3 uses #2a2a2a
+   which is near-black and invisible — override to light.
+   ============================================================= */
+[data-theme="dark"] .ugrad-double-header .wp-block-group__inner-container h2,
+[data-theme="dark"] .ugrad-double-header.is-layout-flow > h2 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"]
+    .ugrad-double-header
+    .wp-block-group__inner-container
+    .is-style-left-line,
+[data-theme="dark"] .ugrad-double-header.is-layout-flow > .is-style-left-line {
+    color: #c0c0c0;
+}
+
+/* Six-pack dark-mode styling lives in
+   umbc-blocks/six-pack-link-block/style.css — single source of truth. */
+
+/* =============================================================
+   Deferred Header Interaction States
+   Loads with async umbc-style.css so first paint can use header.css
+   for structure and closed-state visuals only.
+   ============================================================= */
+
+.new-primary-menu a:hover {
+    color: #666;
+}
+
+.new-primary-menu ul.sub-menu li a:hover {
+    background-color: #ccc;
+    text-decoration-color: #252525;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+}
+
+.new-primary-menu .menu-item-has-children.active > a::after,
+.new-primary-menu .menu-item-has-children:hover > a::after,
+.new-primary-menu .sub-menu .menu-item-has-children.active > a::after,
+.new-primary-menu .sub-menu .menu-item-has-children:hover > a::after {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+.new-primary-menu .menu-item-has-children:not(.active):not(:hover) > a::after,
+.new-primary-menu
+    .sub-menu
+    .menu-item-has-children:not(.active):not(:hover)
+    > a::after {
+    transform: translateY(-50%) rotate(0deg);
+}
+
+.new-primary-menu a:hover,
+.new-primary-menu ul.sub-menu li a:hover {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.new-primary-menu ul.sub-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #666;
+    z-index: 1000;
+    min-width: 300px;
+    padding: 1em;
+}
+
+.new-primary-menu .sub-menu .sub-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -4px;
+}
+
+.secondary-menu a:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.tertiary-menu .new-ghost-button:hover,
+.tertiary-menu .menu-item-dropdown:hover > .new-ghost-button {
+    background-color: #3a3a3a;
+    color: #fff;
+}
+
+.tertiary-menu .new-ghost-button:focus-visible,
+.tertiary-menu .menu-item-dropdown:focus-within > .new-ghost-button {
+    outline: 2px solid #fdb515;
+    outline-offset: 2px;
+    background-color: #3a3a3a;
+    color: #fff;
+}
+
+.tertiary-menu .new-ghost-button:active {
+    background-color: #555;
+    color: #fff;
+}
+
+.tertiary-menu .new-filled-button:hover {
+    background-color: #e6a510;
+    color: #252525;
+    text-decoration: none;
+}
+
+.tertiary-menu .new-filled-button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+    background-color: #e6a510;
+    text-decoration: none;
+}
+
+.tertiary-menu .new-filled-button:active {
+    background-color: #c9910d;
+    color: #252525;
+}
+
+.tertiary-menu .new-sub-menu li a:hover {
+    background-color: #f0f0f0;
+    color: #252525;
+    text-decoration: underline;
+    text-decoration-color: #252525;
+    text-underline-offset: 0.2em;
+}
+
+.tertiary-menu .new-sub-menu li a:focus-visible {
+    outline: 2px solid #007176;
+    outline-offset: -2px;
+    background-color: #f0f0f0;
+}
+
+.tertiary-menu .new-sub-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    white-space: nowrap;
+    padding: 0;
+    list-style: none;
+    margin-left: 0;
+    margin-top: 0;
+}
+
+.tertiary-menu .new-sub-menu li {
+    padding: 0;
+}
+
+.tertiary-menu .new-sub-menu li a {
+    color: #252525;
+    padding: 10px 16px;
+    display: flex;
+    text-decoration: none;
+    font-size: 14px;
+    min-height: 44px;
+    align-items: center;
+}
+
+.tertiary-menu .menu-item-dropdown:hover .new-sub-menu,
+.tertiary-menu .menu-item-dropdown:focus-within .new-sub-menu {
+    display: block;
+}
+
+@media (min-width: 1096px) {
+    .new-primary-menu li:hover > ul.sub-menu {
+        display: block;
+    }
+}
+
+/* Desktop header breakpoint — keep in sync with css/header.css (1100px, raised from 900px 2026-06) */
+@media (min-width: 1100px) {
+    .uh-logo:hover,
+    .uh-logo:focus-visible {
+        opacity: 0.85;
+        text-decoration: none !important;
+    }
+
+    .uh-utility-link:hover,
+    .uh-utility-link:focus-visible {
+        color: #fff;
+        text-decoration: none !important;
+    }
+
+    .uh-utility-cta:hover,
+    .uh-utility-cta:focus-visible {
+        background: #e5a510;
+        text-decoration: none !important;
+    }
+
+    .uh-utility-link--has-dropdown svg {
+        transition: transform 0.2s;
+    }
+
+    .uh-utility-dropdown:hover .uh-utility-link--has-dropdown svg,
+    .uh-utility-dropdown:focus-within .uh-utility-link--has-dropdown svg {
+        transform: rotate(180deg);
+    }
+
+    .uh-utility-dropdown:hover .uh-utility-submenu,
+    .uh-utility-dropdown:focus-within .uh-utility-submenu {
+        display: block;
+    }
+
+    .uh-utility-submenu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        min-width: 240px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        list-style: none !important;
+        margin: 0;
+        padding: 6px 0;
+        z-index: 600;
+    }
+
+    .uh-utility-submenu li {
+        list-style: none !important;
+    }
+
+    .uh-utility-submenu li a {
+        display: block;
+        padding: 9px 18px;
+        font-size: 0.8rem;
+        color: #1a1a1a;
+        text-decoration: none !important;
+        white-space: nowrap;
+        transition: background 0.12s;
+    }
+
+    .uh-utility-submenu li a:hover {
+        background: #f5f5f5;
+        color: #000;
+    }
+
+    .uh-utility-submenu li a:focus-visible {
+        outline: 2px solid #007176;
+        outline-offset: -2px;
+        background: #f5f5f5;
+        color: #000;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > a {
+        transition:
+            background 0.15s,
+            box-shadow 0.15s;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > a:hover,
+    .uh-primary-nav .uh-primary-menu > li > a:focus-visible,
+    .uh-primary-nav .uh-primary-menu > li.current-menu-item > a,
+    .uh-primary-nav .uh-primary-menu > li.current-menu-ancestor > a,
+    .uh-primary-nav .uh-primary-menu > li.current_page_ancestor > a,
+    .uh-primary-nav .uh-primary-menu > li.current_page_item > a {
+        background: #e8e8e8;
+        color: #000;
+        box-shadow: 0 -3px 0 0 #fdb515 inset;
+        text-decoration: none !important;
+    }
+
+    [data-theme="dark"] .uh-primary-nav .uh-primary-menu > li > a:hover,
+    [data-theme="dark"] .uh-primary-nav .uh-primary-menu > li > a:focus-visible,
+    [data-theme="dark"]
+        .uh-primary-nav
+        .uh-primary-menu
+        > li.current-menu-item
+        > a,
+    [data-theme="dark"]
+        .uh-primary-nav
+        .uh-primary-menu
+        > li.current-menu-ancestor
+        > a,
+    [data-theme="dark"]
+        .uh-primary-nav
+        .uh-primary-menu
+        > li.current_page_ancestor
+        > a,
+    [data-theme="dark"]
+        .uh-primary-nav
+        .uh-primary-menu
+        > li.current_page_item
+        > a {
+        background: #2a2a2a;
+        color: #fff;
+        box-shadow: 0 -3px 0 0 #fdb515 inset;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li:hover > ul.sub-menu,
+    .uh-primary-nav .uh-primary-menu > li:focus-within > ul.sub-menu {
+        display: block;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > ul.sub-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 80;
+        min-width: 220px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        list-style: none !important;
+        margin: 0;
+        padding: 6px 0;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > ul.sub-menu li {
+        list-style: none !important;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > ul.sub-menu li a {
+        display: block;
+        height: auto;
+        line-height: 1.4;
+        padding: 9px 18px;
+        font-size: 0.875rem;
+        color: #1a1a1a;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > ul.sub-menu li a:hover,
+    .uh-primary-nav .uh-primary-menu > li > ul.sub-menu li a:focus-visible {
+        background: #e8e8e8;
+        color: #000;
+        text-decoration: underline !important;
+    }
+
+    /* WCAG 2.4.7: keyboard focus indicator on dropdown items — the hover
+       rule above is mouse-only, so without this a tabbed dropdown link has
+       no visible focus state. Matches the 2px outline pattern used by the
+       top-level links and the section nav. */
+    .uh-primary-nav .uh-primary-menu > li > ul.sub-menu li a:focus-visible {
+        outline: 2px solid #252525;
+        outline-offset: -2px;
+    }
+
+    .uh-search-inline .qs-input:focus {
+        background: #fff;
+        color: #1a1a1a;
+        -webkit-text-fill-color: #1a1a1a;
+        border-color: #fdb515;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(253, 181, 21, 0.25);
+    }
+
+    /* width intentionally NOT set here — header.css owns the listbox width
+       (400px, 480px ≥1440px); a width here would override it (loads later). */
+    .uh-search-inline .qs-listbox {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: auto;
+        margin-top: 2px;
+        z-index: 600;
+    }
+}
+
+@media (max-width: 1099px) {
+    /* ── Mobile header bar ─────────────────────────────── */
+
+    .mobile-header-inner {
+        padding: 12px 16px;
+    }
+
+    .hamburger-menu-container {
+        padding: 0;
+        background: none;
+        border-radius: 0;
+    }
+
+    .hamburger-menu {
+        background: #fff;
+        border: 1.5px solid #0c7c7c;
+        border-radius: 6px;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #1a1a1a;
+    }
+
+    .hamburger-menu:focus-visible {
+        outline: 2px solid #0c7c7c;
+        outline-offset: 2px;
+    }
+
+    .mobile-header-gold-rule {
+        height: 3px;
+        background: #fdb515;
+    }
+
+    /* ── Section switcher (closed state) ──────────────── */
+
+    .mobile-section-switcher {
+        background: #fff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-section-switcher__toggle {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px 6px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .mobile-section-switcher__labels {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-section-switcher__eyebrow {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #5f5e5a;
+    }
+
+    .mobile-section-switcher__name {
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-top: 2px;
+    }
+
+    .mobile-section-switcher__chevron {
+        color: #1a1a1a;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-section-switcher__toggle[aria-expanded="true"]
+        .mobile-section-switcher__chevron {
+        transform: rotate(180deg);
+    }
+
+    /* Hide the current-page indicator when the panel is open — it's redundant */
+    .mobile-section-switcher__toggle[aria-expanded="true"]
+        ~ .mobile-section-switcher__current-page {
+        display: none;
+    }
+
+    .mobile-section-switcher__current-page {
+        padding: 8px 16px 12px;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-section-switcher__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0c7c7c;
+        flex-shrink: 0;
+    }
+
+    .mobile-section-switcher__current-page span:last-child {
+        font-size: 13px;
+        color: #0c7c7c;
+        font-weight: 500;
+    }
+
+    /* Panel: sibling page list */
+    .mobile-section-switcher__panel {
+        background: #fff;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .mobile-section-switcher__panel[hidden] {
+        display: none;
+    }
+
+    .mobile-section-switcher__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .mobile-section-switcher__list li {
+        margin: 0;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+    }
+
+    /* Top-level items with children: use a button toggle instead of a plain link */
+    .mobile-section-switcher__list > li.menu-item-has-children > a {
+        display: none; /* replaced by the JS-injected accordion button */
+    }
+
+    .mss-accordion-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        min-height: 44px;
+        box-sizing: border-box;
+        font-family: inherit;
+        gap: 8px;
+    }
+
+    .mss-accordion-btn svg {
+        flex-shrink: 0;
+        color: #555;
+        transition: transform 0.2s ease;
+    }
+
+    .mss-accordion-btn[aria-expanded="true"] svg {
+        transform: rotate(45deg); /* + → × */
+    }
+
+    /* Top-level items without children: plain link */
+    .mobile-section-switcher__list > li:not(.menu-item-has-children) > a {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        text-decoration: none;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    /* Subnav — hidden by default, shown when parent has .is-open */
+    .mobile-section-switcher__list .sub-menu {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: none;
+        background: #f7f7f7;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .mobile-section-switcher__list li.is-open > .sub-menu {
+        display: block;
+    }
+
+    .mobile-section-switcher__list .sub-menu li {
+        border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .mobile-section-switcher__list .sub-menu li:first-child {
+        border-top: none;
+    }
+
+    .mobile-section-switcher__list .sub-menu a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px 10px 28px;
+        font-size: 13px;
+        font-weight: 400;
+        color: #333;
+        text-decoration: none;
+        min-height: 40px;
+        box-sizing: border-box;
+    }
+
+    .mobile-section-switcher__list .sub-menu .sub-menu {
+        display: block; /* deeper levels always show when parent sub is open */
+    }
+
+    .mobile-section-switcher__list .sub-menu .sub-menu a {
+        padding-left: 40px;
+    }
+
+    /* Active states */
+    .mobile-section-switcher__list .current-menu-item > a,
+    .mobile-section-switcher__list .current_page_item > a {
+        color: #0c7c7c;
+        font-weight: 500;
+    }
+
+    .mobile-section-switcher__list .current-menu-item > a::after,
+    .mobile-section-switcher__list .current_page_item > a::after {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0c7c7c;
+        flex-shrink: 0;
+    }
+
+    .mobile-section-switcher__list .sub-menu .current-menu-item > a,
+    .mobile-section-switcher__list .sub-menu .current_page_item > a {
+        color: #0c7c7c;
+        font-weight: 500;
+    }
+
+    .mobile-section-switcher__list .sub-menu .current-menu-item > a::after,
+    .mobile-section-switcher__list .sub-menu .current_page_item > a::after {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0c7c7c;
+        flex-shrink: 0;
+    }
+
+    /* ── Menu overlay (open state) ────────────────────── */
+
+    .mobile-menu-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        background: #fff;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mobile-menu-overlay.active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Desktop section sidebar hidden on mobile — mobile-section-switcher handles it */
+    .section-sidebar {
+        display: none !important;
+    }
+
+    /* Restore single-column layout when sidebar is hidden. Reset align-items:
+       the min-width:768px rule set it to flex-start for the sidebar row; left in
+       place under column direction it sizes .section-main-content to its
+       max-content width instead of the container, so full-width blocks (covers,
+       columns) blew the column past the viewport and got clipped by the
+       overflow-x:clip on .entry-content. stretch pins the column to full width. */
+    .section-layout-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0;
+    }
+
+    /* Top bar inside overlay */
+    .mobile-overlay-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #fff;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+        flex-shrink: 0;
+    }
+
+    .close-menu {
+        border: none;
+        cursor: pointer;
+        background: transparent;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        height: 44px;
+        color: #1a1a1a;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .close-menu:hover,
+    .close-menu:active {
+        background: #f0f0f0;
+    }
+
+    .close-menu:focus-visible {
+        outline: 2px solid #0c7c7c;
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+
+    /* Scrollable content area */
+    .mobile-menu-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        padding: 0;
+    }
+
+    /* Search area */
+    .mobile-overlay-search {
+        padding: 14px 16px 12px;
+    }
+
+    .mobile-overlay-search .qs-widget {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .mobile-overlay-search .qs-input {
+        background: #fff;
+        color: #1a1a1a;
+        -webkit-text-fill-color: #1a1a1a;
+        border: 1.5px solid #757575;
+        border-radius: 8px;
+        font-size: 1rem;
+        height: 48px;
+        padding-left: 2.6em;
+        box-sizing: border-box;
+    }
+
+    .mobile-overlay-search .qs-input::placeholder {
+        color: #6b6b6b;
+        -webkit-text-fill-color: #6b6b6b;
+    }
+
+    /* Override global gold focus ring — use a dark ring instead.
+       WCAG 2.4.7: box-shadow ring is the visible focus indicator that
+       replaces the suppressed outline (no layout shift). */
+    .mobile-overlay-search .qs-input:focus {
+        border-color: #1a1a1a;
+        background: #fff;
+        color: #1a1a1a;
+        -webkit-text-fill-color: #1a1a1a;
+        box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.35);
+        outline: none;
+    }
+
+    .mobile-overlay-search .qs-input-wrap::before {
+        left: 0.9rem;
+        width: 18px;
+        height: 18px;
+        opacity: 0.4;
+        filter: invert(1);
+    }
+
+    .mobile-overlay-search .qs-listbox {
+        border-radius: 8px;
+        left: 0;
+        right: 0;
+        width: auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .mobile-overlay-divider {
+        height: 1px;
+        background: rgba(0, 0, 0, 0.08);
+        margin: 0 16px;
+    }
+
+    /* ── Primary nav (accordion) ─────────────────────── */
+
+    .mobile-overlay-primary-nav {
+        width: 100%;
+    }
+
+    .mobile-overlay-primary-nav .mobile-primary-menu,
+    .mobile-overlay-primary-nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .mobile-overlay-primary-nav li {
+        margin: 0;
+        position: relative;
+    }
+
+    /* Top-level items */
+    .mobile-overlay-primary-nav > div > ul > li > a,
+    .mobile-overlay-primary-nav .mobile-primary-menu > li > a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #1a1a1a;
+        text-decoration: none;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+        background: #fff;
+        min-height: 52px;
+        box-sizing: border-box;
+    }
+
+    /* Expanded top-level: tinted background */
+    .mobile-overlay-primary-nav > div > ul > li > a[aria-expanded="true"],
+    .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li
+        > a[aria-expanded="true"] {
+        background: #f5f3ee;
+    }
+
+    /* Arrow indicator for expandable items */
+    .mobile-overlay-primary-nav .menu-item-has-children > a::after {
+        content: "";
+        display: block;
+        width: 10px;
+        height: 14px;
+        background-image: url("data:image/svg+xml,%3Csvg width='10' height='14' viewBox='0 0 10 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L1 13' stroke='%235f5e5a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-overlay-primary-nav
+        .menu-item-has-children
+        > a[aria-expanded="true"]::after {
+        background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        width: 12px;
+        height: 8px;
+    }
+
+    /* Sub-menu */
+    .mobile-overlay-primary-nav ul.sub-menu {
+        display: none;
+        padding: 6px 0 10px;
+        background: #fff;
+        position: relative;
+        width: 100%;
+        box-shadow: none;
+    }
+
+    .mobile-overlay-primary-nav ul.sub-menu.active {
+        display: block;
+    }
+
+    /* Sub-menu items */
+    .mobile-overlay-primary-nav ul.sub-menu li a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 16px 9px 32px;
+        font-size: 14px;
+        font-weight: 400;
+        color: #2c2c2a;
+        text-decoration: none;
+        border: none;
+        min-height: 44px;
+        box-sizing: border-box;
+        background: #fff;
+    }
+
+    /* Active sub-item: teal text, trailing dot, no border */
+    .mobile-overlay-primary-nav ul.sub-menu li.current-menu-item > a,
+    .mobile-overlay-primary-nav ul.sub-menu li.current_page_item > a,
+    .mobile-overlay-primary-nav ul.sub-menu li.current-menu-ancestor > a {
+        color: #0c7c7c;
+        font-weight: 500;
+    }
+
+    .mobile-overlay-primary-nav ul.sub-menu li.current-menu-item > a::after,
+    .mobile-overlay-primary-nav ul.sub-menu li.current_page_item > a::after,
+    .mobile-overlay-primary-nav
+        ul.sub-menu
+        li.current-menu-ancestor
+        > a::after {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0c7c7c;
+        flex-shrink: 0;
+    }
+
+    /* Active top-level item */
+    .mobile-overlay-primary-nav > div > ul > li.current-menu-item > a,
+    .mobile-overlay-primary-nav > div > ul > li.current-menu-ancestor > a,
+    .mobile-overlay-primary-nav > div > ul > li.current-page-ancestor > a,
+    .mobile-overlay-primary-nav > div > ul > li.current_page_item > a,
+    .mobile-overlay-primary-nav .mobile-primary-menu > li.current-menu-item > a,
+    .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current-menu-ancestor
+        > a,
+    .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current-page-ancestor
+        > a,
+    .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current_page_item
+        > a {
+        color: #0c7c7c;
+        font-weight: 500;
+        background: #fff;
+    }
+
+    .mobile-overlay-primary-nav li a:hover {
+        text-decoration: none;
+        background: #f9f8f5;
+    }
+
+    .mobile-overlay-primary-nav li a:focus-visible {
+        outline: 2px solid #0c7c7c;
+        outline-offset: -2px;
+        border-radius: 2px;
+    }
+
+    /* ── Utility shelf ───────────────────────────────── */
+
+    .mobile-utility-shelf {
+        background: #f5f3ee;
+        padding: 16px 16px 24px;
+        margin-top: auto;
+    }
+
+    .mobile-utility-shelf__label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #5f5e5a;
+        margin: 0 0 10px;
+    }
+
+    .mobile-utility-shelf__grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 16px;
+        margin-bottom: 14px;
+        align-items: start;
+    }
+
+    /* Column 1: stacked simple links (Alumni, Directory, Giving). */
+    .mobile-utility-shelf__links {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-utility-link {
+        display: block;
+        padding: 6px 0;
+        font-size: 14px;
+        color: #1a1a1a;
+        text-decoration: none;
+    }
+
+    .mobile-utility-link:hover,
+    .mobile-utility-link:focus {
+        color: #0c7c7c;
+        text-decoration: underline;
+    }
+
+    /* Contact Admissions sits alone in column 2 so its dropdown can
+       expand below the toggle without pushing the simple-link column. */
+    .mobile-utility-admissions {
+        margin-top: 0;
+    }
+
+    .mobile-utility-admissions__toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        padding: 6px 0;
+        font-size: 14px;
+        color: #1a1a1a;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .mobile-utility-admissions__toggle svg {
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-utility-admissions__toggle[aria-expanded="true"] svg {
+        transform: rotate(180deg);
+    }
+
+    .mobile-utility-admissions__list {
+        list-style: none;
+        margin: 4px 0 0;
+        padding: 0 0 0 12px;
+    }
+
+    .mobile-utility-admissions__list[hidden] {
+        display: none;
+    }
+
+    .mobile-utility-admissions__list li {
+        margin: 0;
+    }
+
+    .mobile-utility-admissions__list a {
+        display: block;
+        padding: 5px 0;
+        font-size: 13px;
+        color: #1a1a1a;
+        text-decoration: none;
+    }
+
+    .mobile-utility-admissions__list a:hover {
+        color: #0c7c7c;
+        text-decoration: underline;
+    }
+
+    /* WCAG 2.4.7 — visible keyboard focus (these links had hover only) */
+    .mobile-utility-admissions__list a:focus-visible {
+        outline: 2px solid #007176;
+        outline-offset: 2px;
+        color: #0c7c7c;
+        text-decoration: underline;
+    }
+
+    .mobile-utility-apply {
+        display: block;
+        width: 100%;
+        background: #fdb515;
+        color: #1a1a1a;
+        text-decoration: none;
+        padding: 13px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        text-align: center;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .mobile-utility-apply:hover {
+        background: #e8a400;
+        text-decoration: none;
+    }
+
+    /* ── Secondary menu (legacy, hidden on mobile) ───── */
+
+    .secondary-menu {
+        display: none;
+    }
+
+    /* ── Focus utilities ─────────────────────────────── */
+
+    .mobile-section-switcher__toggle:focus-visible {
+        outline: 2px solid #0c7c7c;
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+
+    /* ── Mobile logo picture swap ─────────────────────── */
+
+    .mobile-logo-dark {
+        display: none;
+    }
+
+    [data-theme="dark"] .mobile-logo-light {
+        display: none;
+    }
+    [data-theme="dark"] .mobile-logo-dark {
+        display: block;
+    }
+
+    /* ── Mobile dark mode ─────────────────────────────── */
+
+    [data-theme="dark"] .mobile-header {
+        background: #1a1a1a;
+    }
+
+    /* Hamburger button */
+    [data-theme="dark"] .hamburger-menu {
+        background: #2a2a2a;
+        border-color: #56b3b7;
+        color: #e0e0e0;
+    }
+
+    /* Overlay + topbar */
+    [data-theme="dark"] .mobile-menu-overlay {
+        background: #1a1a1a;
+    }
+
+    [data-theme="dark"] .mobile-overlay-topbar {
+        background: #1a1a1a;
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Close button */
+    [data-theme="dark"] .close-menu {
+        color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .close-menu:hover,
+    [data-theme="dark"] .close-menu:active {
+        background: #2a2a2a;
+    }
+
+    /* Search input */
+    [data-theme="dark"] .mobile-overlay-search .qs-input {
+        background: #2a2a2a;
+        border-color: #858585;
+        color: #e0e0e0 !important;
+        -webkit-text-fill-color: #e0e0e0 !important;
+    }
+
+    [data-theme="dark"] .mobile-overlay-search .qs-input::placeholder {
+        color: #919191;
+        -webkit-text-fill-color: #919191;
+    }
+
+    [data-theme="dark"] .mobile-overlay-search .qs-input:focus {
+        background: #333;
+        border-color: #fdb515;
+        color: #e0e0e0 !important;
+        -webkit-text-fill-color: #e0e0e0 !important;
+    }
+
+    [data-theme="dark"] .mobile-overlay-search .qs-input-wrap::before {
+        filter: invert(0.43);
+        opacity: 1;
+    }
+
+    [data-theme="dark"] .mobile-overlay-divider {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Primary nav */
+    [data-theme="dark"] .mobile-overlay-primary-nav > div > ul > li > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li
+        > a {
+        background: #1a1a1a;
+        color: #e0e0e0;
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        > div
+        > ul
+        > li
+        > a[aria-expanded="true"],
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li
+        > a[aria-expanded="true"] {
+        background: #242424;
+    }
+
+    /* Active top-level item — teal text + chevron becomes visible */
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        > div
+        > ul
+        > li.current-menu-item
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        > div
+        > ul
+        > li.current-menu-ancestor
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        > div
+        > ul
+        > li.current-page-ancestor
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        > div
+        > ul
+        > li.current_page_item
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current-menu-item
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current-menu-ancestor
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current-page-ancestor
+        > a,
+    [data-theme="dark"]
+        .mobile-overlay-primary-nav
+        .mobile-primary-menu
+        > li.current_page_item
+        > a {
+        color: #fdb515;
+        background: #1a1a1a;
+    }
+
+    /* Sub-menu */
+    [data-theme="dark"] .mobile-overlay-primary-nav ul.sub-menu {
+        background: #141414;
+    }
+
+    [data-theme="dark"] .mobile-overlay-primary-nav ul.sub-menu li a {
+        background: #141414;
+        color: #c0c0c0;
+    }
+
+    [data-theme="dark"] .mobile-overlay-primary-nav li a:hover {
+        background: #2a2a2a;
+        color: #fdb515;
+    }
+
+    /* Utility shelf */
+    [data-theme="dark"] .mobile-utility-shelf {
+        background: #242424;
+    }
+
+    [data-theme="dark"] .mobile-utility-shelf__label {
+        color: #888;
+    }
+
+    [data-theme="dark"] .mobile-utility-link {
+        color: #c0c0c0;
+    }
+
+    [data-theme="dark"] .mobile-utility-link:hover {
+        color: #fdb515;
+    }
+
+    [data-theme="dark"] .mobile-utility-admissions__toggle {
+        color: #c0c0c0;
+    }
+
+    [data-theme="dark"] .mobile-utility-admissions__list a {
+        color: #c0c0c0;
+    }
+
+    [data-theme="dark"] .mobile-utility-admissions__list a:hover {
+        color: #fdb515;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher {
+        background: #1a1a1a;
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__toggle,
+    [data-theme="dark"] .mobile-section-switcher__panel {
+        background: #1a1a1a;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__eyebrow {
+        color: #888;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__name,
+    [data-theme="dark"] .mobile-section-switcher__chevron,
+    [data-theme="dark"] .mss-accordion-btn,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        > li:not(.menu-item-has-children)
+        > a {
+        color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__current-page,
+    [data-theme="dark"] .mobile-section-switcher__panel,
+    [data-theme="dark"] .mobile-section-switcher__list li,
+    [data-theme="dark"] .mobile-section-switcher__list .sub-menu {
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__dot,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        .current-menu-item
+        > a::after,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        .current_page_item
+        > a::after,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        .sub-menu
+        .current-menu-item
+        > a::after,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        .sub-menu
+        .current_page_item
+        > a::after {
+        background: #fdb515;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__current-page span:last-child,
+    [data-theme="dark"] .mobile-section-switcher__list .current-menu-item > a,
+    [data-theme="dark"] .mobile-section-switcher__list .current_page_item > a,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        .sub-menu
+        .current-menu-item
+        > a,
+    [data-theme="dark"]
+        .mobile-section-switcher__list
+        .sub-menu
+        .current_page_item
+        > a {
+        color: #fdb515;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__list .sub-menu {
+        background: #141414;
+    }
+
+    [data-theme="dark"] .mobile-section-switcher__list .sub-menu a {
+        color: #cfcfcf;
+    }
+
+    [data-theme="dark"] .mss-accordion-btn svg {
+        color: #fdb515;
+    }
+}
+
+.tertiary-menu .menu-item-dropdown:focus,
+.tertiary-menu .menu-item-dropdown:focus-within {
+    outline: 2px solid #007176;
+    outline-offset: 2px;
+}
+
+.tertiary-menu .new-sub-menu li.current-menu-item a,
+.tertiary-menu .new-sub-menu li.current_page_item a,
+.tertiary-menu .new-sub-menu li.active a,
+.tertiary-menu .new-sub-menu li a.active {
+    background-color: #f0f0f0;
+    font-weight: 700;
+}
+
+.tertiary-menu .new-sub-menu li a:hover,
+.tertiary-menu .new-sub-menu li a:active,
+.tertiary-menu .new-sub-menu li a:focus,
+.tertiary-menu .new-sub-menu li a:focus-visible {
+    background-color: #f0f0f0;
+}
+
+.qs-input:focus {
+    border-color: #007176;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    color: #fff;
+}
+
+.mobile-menu-content .qs-input,
+.mobile-overlay-search .qs-input {
+    background: #f5f5f5;
+    color: #1a1a1a;
+    -webkit-text-fill-color: #1a1a1a;
+    border: 1px solid #757575;
+    border-radius: var(--umbc-radius-pill, 999px);
+    font-size: 1rem;
+    height: 44px;
+    padding-left: 2.4em;
+}
+
+.mobile-menu-content .qs-input::placeholder,
+.mobile-overlay-search .qs-input::placeholder {
+    color: #6b6b6b;
+    -webkit-text-fill-color: #6b6b6b;
+}
+
+.mobile-overlay-search .qs-input:focus {
+    border-color: #1a1a1a;
+    background: #fff;
+    color: #252525;
+    -webkit-text-fill-color: #252525;
+    /* WCAG 2.4.7: visible focus ring replacing the suppressed outline */
+    box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.35);
+    outline: none;
+}
+
+.qs-listbox {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 340px;
+    width: max-content;
+    max-width: min(480px, 90vw);
+    z-index: 9000;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+    list-style: none;
+    margin: 0;
+    /* padding on all sides so highlighted rows sit inset from the panel's
+       rounded corners instead of poking square edges into them */
+    padding: 6px;
+    max-height: 360px;
+    overflow-y: auto;
+    overflow: hidden;
+}
+
+/* Rows are rounded chips inside the rounded panel — the hover background
+   and teal left accent follow the radius instead of fighting it. */
+.qs-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65em 0.875em;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    border-radius: var(--umbc-radius-md, 8px);
+    gap: 0.75em;
+    transition:
+        background-color 0.1s,
+        border-color 0.1s;
+}
+
+.qs-option:hover,
+.qs-option--active {
+    background-color: #f0f8f8;
+    border-left-color: #007176;
+}
+
+.qs-option:focus-visible {
+    outline: 2px solid #007176;
+    outline-offset: -2px;
+    background-color: #f0f8f8;
+    border-left-color: #007176;
+}
+
+.qs-option-arrow {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    color: #aaa;
+    transition:
+        color 0.1s,
+        transform 0.1s;
+}
+
+.qs-option:hover .qs-option-arrow,
+.qs-option--active .qs-option-arrow {
+    color: #007176;
+    transform: translateX(2px);
+}
+
+.qs-option--fallback {
+    border-top: 1px solid #e8e8e8;
+    background-color: #fff;
+    border-left: 3px solid transparent;
+    margin: 0;
+    border-radius: var(--umbc-radius-md, 8px);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.qs-option--fallback:first-child {
+    border-top: none;
+    border-radius: var(
+        --umbc-radius-md,
+        8px
+    ); /* sole option: round all corners */
+}
+
+.qs-option--fallback .qs-option-arrow {
+    color: #252525;
+    font-size: 1rem;
+}
+
+.qs-option--fallback:hover,
+.qs-option--fallback.qs-option--active {
+    background-color: #f0f8f8;
+    border-left-color: #007176;
+    border-color: transparent;
+    border-left-color: #007176;
+}
+
+.qs-option--fallback:hover .qs-option-arrow,
+.qs-option--fallback.qs-option--active .qs-option-arrow {
+    color: #007176;
+    transform: translateX(3px);
+}
+
+.mobile-menu-content .qs-input-wrap::before,
+.mobile-overlay-search .qs-input-wrap::before {
+    left: 0.9rem;
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+    filter: invert(1);
+}
+
+.mobile-menu-content .qs-option,
+.mobile-overlay-search .qs-option {
+    padding: 0.85rem 1rem;
+    align-items: flex-start;
+}
+
+.mobile-menu-content .qs-option-text,
+.mobile-overlay-search .qs-option-text {
+    width: 100%;
+    min-width: 0;
+}
+
+.mobile-menu-content .qs-option-label,
+.mobile-overlay-search .qs-option-label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.mobile-menu-content .qs-option--fallback .qs-option-fallback-text,
+.mobile-overlay-search .qs-option--fallback .qs-option-fallback-text {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.qs-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+/* Type icon (college / department / program / page) shown beside each result.
+   Inline SVG from umbc_type_icon_svg() / ICON_SVGS — fills currentColor. */
+.qs-option-icon {
+    flex: 0 0 auto;
+    width: 1.15em;
+    height: 1em;
+    text-align: center;
+    color: #007176;
+    font-size: 0.95em;
+}
+
+[data-theme="dark"] .qs-option-icon {
+    color: #4db6bb;
+}
+
+/* Spoken-only type prefix ("Department: …") — the icon itself is decorative. */
+.qs-option-type-sr {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Labels wrap instead of overflowing — long program titles were colliding
+   with the arrow. (The URL line was removed from results 2026-06: noise.) */
+.qs-option-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #252525;
+    line-height: 1.3;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.qs-option--fallback .qs-option-fallback-text {
+    font-size: 0.825rem;
+    color: #252525;
+    font-weight: 600;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.qs-option--fallback .qs-option-fallback-text strong {
+    font-weight: 800;
+    color: #252525;
+    margin: 0 0.2em;
+}
+
+.mobile-menu-content .qs-widget,
+.mobile-overlay-search .qs-widget {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    overflow: visible;
+    box-sizing: border-box;
+}

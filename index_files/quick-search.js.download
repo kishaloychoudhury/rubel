@@ -1,0 +1,395 @@
+/**
+ * UMBC Quick Search Widget
+ *
+ * Keyword-routing layer: maps typed terms to specific pages via a lookup table
+ * supplied by PHP (quickSearchRoutes global). Falls through to the full UMBC
+ * Google Search when no route matches or the user explicitly requests it.
+ *
+ * Ranking (highest → lowest):
+ *   1. Manual priority field (lower number = higher rank, 0/empty = lowest)
+ *   2. Exact alias match
+ *   3. Alias starts-with query
+ *   4. Alias contains query
+ *
+ * Accessibility: WCAG 1.3.1, 2.1.1, 2.1.2, 4.1.2
+ *   - role="combobox" on the input wrapper
+ *   - role="listbox" on the dropdown
+ *   - role="option" on each item with unique IDs
+ *   - aria-activedescendant tracks the focused option
+ *   - aria-expanded reflects open/closed state
+ *   - aria-live="polite" region announces result count to screen readers
+ *   - Escape closes, arrows move focus, Enter/click navigates, Tab closes
+ */
+(function () {
+  'use strict';
+
+  var FULL_SEARCH_BASE = '/search/';
+  var MAX_RESULTS = 5;
+  var DEBOUNCE_MS = 200;
+
+  // type → inline SVG [viewBox, path]. Font Awesome Free 6.7.2 solid artwork
+  // embedded directly so icons render without the FA kit script (which ad
+  // blockers commonly block). Mirror of umbc_type_icon_svg() in
+  // quick-search.php; keep the two in sync.
+  var ICON_SVGS = {
+    college: ['0 0 512 512', 'M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160l0 8c0 13.3 10.7 24 24 24l400 0c13.3 0 24-10.7 24-24l0-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224l-64 0 0 196.3c-.6 .3-1.2 .7-1.8 1.1l-48 32c-11.7 7.8-17 22.4-12.9 35.9S17.9 512 32 512l448 0c14.1 0 26.5-9.2 30.6-22.7s-1.1-28.1-12.9-35.9l-48-32c-.6-.4-1.2-.7-1.8-1.1L448 224l-64 0 0 192-40 0 0-192-64 0 0 192-48 0 0-192-64 0 0 192-40 0 0-192zM256 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64z'],
+    department: ['0 0 576 512', 'M208 80c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-8 0 0 40 152 0c30.9 0 56 25.1 56 56l0 32 8 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64c0-26.5 21.5-48 48-48l8 0 0-32c0-4.4-3.6-8-8-8l-152 0 0 40 8 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64c0-26.5 21.5-48 48-48l8 0 0-40-152 0c-4.4 0-8 3.6-8 8l0 32 8 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64c0-26.5 21.5-48 48-48l8 0 0-32c0-30.9 25.1-56 56-56l152 0 0-40-8 0c-26.5 0-48-21.5-48-48l0-64z'],
+    program: ['0 0 640 512', 'M320 32c-8.1 0-16.1 1.4-23.7 4.1L15.8 137.4C6.3 140.9 0 149.9 0 160s6.3 19.1 15.8 22.6l57.9 20.9C57.3 229.3 48 259.8 48 291.9l0 28.1c0 28.4-10.8 57.7-22.3 80.8c-6.5 13-13.9 25.8-22.5 37.6C0 442.7-.9 448.3 .9 453.4s6 8.9 11.2 10.2l64 16c4.2 1.1 8.7 .3 12.4-2s6.3-6.1 7.1-10.4c8.6-42.8 4.3-81.2-2.1-108.7C90.3 344.3 86 329.8 80 316.5l0-24.6c0-30.2 10.2-58.7 27.9-81.5c12.9-15.5 29.6-28 49.2-35.7l157-61.7c8.2-3.2 17.5 .8 20.7 9s-.8 17.5-9 20.7l-157 61.7c-12.4 4.9-23.3 12.4-32.2 21.6l159.6 57.6c7.6 2.7 15.6 4.1 23.7 4.1s16.1-1.4 23.7-4.1L624.2 182.6c9.5-3.4 15.8-12.5 15.8-22.6s-6.3-19.1-15.8-22.6L343.7 36.1C336.1 33.4 328.1 32 320 32zM128 408c0 35.3 86 72 192 72s192-36.7 192-72L496.7 262.6 354.5 314c-11.1 4-22.8 6-34.5 6s-23.5-2-34.5-6L143.3 262.6 128 408z'],
+    page: ['0 0 384 512', 'M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM112 256l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z'],
+    search: ['0 0 512 512', 'M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z']
+  };
+  // Spoken type prefix for screen readers (the icon is decorative).
+  var TYPE_LABELS = {
+    college: 'College or school',
+    department: 'Department',
+    program: 'Program',
+    page: 'Page'
+  };
+
+  function iconHtml(type) {
+    var icon = ICON_SVGS[type] || ICON_SVGS.page;
+    return '<svg class="qs-option-icon" viewBox="' + icon[0] + '" fill="currentColor"' +
+      ' aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="' + icon[1] + '"/></svg>';
+  }
+
+  /* Detect context-specific refinement tab from current URL path */
+  function getSearchRef() {
+    var path = window.location.pathname;
+    if (path.indexOf('/stories/') !== -1 || path.endsWith('/stories')) return 'stories';
+    if (path.indexOf('/events/') !== -1 || path.endsWith('/events')) return 'events';
+    return null;
+  }
+
+  /* ------------------------------------------------------------------
+   * Scoring — returns a numeric rank for a single route against a query.
+   * Lower score = higher priority in results list.
+   * Returns null if the route does not match at all.
+   * ------------------------------------------------------------------ */
+  function scoreRoute(route, query) {
+    var aliases = route.aliases || [];
+    var bestMatch = null; // null | 'exact' | 'starts' | 'contains'
+
+    for (var i = 0; i < aliases.length; i++) {
+      var alias = aliases[i].toLowerCase().trim();
+      if (alias === query) {
+        bestMatch = 'exact';
+        break; // can't do better
+      }
+      if (alias.indexOf(query) === 0) {
+        if (bestMatch !== 'exact') bestMatch = 'starts';
+      } else if (alias.indexOf(query) !== -1) {
+        if (bestMatch !== 'exact' && bestMatch !== 'starts') bestMatch = 'contains';
+      }
+    }
+
+    if (bestMatch === null) return null;
+
+    // Base score by match type
+    var matchScore = bestMatch === 'exact' ? 0 : bestMatch === 'starts' ? 1 : 2;
+
+    // Priority field: lower number wins. Missing/0 treated as 999 (lowest).
+    var priority = parseInt(route.priority, 10);
+    if (isNaN(priority) || priority <= 0) priority = 999;
+
+    // Combined score: priority is primary sort, match type breaks ties.
+    // Multiply priority by 10 so match type only matters within same priority band.
+    return priority * 10 + matchScore;
+  }
+
+  /* ------------------------------------------------------------------
+   * Filter and rank routes against a query string.
+   * ------------------------------------------------------------------ */
+  function getMatches(query) {
+    if (!query || !window.quickSearchRoutes) return [];
+
+    var scored = [];
+    var routes = window.quickSearchRoutes;
+
+    for (var i = 0; i < routes.length; i++) {
+      var s = scoreRoute(routes[i], query);
+      if (s !== null) {
+        scored.push({ route: routes[i], score: s });
+      }
+    }
+
+    scored.sort(function (a, b) { return a.score - b.score; });
+    return scored.slice(0, MAX_RESULTS).map(function (s) { return s.route; });
+  }
+
+  /* ------------------------------------------------------------------
+   * Initialise a single quick-search widget instance.
+   * widgetEl: the containing element that holds the input and listbox.
+   * ------------------------------------------------------------------ */
+  function initWidget(widgetEl) {
+    var input     = widgetEl.querySelector('.qs-input');
+    var listbox   = widgetEl.querySelector('.qs-listbox');
+    var announcer = widgetEl.querySelector('.qs-announcer');
+
+    if (!input || !listbox || !announcer) return;
+
+    var debounceTimer   = null;
+    var noResultsTimer  = null; // settle timer for the zero-result content-gap signal
+    var lastNoResultTerm = null; // dedup: only report each zero-result term once
+    var activeIndex     = -1; // index of keyboard-highlighted option
+    var currentMatches  = [];
+    var widgetId       = input.id || ('qs-' + Math.random().toString(36).slice(2));
+
+    input.setAttribute('id', widgetId);
+    listbox.setAttribute('id', widgetId + '-listbox');
+    input.setAttribute('aria-controls', widgetId + '-listbox');
+
+    /* ---- helpers ---- */
+
+    function optionId(i) {
+      return widgetId + '-opt-' + i;
+    }
+
+    function closeListbox() {
+      listbox.innerHTML = '';
+      listbox.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      activeIndex = -1;
+      currentMatches = [];
+    }
+
+    function setActive(index) {
+      var items = listbox.querySelectorAll('[role="option"]');
+      items.forEach(function (el, i) {
+        var isActive = i === index;
+        el.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        el.classList.toggle('qs-option--active', isActive);
+      });
+      if (index >= 0 && items[index]) {
+        input.setAttribute('aria-activedescendant', items[index].id);
+      } else {
+        input.removeAttribute('aria-activedescendant');
+      }
+      activeIndex = index;
+    }
+
+    // User picked an on-site route — the "kept on site" win.
+    // position = 1-based rank of the clicked result; count = on-site matches shown.
+    function navigate(url, query, label, position, count) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'quick_search_click',
+        search_term: query,
+        destination: url,
+        result_label: label,
+        result_position: position,
+        result_count: count
+      });
+      window.location.href = url;
+    }
+
+    // User went to the full GCSE search instead. count = on-site matches that
+    // WERE available when they chose Google — had_results separates "we had
+    // nothing" (content gap) from "we had matches but they still left".
+    function navigateFullSearch(query, count) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'quick_search_fallback',
+        search_term: query,
+        result_count: count,
+        had_results: count > 0
+      });
+      var ref = getSearchRef();
+      var url = FULL_SEARCH_BASE + (ref ? '?ref=' + ref : '') + '#gsc.q=' + encodeURIComponent(query);
+      window.location.href = url;
+    }
+
+    function buildListbox(matches, query) {
+      listbox.innerHTML = '';
+
+      // Content-gap signal: a search that yields zero on-site routes, reported
+      // once it settles (~1.2s after typing stops) and deduped per term — NOT
+      // on every keystroke — so we learn what people expect us to route without
+      // flooding GA4. Captures intent even if the user abandons without clicking.
+      clearTimeout(noResultsTimer);
+      if (matches.length === 0) {
+        noResultsTimer = setTimeout(function () {
+          if (lastNoResultTerm === query) return;            // already reported
+          if (input.value.toLowerCase().trim() !== query) return; // term changed
+          lastNoResultTerm = query;
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ event: 'quick_search_no_results', search_term: query });
+        }, 1200);
+      }
+
+      if (matches.length === 0) {
+        // Show a single "search all" option
+        var fallback = document.createElement('li');
+        fallback.setAttribute('role', 'option');
+        fallback.setAttribute('id', optionId(0));
+        fallback.setAttribute('aria-selected', 'false');
+        fallback.className = 'qs-option qs-option--fallback';
+        fallback.innerHTML =
+          iconHtml('search') +
+          '<span class="qs-option-text qs-option-fallback-text">Search all of UMBC for “' + escHtml(query) + '”</span>' +
+          '<span class="qs-option-arrow" aria-hidden="true">→</span>';
+        fallback.addEventListener('mousedown', function (e) {
+          e.preventDefault(); // prevent blur before click fires
+          navigateFullSearch(query, 0);
+        });
+        listbox.appendChild(fallback);
+        announcer.textContent = 'No direct matches. Press Enter to search all of UMBC.';
+      } else {
+        matches.forEach(function (route, i) {
+          var li = document.createElement('li');
+          li.setAttribute('role', 'option');
+          li.setAttribute('id', optionId(i));
+          li.setAttribute('aria-selected', 'false');
+          li.className = 'qs-option';
+          var type = route.type || 'page';
+          li.innerHTML =
+            iconHtml(type) +
+            '<span class="qs-option-text">' +
+              '<span class="qs-option-label">' +
+                '<span class="qs-option-type-sr">' + escHtml(TYPE_LABELS[type] || 'Page') + ': </span>' +
+                escHtml(route.label) +
+              '</span>' +
+              '</span>' +
+            '<span class="qs-option-arrow" aria-hidden="true">→</span>';
+          li.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            navigate(route.url, query, route.label, i + 1, matches.length);
+          });
+          listbox.appendChild(li);
+        });
+
+        // Always append a "full search" footer option
+        var footer = document.createElement('li');
+        footer.setAttribute('role', 'option');
+        footer.setAttribute('id', optionId(matches.length));
+        footer.setAttribute('aria-selected', 'false');
+        footer.className = 'qs-option qs-option--fallback';
+        footer.innerHTML =
+          iconHtml('search') +
+          '<span class="qs-option-text qs-option-fallback-text">Search all of UMBC for "' + escHtml(query) + '"</span>' +
+          '<span class="qs-option-arrow" aria-hidden="true">→</span>';
+        footer.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          navigateFullSearch(query, matches.length);
+        });
+        listbox.appendChild(footer);
+
+        var count = matches.length;
+        announcer.textContent =
+          count + (count === 1 ? ' result' : ' results') + ' for ' + query + '. Use arrow keys to navigate.';
+      }
+
+      listbox.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+
+      currentMatches = matches;
+      activeIndex = -1;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    /* ---- event listeners ---- */
+
+    input.addEventListener('input', function () {
+      clearTimeout(debounceTimer);
+      var query = input.value.toLowerCase().trim();
+
+      if (!query) {
+        closeListbox();
+        announcer.textContent = '';
+        return;
+      }
+
+      debounceTimer = setTimeout(function () {
+        var matches = getMatches(query);
+        buildListbox(matches, query);
+      }, DEBOUNCE_MS);
+    });
+
+    input.addEventListener('keydown', function (e) {
+      var query = input.value.toLowerCase().trim();
+      var items = listbox.querySelectorAll('[role="option"]');
+      var total = items.length; // includes fallback footer
+
+      if (listbox.hidden) {
+        // Open on arrow-down if closed
+        if (e.key === 'ArrowDown' && query) {
+          e.preventDefault();
+          var matches = getMatches(query);
+          buildListbox(matches, query);
+          setActive(0);
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setActive(Math.min(activeIndex + 1, total - 1));
+          break;
+
+        case 'ArrowUp':
+          e.preventDefault();
+          if (activeIndex <= 0) {
+            setActive(-1); // return focus to input
+          } else {
+            setActive(activeIndex - 1);
+          }
+          break;
+
+        case 'Enter':
+          e.preventDefault();
+          if (activeIndex >= 0 && items[activeIndex]) {
+            items[activeIndex].dispatchEvent(new MouseEvent('mousedown'));
+          } else if (query) {
+            // No selection — fall through to full search
+            navigateFullSearch(query, currentMatches.length);
+          }
+          break;
+
+        case 'Escape':
+          e.preventDefault();
+          closeListbox();
+          announcer.textContent = 'Search suggestions closed.';
+          break;
+
+        case 'Tab':
+          closeListbox();
+          break;
+      }
+    });
+
+    input.addEventListener('blur', function () {
+      // Small delay so mousedown on an option fires before blur closes the list
+      setTimeout(closeListbox, 150);
+    });
+
+    // Close if user clicks outside the widget
+    document.addEventListener('click', function (e) {
+      if (!widgetEl.contains(e.target)) {
+        closeListbox();
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * Boot: initialise every .qs-widget on the page
+   * ------------------------------------------------------------------ */
+  function boot() {
+    var widgets = document.querySelectorAll('.qs-widget');
+    widgets.forEach(initWidget);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

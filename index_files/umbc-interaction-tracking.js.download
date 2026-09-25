@@ -1,0 +1,89 @@
+/**
+ * UMBC Interaction Tracking — generic button / CTA click coverage.
+ *
+ * Fires a single `ui_click` dataLayer event for high-signal interactions:
+ *   • every <button> and [role="button"] (real controls — toggles, modals, tabs…)
+ *   • anything explicitly tagged with data-track="Label" (editor opt-in)
+ *   • CTA-styled links (class contains btn / button / cta)
+ *
+ * Deliberately NOT every <a>: plain navigation is already visible via pageviews,
+ * and outbound/download links should come from GA4 Enhanced Measurement (a toggle,
+ * no code). Tracking every click would duplicate data and risk the Stape request
+ * cap — see umbc-sgtm-migration-plan.md §11.6 / §12.5. Add data-track to any link
+ * you want captured; add data-no-track to anything you want suppressed.
+ *
+ * This is a high-volume micro-interaction stream: per §12.5, route `ui_click` to
+ * GA4 directly (not through Stape). Conversions live in umbc-conversion-tracking.js.
+ */
+(function () {
+	'use strict';
+
+	var MAX_LABEL = 100;
+
+	function classStr(el) {
+		return (typeof el.className === 'string' ? el.className : '').toLowerCase();
+	}
+
+	function looksLikeCta(el) {
+		return /(^|[\s_-])(btn|button|cta)([\s_-]|$)/.test(classStr(el));
+	}
+
+	function textLabel(el) {
+		var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+		return t.length > MAX_LABEL ? t.slice(0, MAX_LABEL) : t;
+	}
+
+	function resolveLabel(el) {
+		return el.getAttribute('data-track')
+			|| el.getAttribute('aria-label')
+			|| textLabel(el)
+			|| el.getAttribute('title')
+			|| el.id
+			|| '';
+	}
+
+	function nearestSection(el) {
+		var s = el.closest('[data-section], section[id], [role="region"][aria-label]');
+		if (!s) return '';
+		return s.getAttribute('data-section') || s.id || s.getAttribute('aria-label') || '';
+	}
+
+	// Capture phase so we still record clicks on controls that stopPropagation.
+	document.addEventListener('click', function (e) {
+		var el = e.target.closest ? e.target.closest('button, [role="button"], [data-track], a') : null;
+		if (!el) return;
+
+		// Owned by other trackers / intentionally excluded.
+		if (el.closest('[data-umbc-register-cta]')) return; // event_register_click
+		if (el.closest('[data-no-track]')) return;          // explicit opt-out
+		if (el.closest('#umbc-cookie-banner')) return;      // consent UI, own semantics
+		if (el.closest('.qs-listbox')) return;              // quick-search, already tracked
+
+		var tag      = el.tagName.toLowerCase();
+		var isButton = tag === 'button' || el.getAttribute('role') === 'button';
+		var isTagged = el.hasAttribute('data-track');
+		var isLink   = tag === 'a';
+
+		// Plain (non-CTA, non-tagged) links: skip — navigation shows up in pageviews.
+		if (isLink && !isButton && !isTagged && !looksLikeCta(el)) return;
+
+		var label = resolveLabel(el);
+		if (!label) return; // nothing meaningful to report
+
+		var payload = {
+			event: 'ui_click',
+			click_text: label,
+			click_type: isTagged ? 'tagged' : (isButton ? 'button' : 'link'),
+			click_id: el.id || '',
+			click_classes: classStr(el),
+			click_section: nearestSection(el)
+		};
+		if (isLink) {
+			var href = el.getAttribute('href');
+			if (href) payload.click_url = href;
+		}
+
+		window.dataLayer = window.dataLayer || [];
+		window.dataLayer.push(payload);
+	}, true);
+})();

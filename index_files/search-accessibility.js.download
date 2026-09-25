@@ -1,0 +1,98 @@
+/**
+ * UMBC Site Search — open/close fullscreen overlay + accessibility
+ *
+ * Triggers: any element matching OPEN_SELECTOR opens the modal.
+ * Close: #close button, Escape key, or clicking the backdrop.
+ */
+( function () {
+    'use strict';
+
+    var OPEN_SELECTOR = '.umbc-search-icon, .full-screen.umbc-search-icon, .astra-search-icon, .full-screen.astra-search-icon';
+    var modal         = null;
+    var closeBtn      = null;
+    var lastFocus     = null;
+
+    function openModal() {
+        if ( ! modal ) { return; }
+        modal.classList.add( 'active' );
+        modal.removeAttribute( 'aria-hidden' );
+        lastFocus = document.activeElement;
+        var input = modal.querySelector( '#desktop-search-input, .search-field' );
+        if ( input ) {
+            setTimeout( function () { input.focus(); }, 50 );
+        }
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        if ( ! modal ) { return; }
+        modal.classList.remove( 'active' );
+        modal.setAttribute( 'aria-hidden', 'true' );
+        document.body.style.overflow = '';
+        if ( lastFocus ) {
+            lastFocus.focus();
+            lastFocus = null;
+        }
+    }
+
+    function init() {
+        modal    = document.getElementById( 'ast-seach-full-screen-form' );
+        closeBtn = document.getElementById( 'close' );
+
+        if ( ! modal ) { return; }
+
+        modal.setAttribute( 'aria-hidden', 'true' );
+
+        // Open triggers
+        document.querySelectorAll( OPEN_SELECTOR ).forEach( function ( el ) {
+            el.addEventListener( 'click', function ( e ) {
+                e.preventDefault();
+                openModal();
+            } );
+        } );
+
+        // Close button
+        if ( closeBtn ) {
+            closeBtn.addEventListener( 'click', closeModal );
+        }
+
+        // Escape key + focus trap
+        modal.addEventListener( 'keydown', function ( e ) {
+            if ( e.key === 'Escape' || e.keyCode === 27 ) {
+                closeModal();
+                return;
+            }
+            if ( e.key !== 'Tab' ) { return; }
+
+            var focusable = Array.from( modal.querySelectorAll(
+                'button:not([disabled]), input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'
+            ) );
+            if ( focusable.length === 0 ) { return; }
+
+            var first = focusable[0];
+            var last  = focusable[ focusable.length - 1 ];
+
+            if ( e.shiftKey && document.activeElement === first ) {
+                e.preventDefault();
+                last.focus();
+            } else if ( ! e.shiftKey && document.activeElement === last ) {
+                e.preventDefault();
+                first.focus();
+            }
+        } );
+
+        // Click backdrop to close (but not clicks inside the form)
+        modal.addEventListener( 'click', function ( e ) {
+            if ( ! e.target.closest( '.ast-search-wrapper, #close' ) ) {
+                closeModal();
+            }
+        } );
+    }
+
+    if ( document.readyState === 'loading' ) {
+        document.addEventListener( 'DOMContentLoaded', init );
+    } else {
+        init();
+    }
+
+} )();

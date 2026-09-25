@@ -1,0 +1,178 @@
+/* General Styles for Search */
+.search-field, .search-button {
+	font-size: 1em;
+}
+
+/* Mobile Search Bar */
+@media screen and (max-width: 991px) {
+	.desktop-search-icon {
+		display: none;
+	}
+	
+	.mobile-search-bar {
+		display: flex;
+		align-items: center;
+		width: 100%; /* Ensure the container takes full width */
+	}
+
+	#mobile-search-input {
+		flex-grow: 1; /* Allow the input to take available space */
+		font-size: 16px; 
+		padding: 10px;
+		background-color: #f8f9fa;
+		box-sizing: border-box; /* Include padding and border in width */
+		border: 2px solid #707070; /* Add a border for better visibility */
+		border-radius: 4px; 
+		height: 50px !important; 
+	}
+
+	#mobile-search-input::placeholder {
+		color: #707070; /* Placeholder text color */
+	}
+
+	#mobile-search-button {
+		padding: 12px 16px;
+		height: 50px; 
+		background-color: #252525; 
+		color: white;
+		border: none; /* Remove border */
+		cursor: pointer;
+		flex-shrink: 0; /* Prevent the button from shrinking */
+		box-sizing: border-box; /* Include padding and border in width */
+		margin-left: 10px; 
+	}
+
+	#mobile-search-button:hover,
+	#mobile-search-button:focus {
+		background-color: #444; /* Darker shade for hover/focus */
+		color: white;
+		outline: none;
+	}
+
+	#mobile-search-button:active {
+		background-color: #333; /* Even darker shade for active state */
+		color: white;
+		outline: none;
+	}
+
+	.mobile-search-bar form {
+		display: flex;
+		width: 100%; /* Ensure the form takes full width */
+	}
+}
+
+/* Desktop Search */
+@media screen and (min-width: 992px) {
+	.mobile-search-bar {
+		display: none;
+	}
+
+	.ast-search-icon {
+		display: block;
+	}
+	
+	.desktop-search-icon {
+		display: block;
+	}
+	
+	.custom-search-icon svg {
+		fill: #252525; /* Black color */
+		height: 24px;
+		width: 24px;
+		stroke: #252525;
+	}
+}
+
+/* Full Screen Search Modal */
+.full-screen-search-modal {
+	display: none; /* Hidden by default */
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+	z-index: 1000; /* Ensure it's on top */
+	justify-content: center;
+	align-items: center;
+	display: flex;
+	box-sizing: border-box;
+}
+
+.full-screen-search-modal.active {
+	display: flex;
+}
+
+
+.ast-search-box.full-screen .ast-search-wrapper fieldset {
+	border-bottom: 0 !important;
+	display: flex; 
+	padding: 1em 0 !important;
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper .large-search-text {
+	text-align: center;
+	margin-bottom: 20px;
+	font-size: 1.5em; /* Larger text for heading */
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper .search-form-new {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper.search-form-new fieldset {
+	display: flex;
+	flex-wrap: wrap; /* Allow wrapping for smaller screens */
+	justify-content: center; /* Center the items horizontally */
+	align-items: center; /* Align items vertically */
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper .search-field {
+	flex-grow: 1; /* Allow the input to grow */
+	margin-right: 10px; /* Add space between input and button */
+}
+
+
+#ast-seach-full-screen-form .ast-search-wrapper .search-field {
+	width: 95%; /* Full width minus padding */
+	padding: 15px;
+	font-size: 1.5em; /* Larger text for input */
+	border-radius: 4px; /* Rounded corners for the input field */
+	border-color: #757575 !important; /* Darker border color for better contrast */
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper .search-field::placeholder {
+	color: #757575;
+	opacity: 1; /* Ensures full opacity */
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper .search-form-new button.search-submit {
+	background-color: #252525; /* Teal color */
+	color: white !important;
+	padding: 15px 30px;
+	border-radius: 4px;
+	font-size: 1.2em;
+	border: none;
+	cursor: pointer;
+}
+
+#ast-seach-full-screen-form .ast-search-wrapper .search-form-new button.search-submit:hover {
+	background-color: #444; /* Darker shade of teal for hover */
+}
+
+/* Close Button Styles */
+.close-modal {
+	position: absolute;
+	top: 20px;
+	right: 20px; /* Position close button in the top right corner */
+	cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+	color: #000;
+	text-decoration: none;
+	cursor: pointer;
+}

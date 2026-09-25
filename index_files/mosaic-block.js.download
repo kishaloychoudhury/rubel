@@ -1,0 +1,41 @@
+/* ==============================================
+   UMBC Mosaic Block — mosaic-block.js
+   Handles: scroll-entry animation for tiles.
+   Navigation is a native full-tile link
+   (.mosaic-tile__cover-link); the detail overlay
+   is revealed via CSS :hover on desktop.
+   ============================================== */
+
+(function () {
+  'use strict';
+
+  function initMosaicBlock(block) {
+    /* ── Scroll-entry observer ── */
+    const targets = block.querySelectorAll('.mosaic-tile.will-animate');
+    if (!targets.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+    targets.forEach((el) => observer.observe(el));
+  }
+
+  function initAll() {
+    document.querySelectorAll('.umbc-mosaic-block').forEach(initMosaicBlock);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+
+})();

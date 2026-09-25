@@ -1,0 +1,654 @@
+/* ==============================================
+   UMBC Stories Block
+   style.css
+   ============================================== */
+
+/* ── Shared block shell ─────────────────────────────── */
+.umbc-stories-block {
+  --stories-gold:       var(--umbc-btn-gold, #fdb515);
+  --stories-black:      #000;
+  --stories-white:      #fff;
+  --stories-bg:         #fff;
+  --stories-text:       #111;
+  --stories-subtext:    #555;
+  --stories-border:     rgba(0,0,0,0.1);
+  --stories-card-bg:    #f4f4f4;
+  --stories-pill-bg:    var(--stories-gold);
+  --stories-pill-text:  #000;
+  --stories-btn-bg:     rgba(0,0,0,0.08);
+  --stories-btn-hover:  rgba(0,0,0,0.15);
+  --stories-link:       #111;
+  --stories-link-line:  #111;
+
+  width: 100%;
+  background-color: var(--stories-bg);
+  color: var(--stories-text);
+}
+
+/* ── Dark theme ─────────────────────────────────────── */
+[data-theme="dark"] .umbc-stories-block {
+  --stories-bg:         #000;
+  --stories-text:       #fff;
+  --stories-subtext:    rgba(255,255,255,0.72);
+  --stories-border:     rgba(255,255,255,0.12);
+  --stories-card-bg:    #111;
+  --stories-btn-bg:     rgba(255,255,255,0.12);
+  --stories-btn-hover:  rgba(255,255,255,0.22);
+  --stories-link:       var(--stories-gold);
+  --stories-link-line:  var(--stories-gold);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FEATURED MODE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.stories-feature {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 480px;
+}
+
+.stories-feature__image-wrap {
+  overflow: hidden;
+  position: relative;
+  min-height: 320px;
+}
+
+.stories-feature__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.stories-feature__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2.5rem, 5vw, 4.5rem) clamp(2rem, 4vw, 4rem);
+  gap: 1.25rem;
+}
+
+.stories-feature__pill {
+  display: inline-block;
+  background: var(--stories-pill-bg);
+  color: var(--stories-pill-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.3em 0.9em;
+  border-radius: var(--umbc-radius-pill, 999px);
+  align-self: flex-start;
+}
+
+.stories-feature__headline {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--stories-text);
+  margin: 0;
+}
+
+.stories-feature__body {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--stories-subtext);
+  margin: 0;
+}
+
+.stories-feature__body p {
+  margin: 0 0 0.75em;
+  font-size: inherit;
+  color: inherit;
+}
+
+.stories-feature__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--stories-link);
+  text-decoration: none;
+  border-bottom: 2px solid var(--stories-link-line);
+  padding-bottom: 2px;
+  align-self: flex-start;
+  transition: opacity 0.18s;
+}
+
+.stories-feature__link:hover,
+.stories-feature__link:focus-visible {
+  opacity: 0.8;
+}
+
+.stories-feature__link:focus-visible {
+  outline: 2px solid var(--stories-gold);
+  outline-offset: 3px;
+}
+
+/* Flipped: image right */
+.stories-feature--flip {
+  direction: rtl;
+}
+
+.stories-feature--flip .stories-feature__content {
+  direction: ltr;
+}
+
+/* Mobile: stack vertically */
+@media (max-width: 767px) {
+  .stories-feature {
+    grid-template-columns: 1fr;
+  }
+
+  .stories-feature--flip {
+    direction: ltr;
+  }
+
+  .stories-feature__image-wrap {
+    min-height: 240px;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SLIDER MODE
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.stories-slider {
+  padding: clamp(3rem, 6vw, 5rem) 0 clamp(2.5rem, 5vw, 4rem);
+}
+
+/* Header row: title + nav buttons */
+.stories-slider__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
+  margin-bottom: 2rem;
+}
+
+.stories-slider__title {
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--stories-text);
+  margin: 0;
+}
+
+/* Standalone nav (no heading) */
+.stories-slider__nav--standalone {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
+  margin-bottom: 1.25rem;
+}
+
+.stories-slider__nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.stories-slider__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--stories-btn-bg);
+  color: var(--stories-text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.stories-slider__btn:hover {
+  background: var(--stories-btn-hover);
+}
+
+.stories-slider__btn:focus-visible {
+  outline: 2px solid var(--stories-gold);
+  outline-offset: 2px;
+}
+
+.stories-slider__btn svg {
+  display: block;
+}
+
+/* Track */
+.stories-slider__track-wrap {
+  overflow: hidden;
+  /* peek: right edge reveals next card */
+  padding-right: clamp(1.25rem, 4vw, 3rem);
+  padding-left: clamp(1.25rem, 4vw, 3rem);
+}
+
+.stories-slider__track {
+  display: flex;
+  gap: 16px;
+  /* no transition — cut, like Instagram Stories */
+  will-change: transform;
+  /* allow focus ring on keyboard-focused children to show */
+  overflow: visible;
+}
+
+/* Cards */
+.stories-card {
+  flex: 0 0 clamp(240px, 28vw, 320px);
+  max-width: 320px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--umbc-radius-md, 8px);
+  overflow: hidden;
+  background: var(--stories-card-bg);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  aspect-ratio: 3 / 4;
+}
+
+/* will-animate pattern: JS adds this class to hide,
+   then adds .is-visible on intersection.
+   Without JS, cards are always visible.              */
+.stories-card.will-animate {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.stories-card.will-animate.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stories-card.will-animate {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.stories-card__image-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.stories-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Bottom gradient for readability */
+.stories-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.85) 0%,
+    rgba(0,0,0,0.4)  45%,
+    rgba(0,0,0,0)    70%
+  );
+  pointer-events: none;
+}
+
+/* Gold pill — top-left */
+.stories-card__pill {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  display: inline-block;
+  background: var(--stories-pill-bg);
+  color: var(--stories-pill-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25em 0.75em;
+  border-radius: var(--umbc-radius-pill, 999px);
+}
+
+/* Lower-third content */
+.stories-card__lower {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 1.25rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.stories-card__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.75);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.stories-card__headline {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+  margin: 0;
+}
+
+/* a-tag card: remove link underline, keep focus ring */
+a.stories-card:hover .stories-card__headline {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a.stories-card:focus-visible {
+  outline: 3px solid var(--stories-gold);
+  outline-offset: 2px;
+}
+
+/* Dots */
+.stories-slider__dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
+}
+
+/* The button is a 24x24 hit target; the visible 8px dot is a ::before,
+   so the dots look unchanged but are far easier to tap. */
+.stories-slider__dot {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.stories-slider__dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stories-border);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.stories-slider__dot:hover::before {
+  transform: scale(1.2);
+}
+
+.stories-slider__dot.is-active::before {
+  background: var(--stories-link);
+  transform: scale(1.25);
+}
+
+.stories-slider__dot:focus-visible {
+  outline: 2px solid var(--stories-gold);
+  outline-offset: 2px;
+}
+
+/* Dark mode — the inactive dot's --stories-border (rgba white 12%) is well
+   below the 3:1 non-text contrast minimum. Use a solid accessible grey;
+   the active dot already switches to gold via --stories-link. */
+[data-theme="dark"] .umbc-stories-block .stories-slider__dot:not(.is-active)::before {
+  background: #8a8a8a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stories-slider__dot::before {
+    transition: none;
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stories-card {
+    flex: 0 0 82vw;
+    max-width: 82vw;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   EXPAND MODE — expand-in-place tile slider
+   Mirrors the lp-enroll interaction from the brand
+   landing page, namespaced for block reuse.
+══════════════════════════════════════════════ */
+.mode-expand.umbc-stories-block {
+  overflow: hidden;
+  padding-block: var(--wp--preset--spacing--80, 4rem) 0;
+}
+
+.stories-expand__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 0 var(--wp--style--root--padding-right, 2rem) 2.5rem;
+  flex-wrap: wrap;
+}
+
+.stories-expand__title {
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.stories-expand__sub {
+  font-size: clamp(1rem, 1.8vw, 1.375rem);
+  color: var(--wp--preset--color--gold, #fdb515);
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+
+.stories-expand__nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.stories-expand__nav-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #333;
+  background: transparent;
+  color: #fff;
+  font-size: 1.125rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.stories-expand__nav-btn:hover,
+.stories-expand__nav-btn:focus-visible {
+  background: var(--wp--preset--color--gold, #fdb515);
+  border-color: var(--wp--preset--color--gold, #fdb515);
+  color: #000;
+  outline: none;
+}
+
+.stories-expand__viewport {
+  overflow: hidden;
+  padding: 0 var(--wp--style--root--padding-right, 2rem);
+}
+
+.stories-expand__track {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.stories-expand-card {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: clamp(420px, 56vw, 560px);
+  overflow: hidden;
+  background: #1a1a1a;
+  cursor: pointer;
+  transition: flex-grow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stories-expand-card.is-active {
+  flex-grow: 6;
+  cursor: default;
+}
+
+.stories-expand-card__image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s;
+  filter: brightness(0.55) saturate(0.85);
+}
+.stories-expand-card.is-active .stories-expand-card__image {
+  filter: brightness(0.85) saturate(1);
+}
+.stories-expand-card:not(.is-active):hover .stories-expand-card__image {
+  transform: scale(1.05);
+  filter: brightness(0.7);
+}
+
+.stories-expand-card__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.55) 42%, rgba(0,0,0,.05) 100%);
+}
+
+.stories-expand-card__body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.25rem, 2.5vw, 2.25rem);
+}
+
+.stories-expand-card__pill {
+  align-self: flex-start;
+  background: var(--wp--preset--color--gold, #fdb515);
+  color: #000;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3em 0.75em;
+  margin-bottom: auto;
+  opacity: 0;
+  transition: opacity 0.3s 0.15s;
+}
+.stories-expand-card.is-active .stories-expand-card__pill { opacity: 1; }
+
+.stories-expand-card__name {
+  font-size: clamp(1.25rem, 2.4vw, 1.875rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+.stories-expand-card:not(.is-active) .stories-expand-card__name {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.stories-expand-card__story {
+  font-size: clamp(0.875rem, 1.3vw, 1rem);
+  line-height: 1.6;
+  color: #c7c8ca;
+  max-width: 56ch;
+  margin-bottom: 1.25rem;
+  opacity: 0;
+  transition: opacity 0.3s 0.2s;
+}
+.stories-expand-card__link {
+  align-self: flex-start;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wp--preset--color--gold, #fdb515);
+  border-bottom: 2px solid currentColor;
+  padding-bottom: 3px;
+  opacity: 0;
+  transition: opacity 0.3s 0.25s, color 0.15s;
+}
+.stories-expand-card__link:hover { color: #fff; }
+.stories-expand-card.is-active .stories-expand-card__story,
+.stories-expand-card.is-active .stories-expand-card__link { opacity: 1; }
+.stories-expand-card:not(.is-active) .stories-expand-card__story,
+.stories-expand-card:not(.is-active) .stories-expand-card__link { display: none; }
+
+.stories-expand__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 2rem var(--wp--style--root--padding-right, 2rem) 0;
+}
+
+.stories-expand__dots { display: flex; gap: 0.4rem; }
+.stories-expand__dot {
+  width: 1.5rem;
+  height: 3px;
+  background: #333;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.stories-expand__dot.is-active { background: var(--wp--preset--color--gold, #fdb515); }
+
+.stories-expand__cta {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #000;
+  background: var(--wp--preset--color--gold, #fdb515);
+  padding: 0.875em 1.75em;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.12s;
+}
+.stories-expand__cta:hover,
+.stories-expand__cta:focus-visible { background: #fff; outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stories-expand-card { transition: none; }
+}
+
+@media (max-width: 700px) {
+  .stories-expand-card { height: clamp(420px, 110vw, 560px); }
+  .stories-expand-card.is-active { flex-grow: 10; }
+}

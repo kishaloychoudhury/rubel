@@ -1,0 +1,1711 @@
+/**
+Theme Name: UMBC Theme Non Astra
+Author: UMBC Web Team
+Description: UMBC standalone theme — no Astra dependency.
+Version: 1.0.3
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: umbc-theme
+*/
+
+:root {
+    /* ── Typography ─────────────────────────────────────────── */
+    --umbc-font-size-body: 16px;
+    --umbc-font-size-prose: 17px;
+    --umbc-line-height-body: 1.6;
+    --umbc-line-height-prose: 1.75;
+    --umbc-letter-spacing-body: -0.014em;
+    --umbc-font-size-h1: clamp(42px, 5vw, 60px);
+    --umbc-font-size-h2: clamp(32px, 4vw, 42px);
+    --umbc-font-size-h3: clamp(26px, 3vw, 32px);
+    --umbc-font-size-h4: 24px;
+    --umbc-font-size-h5: 20px;
+    --umbc-font-size-h6: 16px;
+    --umbc-color-heading: #252525;
+
+    /* ── Layout containers ──────────────────────────────────── */
+    --ast-normal-container-width: 1200px;
+    --ast-narrow-container-width: 700px;
+    --wp--style--global--wide-size: 1200px;
+    --wp--style--global--content-size: 1200px;
+
+    /* ── Brand colours ──────────────────────────────────────── */
+    --umbc-btn-gold: #fdb515;
+    --umbc-btn-gold-hover: #e6a510;
+    --umbc-btn-gold-active: #c9900d;
+    --umbc-btn-black: #252525;
+    --umbc-btn-black-hover: #3a3a3a;
+    --umbc-btn-black-active: #111111;
+    --umbc-btn-radius: 4px;
+    --umbc-btn-radius-pill: 999px;
+
+    /* keep legacy names so other components don't break */
+    --umbc-color-gold: var(--umbc-btn-gold);
+    --umbc-color-gold-hover: var(--umbc-btn-gold-hover);
+    --umbc-color-gold-active: var(--umbc-btn-gold-active);
+
+    /* WP core gradient preset — theme.json doesn't define this so WP never
+       outputs the CSS variable, leaving cover block gradient overlays invisible.
+       Define it here so has-black-to-transparent-gradient-background works. */
+    --wp--preset--gradient--black-to-transparent: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.7) 0%,
+        rgba(0, 0, 0, 0) 100%
+    );
+
+    /* UMBC palette CSS custom properties — defined here rather than in theme.json
+       so they are available to content classes without showing in the editor color picker. */
+    --wp--preset--color--umbc-gold: #fdb515;
+    --wp--preset--color--umbc-black: #000000;
+    --wp--preset--color--umbc-white: #ffffff;
+    --wp--preset--color--umbc-red: #da2128;
+    --wp--preset--color--umbc-aok-teal: #007176;
+    --wp--preset--color--umbc-retriever-brown: #a67a05;
+    --wp--preset--color--umbc-extra-light-gray: #efefef;
+    --wp--preset--color--umbc-light-gray: #c7c8ca;
+    --wp--preset--color--umbc-dark-gray: #636466;
+
+    /* ── Astra legacy palette — maps ast-global-color-N to UMBC brand values.
+       These variables back the has-ast-global-color-N-* CSS classes that still
+       exist in page content from the pre-migration Astra theme. Once DB content
+       is migrated to umbc-* slugs these can be removed.
+       Actual Astra palette hex (from astra-settings option):
+         0 = #fdb515  gold
+         1 = #252525  near-black / heading color
+         2 = #007176  teal
+         3 = #da2128  red
+         4 = #717171  mid-gray
+         5 = #ffffff  white
+         6 = #a3a3a3  light-mid-gray
+         7 = #010101  black
+         8 = #f3f3f3  extra-light-gray  */
+    --wp--preset--color--ast-global-color-0: #fdb515;
+    --wp--preset--color--ast-global-color-1: #252525;
+    --wp--preset--color--ast-global-color-2: #007176;
+    --wp--preset--color--ast-global-color-3: #da2128;
+    --wp--preset--color--ast-global-color-4: #717171;
+    --wp--preset--color--ast-global-color-5: #ffffff;
+    --wp--preset--color--ast-global-color-6: #a3a3a3;
+    --wp--preset--color--ast-global-color-7: #010101;
+    --wp--preset--color--ast-global-color-8: #f3f3f3;
+
+    /* ── Ink / surface split ────────────────────────────────────
+       Every palette class resolves through TWO variables:
+         --umbc-ink-<slug> / --ast-N-ink  → slug applied as TEXT color
+         --umbc-bg-<slug>  / --ast-N-bg   → slug applied as BACKGROUND
+       Both hold the same value in light mode. The [data-theme="dark"]
+       block below redefines them independently: surfaces flip dark,
+       inks flip light, gold never flips. This is the ONLY place where
+       "what does this color mean in dark mode" is decided — do not add
+       per-element [data-theme="dark"] color overrides elsewhere. */
+    --umbc-ink-gold: #fdb515;
+    --umbc-bg-gold: #fdb515;
+    --umbc-ink-black: #000000;
+    --umbc-bg-black: #000000;
+    --umbc-ink-white: #ffffff;
+    --umbc-bg-white: #ffffff;
+    --umbc-ink-red: #da2128;
+    --umbc-bg-red: #da2128;
+    --umbc-ink-aok-teal: #007176;
+    --umbc-bg-aok-teal: #007176;
+    --umbc-ink-retriever-brown: #a67a05;
+    --umbc-bg-retriever-brown: #a67a05;
+    --umbc-ink-extra-light-gray: #efefef;
+    --umbc-bg-extra-light-gray: #efefef;
+    --umbc-ink-light-gray: #c7c8ca;
+    --umbc-bg-light-gray: #c7c8ca;
+    --umbc-ink-dark-gray: #636466;
+    --umbc-bg-dark-gray: #636466;
+
+    --ast-0-ink: var(--umbc-ink-gold);
+    --ast-0-bg: var(--umbc-bg-gold);
+    --ast-1-ink: #252525;
+    --ast-1-bg: #252525;
+    --ast-2-ink: var(--umbc-ink-aok-teal);
+    --ast-2-bg: var(--umbc-bg-aok-teal);
+    --ast-3-ink: var(--umbc-ink-red);
+    --ast-3-bg: var(--umbc-bg-red);
+    --ast-4-ink: #717171;
+    --ast-4-bg: #717171;
+    --ast-5-ink: var(--umbc-ink-white);
+    --ast-5-bg: var(--umbc-bg-white);
+    --ast-6-ink: #a3a3a3;
+    --ast-6-bg: #a3a3a3;
+    --ast-7-ink: var(--umbc-ink-black);
+    --ast-7-bg: #010101;
+    --ast-8-ink: #f3f3f3;
+    --ast-8-bg: #f3f3f3;
+
+    /* ── Semantic tokens ────────────────────────────────────────
+       New components use ONLY these (plus the brand tokens above).
+       No literal hex, no [data-theme="dark"] rules in component CSS —
+       a component built on these is dark-mode-correct automatically. */
+    --umbc-surface-page: #ffffff;
+    --umbc-surface-card: #ffffff;
+    --umbc-surface-card-alt: #f3f3f3;
+    --umbc-text: #252525;
+    --umbc-text-muted: #636466;
+    --umbc-link: #007176;
+    --umbc-link-hover: #00595d;
+    --umbc-border: #c7c8ca;
+
+    /* ── Component primitives ───────────────────────────────────
+       Shared scale for umbc-blocks so cards, pills, and pop-outs
+       look related. Radius scale: 4 / 8 / 12 / 24 / 48px —
+       sm = inputs/tags, md = cards/panels, lg = feature cards,
+       xl = large feature surfaces, xxl = hero/pill-ish features,
+       pill = true pills and badges, 50% for circles.
+       Shadows flip to deeper dark variants in the block below —
+       a block using var(--umbc-shadow-card) needs NO dark override. */
+    --umbc-radius-sm: 4px;
+    --umbc-radius-md: 8px;
+    --umbc-radius-lg: 12px;
+    --umbc-radius-xl: 24px;
+    --umbc-radius-xxl: 48px;
+    --umbc-radius-pill: 999px;
+    --umbc-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --umbc-shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.16);
+    --umbc-shadow-pop: 6px 6px 16px rgba(0, 0, 0, 0.18);
+    --umbc-transition-fast: 0.2s ease;
+    --umbc-transition-medium: 0.3s ease;
+    /* Corner-notch leg length — the 46px/45° cut used by the header
+       utility strip, section nav, cover block, and scholars hero. */
+    --umbc-notch: 46px;
+
+    /* ── Canonical overlay tokens ───────────────────────────────
+       Use these in CSS rather than repeating rgba values.
+       Dark overlays: text always white, no dark-mode flip needed.
+       Light overlay: text dark in light mode, flips to white in dark mode. */
+    --umbc-overlay-dark: rgba(0, 0, 0, 0.7); /* standard dark scrim */
+    --umbc-overlay-dark-strong: rgba(
+        0,
+        0,
+        0,
+        0.85
+    ); /* .scrim-dark legacy strength */
+    --umbc-overlay-light: rgba(
+        255,
+        255,
+        255,
+        0.35
+    ); /* light/white scrim over photo */
+    --umbc-overlay-light-dm: rgba(
+        0,
+        0,
+        0,
+        0.55
+    ); /* light overlay dark-mode replacement */
+}
+
+/* =============================================================
+   CORNER-NOTCH UTILITIES
+   Cut the signature 46px/45° notch from any element — add the
+   class to an image, figure, group, or cover in the editor
+   ("Additional CSS class"). Transparent cut: reveals whatever
+   is behind, so it needs no fill and works in dark mode as-is.
+   Pairs fine with border-radius on the other corners.
+   NOTE: a box-shadow on the SAME element gets clipped — put
+   the shadow on a parent as filter: drop-shadow(...) instead
+   (see .scholars-testimonial__img for the pattern).
+   ============================================================= */
+.umbc-notch-tl {
+    clip-path: polygon(
+        var(--umbc-notch, 46px) 0,
+        100% 0,
+        100% 100%,
+        0 100%,
+        0 var(--umbc-notch, 46px)
+    );
+}
+
+.umbc-notch-tr {
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--umbc-notch, 46px)) 0,
+        100% var(--umbc-notch, 46px),
+        100% 100%,
+        0 100%
+    );
+}
+
+.umbc-notch-bl {
+    clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 100%,
+        var(--umbc-notch, 46px) 100%,
+        0 calc(100% - var(--umbc-notch, 46px))
+    );
+}
+
+.umbc-notch-br {
+    clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - var(--umbc-notch, 46px)),
+        calc(100% - var(--umbc-notch, 46px)) 100%,
+        0 100%
+    );
+}
+
+/* =============================================================
+   DARK MODE TOKEN FLIP — the single decision point.
+   Surfaces flip dark, inks flip light, gold never flips.
+   Brand surfaces (teal, red, black, charcoal, dark-gray) keep their
+   background — they already read correctly on a dark canvas.
+   ============================================================= */
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* semantic */
+    --umbc-surface-page: #1a1a1a;
+    --umbc-surface-card: #2d2d2d;
+    --umbc-surface-card-alt: #232323;
+    --umbc-text: #e0e0e0;
+    --umbc-text-muted: #b0b1b3;
+    --umbc-color-heading: #f0f0f0;
+    --umbc-link: #fdb515;
+    --umbc-link-hover: #ffd36a;
+    --umbc-border: #3d3d3d;
+    --umbc-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --umbc-shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.6);
+    --umbc-shadow-pop: 6px 6px 16px rgba(0, 0, 0, 0.5);
+
+    /* inks — dark text colors flip light; accent inks lighten to keep
+       ≥4.5:1 on the #1a1a1a canvas. Gold/white/light-gray inks already
+       read on dark and stay unchanged. */
+    --umbc-ink-black: #e0e0e0;
+    --umbc-ink-red: #ff686d;
+    --umbc-ink-aok-teal: #58c0c5;
+    --umbc-ink-retriever-brown: #cfa133;
+    --umbc-ink-dark-gray: #b0b1b3;
+    --ast-1-ink: #e0e0e0;
+    --ast-4-ink: #b0b0b0;
+
+    /* surfaces — every light surface becomes a dark card; pure black
+       lifts to #111 so card edges stay visible on the #1a1a1a canvas */
+    --umbc-bg-black: #111111;
+    --umbc-bg-white: var(--umbc-surface-card);
+    --umbc-bg-extra-light-gray: var(--umbc-surface-card-alt);
+    --umbc-bg-light-gray: #3a3a3a;
+    --ast-4-bg: #404040;
+    --ast-6-bg: #3a3a3a;
+    --ast-8-bg: var(--umbc-surface-card-alt);
+}
+
+/* Gold never flips — restore light-mode ink for everything sitting on a
+   gold surface, by re-scoping the tokens its descendants resolve. */
+[data-theme="dark"] .has-umbc-gold-background-color,
+[data-theme="dark"] .has-ast-global-color-0-background-color,
+[data-theme="dark"] [style*="background-color:#fdb515"],
+[data-theme="dark"] [style*="background-color: #fdb515"] {
+    --umbc-text: #252525;
+    --umbc-text-muted: #4a4a4c;
+    --umbc-color-heading: #252525;
+    --umbc-link: #00595d;
+    --umbc-link-hover: #003a3d;
+    --umbc-border: #a67a05;
+    --umbc-ink-black: #000000;
+    --umbc-ink-red: #b8141b;
+    --umbc-ink-aok-teal: #00595d;
+    --umbc-ink-retriever-brown: #6e5103;
+    --umbc-ink-dark-gray: #4a4a4c;
+    --ast-1-ink: #252525;
+    --ast-4-ink: #4a4a4c;
+}
+
+/* =============================================================
+   "Keep light mode" opt-out — the inverse of the gold-never-flips
+   block above. Drop .umbc-keep-light (or the registered block style,
+   which adds .is-style-keep-light) on a section's OUTER wrapper and it
+   re-asserts every light-mode token. Because dark mode is token-driven,
+   restoring the tokens here makes the wrapper AND all descendants resolve
+   light values — the whole section stays light on a dark page.
+
+   Set a background on the wrapper (e.g. White / Extra Light Gray palette
+   color) so it reads as a deliberate light island; with no background it
+   is transparent and the dark page canvas shows through.
+
+   Caveat: legacy INLINE style="background-color:#fff" descendants flip via
+   !important rules in umbc-style.css and bypass tokens — use palette
+   background colors inside a keep-light section.
+   ============================================================= */
+[data-theme="dark"] .umbc-keep-light,
+[data-theme="dark"] .is-style-keep-light {
+    color-scheme: light;
+
+    /* IMPORTANT: every token is restored to a LITERAL light value, not to
+       another var(). The --ast-N-* tokens are declared at :root as
+       var(--umbc-bg-*) / var(--umbc-ink-*); a var() inside a custom property
+       is substituted at the element where it is DECLARED (:root), so in dark
+       mode --ast-5-bg already baked to the dark #2d2d2d at :root and inherits
+       down pre-resolved. Re-pointing --umbc-bg-white here would NOT reach it.
+       Literal values on this wrapper are re-read by the consuming
+       .has-*-background-color / .has-*-color rules, so the whole section and
+       its descendants render light. */
+
+    /* semantic */
+    --umbc-surface-page: #ffffff;
+    --umbc-surface-card: #ffffff;
+    --umbc-surface-card-alt: #f3f3f3;
+    --umbc-text: #252525;
+    --umbc-text-muted: #636466;
+    --umbc-color-heading: #252525;
+    --umbc-link: #007176;
+    --umbc-link-hover: #00595d;
+    --umbc-border: #c7c8ca;
+    --umbc-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --umbc-shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.16);
+    --umbc-shadow-pop: 6px 6px 16px rgba(0, 0, 0, 0.18);
+
+    /* UMBC palette inks */
+    --umbc-ink-gold: #fdb515;
+    --umbc-ink-black: #000000;
+    --umbc-ink-white: #ffffff;
+    --umbc-ink-red: #da2128;
+    --umbc-ink-aok-teal: #007176;
+    --umbc-ink-retriever-brown: #a67a05;
+    --umbc-ink-extra-light-gray: #efefef;
+    --umbc-ink-light-gray: #c7c8ca;
+    --umbc-ink-dark-gray: #636466;
+
+    /* UMBC palette surfaces */
+    --umbc-bg-gold: #fdb515;
+    --umbc-bg-black: #000000;
+    --umbc-bg-white: #ffffff;
+    --umbc-bg-red: #da2128;
+    --umbc-bg-aok-teal: #007176;
+    --umbc-bg-retriever-brown: #a67a05;
+    --umbc-bg-extra-light-gray: #efefef;
+    --umbc-bg-light-gray: #c7c8ca;
+    --umbc-bg-dark-gray: #636466;
+
+    /* Astra global-color inks (literal — see note above) */
+    --ast-0-ink: #fdb515;
+    --ast-1-ink: #252525;
+    --ast-2-ink: #007176;
+    --ast-3-ink: #da2128;
+    --ast-4-ink: #717171;
+    --ast-5-ink: #ffffff;
+    --ast-6-ink: #a3a3a3;
+    --ast-7-ink: #000000;
+    --ast-8-ink: #f3f3f3;
+
+    /* Astra global-color surfaces (literal — see note above) */
+    --ast-0-bg: #fdb515;
+    --ast-1-bg: #252525;
+    --ast-2-bg: #007176;
+    --ast-3-bg: #da2128;
+    --ast-4-bg: #717171;
+    --ast-5-bg: #ffffff;
+    --ast-6-bg: #a3a3a3;
+    --ast-7-bg: #010101;
+    --ast-8-bg: #f3f3f3;
+
+    /* bare-text + link tokens consumed by umbc-style.css dark rules */
+    --dm-text: #252525;
+    --dm-link: #007176;
+    --dm-link-hover: #00595d;
+}
+
+.hidden {
+    display: none;
+}
+
+/* =============================================================
+   Image plates — .is-style-plate-dark / .is-style-plate-light
+   Registered as core/image block styles in functions.php, so editors
+   pick them in the Styles list next to Default / Rounded.
+
+   Problem: a logo shipped as a transparent PNG carries one ink colour.
+   A black-inked logo disappears on the dark canvas; a white-inked logo
+   disappears on the light one. These styles paint a solid plate behind
+   the artwork in ONLY the theme where it would otherwise vanish, and stay
+   fully transparent in the other — so a logo that already reads correctly
+   is never boxed in for no reason.
+
+   Painted on the <img>, deliberately NOT the <figure>. The figure is
+   block-level and stretches to the full column width, so a background
+   there would run far past a narrow logo. The img box hugs the artwork.
+   Padding widens the plate into a margin so the glyphs never touch the
+   edge; background-clip keeps the paint under that padding.
+
+   Applies to linked logos too (figure > a > img) — the <a> is inline and
+   would otherwise clip the plate.
+   ============================================================= */
+[data-theme="dark"] .wp-block-image.is-style-plate-dark img,
+html:not([data-theme="dark"]) .wp-block-image.is-style-plate-light img {
+    padding: 0.75rem;
+    border-radius: var(--umbc-radius-sm, 4px);
+    background-clip: border-box;
+    /* box-sizing so the padding does not push a width-constrained logo wider
+       than the editor's chosen size */
+    box-sizing: border-box;
+}
+
+[data-theme="dark"] .wp-block-image.is-style-plate-dark img {
+    background-color: #ffffff;
+}
+
+html:not([data-theme="dark"]) .wp-block-image.is-style-plate-light img {
+    background-color: #000000;
+}
+
+/* UMBC palette utility classes — mirrors what WP would generate from theme.json palette
+   entries, without registering them in the picker. Content using has-umbc-* classes
+   continues to work. */
+.has-umbc-gold-color {
+    color: var(--umbc-ink-gold) !important;
+}
+.has-umbc-black-color {
+    color: var(--umbc-ink-black) !important;
+}
+.has-umbc-white-color {
+    color: var(--umbc-ink-white) !important;
+}
+.has-umbc-red-color {
+    color: var(--umbc-ink-red) !important;
+}
+.has-umbc-aok-teal-color {
+    color: var(--umbc-ink-aok-teal) !important;
+}
+.has-umbc-retriever-brown-color {
+    color: var(--umbc-ink-retriever-brown) !important;
+}
+.has-umbc-extra-light-gray-color {
+    color: var(--umbc-ink-extra-light-gray) !important;
+}
+.has-umbc-light-gray-color {
+    color: var(--umbc-ink-light-gray) !important;
+}
+.has-umbc-dark-gray-color {
+    color: var(--umbc-ink-dark-gray) !important;
+}
+
+/* WP core default-palette slugs that appear in legacy content — route them
+   through the same ink/bg tokens so they flip with everything else. */
+.has-white-color {
+    color: var(--umbc-ink-white) !important;
+}
+.has-black-color {
+    color: var(--umbc-ink-black) !important;
+}
+
+.has-umbc-gold-background-color {
+    background-color: var(--umbc-bg-gold) !important;
+}
+.has-umbc-black-background-color {
+    background-color: var(--umbc-bg-black) !important;
+}
+.has-umbc-white-background-color {
+    background-color: var(--umbc-bg-white) !important;
+}
+.has-umbc-red-background-color {
+    background-color: var(--umbc-bg-red) !important;
+}
+.has-umbc-aok-teal-background-color {
+    background-color: var(--umbc-bg-aok-teal) !important;
+}
+.has-umbc-retriever-brown-background-color {
+    background-color: var(--umbc-bg-retriever-brown) !important;
+}
+.has-umbc-extra-light-gray-background-color {
+    background-color: var(--umbc-bg-extra-light-gray) !important;
+}
+.has-umbc-light-gray-background-color {
+    background-color: var(--umbc-bg-light-gray) !important;
+}
+.has-umbc-dark-gray-background-color {
+    background-color: var(--umbc-bg-dark-gray) !important;
+}
+
+.has-white-background-color {
+    background-color: var(--umbc-bg-white) !important;
+}
+.has-black-background-color {
+    background-color: var(--umbc-bg-black) !important;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: var(--umbc-font-size-body);
+    font-weight: 400;
+    line-height: var(--umbc-line-height-body);
+    letter-spacing: var(--umbc-letter-spacing-body);
+    color: #252525;
+}
+
+p,
+.entry-content p,
+li,
+dt,
+dd,
+figcaption {
+    font-size: var(--umbc-font-size-body);
+    line-height: var(--umbc-line-height-body);
+    letter-spacing: var(--umbc-letter-spacing-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.entry-content :where(h1, h2, h3, h4, h5, h6),
+.wp-block-heading {
+    font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--umbc-color-heading);
+    margin-top: 0;
+}
+
+/* Restore top spacing for headings inside block containers.
+   Cover __inner-container has its own padding so margin-top on the first
+   heading is fine. !important beats WP core's margin-block-start: 0 rule. */
+.wp-block-cover__inner-container :where(h1, h2, h3, h4, h5, h6) {
+    margin-top: 1.5rem !important;
+}
+
+.wp-block-media-text__content :where(h1, h2, h3, h4, h5, h6) {
+    margin-top: 1.5rem !important;
+}
+
+.wp-block-group :where(h1, h2, h3, h4, h5, h6):not(:first-child),
+.wp-block-column :where(h1, h2, h3, h4, h5, h6):not(:first-child) {
+    margin-top: 1.5rem !important;
+}
+
+h1,
+.entry-content :where(h1),
+.wp-block-heading:where(h1),
+body.page .entry-title {
+    font-size: var(--umbc-font-size-h1);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.032em;
+}
+
+h2,
+.entry-content :where(h2),
+.wp-block-heading:where(h2) {
+    font-size: var(--umbc-font-size-h2);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.024em;
+}
+
+h3,
+.entry-content :where(h3),
+.wp-block-heading:where(h3) {
+    font-size: var(--umbc-font-size-h3);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.018em;
+}
+
+h4,
+.entry-content :where(h4),
+.wp-block-heading:where(h4) {
+    font-size: var(--umbc-font-size-h4);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.014em;
+}
+
+h5,
+.entry-content :where(h5),
+.wp-block-heading:where(h5) {
+    font-size: var(--umbc-font-size-h5);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+h6,
+.entry-content :where(h6),
+.wp-block-heading:where(h6) {
+    font-size: var(--umbc-font-size-h6);
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.006em;
+}
+
+.site .site-content #primary .ast-article-single {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.type-page
+    .wp-block-column
+    ul.wp-block-list:not(.navigation-list):not(.list-look-alike),
+.type-page
+    .wp-block-group
+    ul.wp-block-list:not(.navigation-list):not(.list-look-alike) {
+    list-style-type: disc;
+    margin-left: 1em !important;
+}
+
+.type-page
+    .wp-block-column
+    ul.wp-block-list:not(.navigation-list):not(.list-look-alike)
+    .wp-block-list,
+.type-page
+    .wp-block-group
+    ul.wp-block-list:not(.navigation-list):not(.list-look-alike)
+    .wp-block-list {
+    margin-left: 1em !important;
+    list-style-type: circle;
+}
+
+.type-page ul.wp-block-list .navigation-list {
+    margin-left: 0 !important;
+}
+
+.type-page .entry-content .ugrad-six-pack-content ul {
+    padding-left: 0;
+}
+
+.taxonomy-category .wp-block-post-terms__separator {
+    visibility: hidden;
+    display: inline-block;
+    width: 8px;
+    margin: 0;
+    padding: 0;
+}
+
+/* =============================================================
+   Astra legacy palette class → UMBC color rendering.
+   has-ast-global-color-N-background-color and has-ast-global-color-N-color
+   classes remain in page content from the pre-migration Astra theme.
+   These rules make them render correctly using the canonical UMBC colours
+   defined in :root above. Remove after DB content is migrated to umbc-* slugs.
+   ============================================================= */
+.has-ast-global-color-0-background-color {
+    background-color: var(--ast-0-bg) !important;
+} /* gold    */
+.has-ast-global-color-1-background-color {
+    background-color: var(--ast-1-bg) !important;
+} /* charcoal */
+.has-ast-global-color-2-background-color {
+    background-color: var(--ast-2-bg) !important;
+} /* teal    */
+.has-ast-global-color-3-background-color {
+    background-color: var(--ast-3-bg) !important;
+} /* red     */
+.has-ast-global-color-4-background-color {
+    background-color: var(--ast-4-bg) !important;
+} /* mid-gray */
+.has-ast-global-color-5-background-color {
+    background-color: var(--ast-5-bg) !important;
+} /* white   */
+.has-ast-global-color-6-background-color {
+    background-color: var(--ast-6-bg) !important;
+} /* lt-gray */
+.has-ast-global-color-7-background-color {
+    background-color: var(--ast-7-bg) !important;
+} /* black   */
+.has-ast-global-color-8-background-color {
+    background-color: var(--ast-8-bg) !important;
+} /* xlt-gray */
+
+.has-ast-global-color-0-color {
+    color: var(--ast-0-ink) !important;
+}
+.has-ast-global-color-1-color {
+    color: var(--ast-1-ink) !important;
+}
+.has-ast-global-color-2-color {
+    color: var(--ast-2-ink) !important;
+}
+.has-ast-global-color-3-color {
+    color: var(--ast-3-ink) !important;
+}
+.has-ast-global-color-4-color {
+    color: var(--ast-4-ink) !important;
+}
+.has-ast-global-color-5-color {
+    color: var(--ast-5-ink) !important;
+}
+.has-ast-global-color-6-color {
+    color: var(--ast-6-ink) !important;
+}
+.has-ast-global-color-7-color {
+    color: var(--ast-7-ink) !important;
+}
+.has-ast-global-color-8-color {
+    color: var(--ast-8-ink) !important;
+}
+
+/* Any cover block with a dark solid overlay → white text (belt-and-suspenders,
+   covers all ast-global-color-1/7/umbc-black overlay combinations). */
+.wp-block-cover
+    .has-ast-global-color-1-background-color.wp-block-cover__background,
+.wp-block-cover
+    .has-ast-global-color-7-background-color.wp-block-cover__background,
+.wp-block-cover .has-umbc-black-background-color.wp-block-cover__background {
+    background-color: #000 !important;
+}
+.wp-block-cover.alignfull
+    > .has-ast-global-color-1-background-color
+    ~ .wp-block-cover__inner-container
+    p,
+.wp-block-cover.alignfull
+    > .has-ast-global-color-7-background-color
+    ~ .wp-block-cover__inner-container
+    p,
+.wp-block-cover.alignfull
+    > .wp-block-cover__background.has-background-dim-60
+    ~ .wp-block-cover__inner-container
+    p,
+.wp-block-group.has-background[style*="background-color:#262626ba"]
+    .wp-block-group__inner-container
+    p {
+    color: #fff;
+}
+
+/* Same dark overlays, but for HEADINGS. An un-classed heading otherwise follows
+   --umbc-color-heading (dark in light mode) and renders dark-on-dark over a
+   charcoal/black scrim — it only happens to read in dark mode. Force white in
+   both modes. :where() keeps specificity low so explicit ink classes still win. */
+.wp-block-cover
+    > .has-ast-global-color-1-background-color
+    ~ .wp-block-cover__inner-container
+    :where(h1, h2, h3, h4, h5, h6),
+.wp-block-cover
+    > .has-ast-global-color-7-background-color
+    ~ .wp-block-cover__inner-container
+    :where(h1, h2, h3, h4, h5, h6),
+.wp-block-cover
+    > .has-umbc-black-background-color
+    ~ .wp-block-cover__inner-container
+    :where(h1, h2, h3, h4, h5, h6) {
+    color: #fff;
+}
+
+/* White / light cover overlay (ast-global-color-5) is a LIGHT surface in light
+   mode, so default (un-classed) text must be dark ink. WP core hard-codes
+   .wp-block-cover { color:#fff }, which vanishes on it. Routing through
+   --umbc-text makes the text flip light automatically when --ast-5-bg flips
+   dark in dark mode. Explicit ink classes (!important) still win; headings keep
+   their own --umbc-color-heading rule, which is already dark-on-light here. */
+.wp-block-cover
+    > .has-ast-global-color-5-background-color
+    ~ .wp-block-cover__inner-container,
+.wp-block-cover
+    > .has-ast-global-color-5-background-color
+    ~ .wp-block-cover__inner-container
+    :where(p, li, div, blockquote, span) {
+    color: var(--umbc-text);
+}
+
+/* =============================================================
+   .scrim — standard bottom-up dark gradient over cover images.
+   Use this class on any wp-block-cover that needs a dark scrim.
+   dim-ratio 0 in the editor = WP sets opacity:0 on the overlay span,
+   so we must force both background and opacity here.
+
+   .scrim-dark is kept as an alias at higher strength for the 36 pages
+   that already use it. The DB migration script will eventually move
+   all scrim-dark → scrim once editors have a chance to verify visually.
+   ============================================================= */
+.scrim .wp-block-cover__background.has-background-dim,
+.scrim .wp-block-cover__gradient-background.has-background-dim,
+.scrim .wp-block-cover-image .wp-block-cover__background.has-background-dim,
+.scrim
+    .wp-block-cover-image
+    .wp-block-cover__gradient-background.has-background-dim {
+    opacity: 1 !important;
+    background: var(--umbc-overlay-dark) !important;
+    background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.85) 0%,
+        rgba(0, 0, 0, 0.4) 60%,
+        rgba(0, 0, 0, 0) 100%
+    ) !important;
+}
+
+.scrim-dark .wp-block-cover__background.has-background-dim,
+.scrim-dark .wp-block-cover__gradient-background.has-background-dim,
+.scrim-dark
+    .wp-block-cover-image
+    .wp-block-cover__background.has-background-dim,
+.scrim-dark
+    .wp-block-cover-image
+    .wp-block-cover__gradient-background.has-background-dim {
+    opacity: 1 !important;
+    background: var(--umbc-overlay-dark-strong) !important;
+    background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 0.6) 60%,
+        rgba(0, 0, 0, 0) 100%
+    ) !important;
+}
+
+/* Text inside any scrim/scrim-dark cover always white */
+.scrim .wp-block-cover__inner-container,
+.scrim .wp-block-cover__inner-container h1,
+.scrim .wp-block-cover__inner-container h2,
+.scrim .wp-block-cover__inner-container h3,
+.scrim .wp-block-cover__inner-container h4,
+.scrim .wp-block-cover__inner-container h5,
+.scrim .wp-block-cover__inner-container h6,
+.scrim .wp-block-cover__inner-container p,
+.scrim-dark .wp-block-cover__inner-container,
+.scrim-dark .wp-block-cover__inner-container h1,
+.scrim-dark .wp-block-cover__inner-container h2,
+.scrim-dark .wp-block-cover__inner-container h3,
+.scrim-dark .wp-block-cover__inner-container h4,
+.scrim-dark .wp-block-cover__inner-container h5,
+.scrim-dark .wp-block-cover__inner-container h6,
+.scrim-dark .wp-block-cover__inner-container p {
+    color: #fff !important;
+}
+
+/* Dark mode: scrim/scrim-dark overlays are already dark — no changes needed.
+   The overlay colour and text-white rule both hold in dark mode as-is. */
+
+/* =============================================================
+   .image-hero cover blocks — enforce dark gradient overlay.
+   WP's has-black-to-transparent-gradient-background uses the
+   --wp--preset--gradient--black-to-transparent CSS variable which
+   resolves correctly now that it is defined in :root above.
+   These rules are a belt-and-suspenders backstop for any dim level
+   and ensure white text is always readable over the photo.
+   ============================================================= */
+/* The gradient span carries BOTH .wp-block-cover__gradient-background AND
+   .wp-block-cover__background on the same element. Force the gradient and
+   full opacity; exclude it from any solid-background opacity zero-out. */
+.image-hero.wp-block-cover .wp-block-cover__gradient-background {
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.65) 40%,
+        rgba(0, 0, 0, 0.65) 100%
+    ) !important;
+    opacity: 1 !important;
+}
+
+/* Zero out any solid-color background span that is NOT the gradient span */
+.image-hero.wp-block-cover
+    .wp-block-cover__background:not(.wp-block-cover__gradient-background):not(
+        [style*="background-color:#ffffff"]
+    ):not([style*="background-color: #ffffff"]) {
+    opacity: 0 !important;
+}
+
+/* All text in the left content column stays white — but NOT inside
+   columns that have their own background (e.g. the form card column) */
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    h1,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    h2,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    h3,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    h4,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    h5,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    h6,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    > *:not(.has-background)
+    p,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    h1,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    h2,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    h3,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    h4,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    h5,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    h6,
+.image-hero.wp-block-cover
+    .wp-block-cover__inner-container
+    .wp-block-column:not(.has-background)
+    p {
+    color: #fff;
+}
+
+/* White-overlay is-light covers: honor the editor's dimRatio rather than capping it.
+   Removed the 0.35 cap — editors set the opacity they want via the dim slider. */
+
+body.page
+    p:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    .wp-block-list:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    .wp-block-heading:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    h1:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    h2:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    h3:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    h4:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    h5:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(.has-text-color),
+body.page
+    h6:not([class*="alignwide"]):not([class*="alignfull"]):not(
+        [style*="width"]
+    ):not(.has-text-align-left):not(.has-text-align-right):not(
+        .has-text-color
+    ) {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px;
+}
+
+/* Tribe Events list view: undo the body.page h3 auto-centering.
+   Both selectors need !important — the h3 rule above has higher specificity
+   via :not() chains and cannot be overridden otherwise. */
+body.page .tribe-events-calendar-list__event-title,
+body.page .tribe-events-calendar-list__month-separator h3,
+body.page .tribe-events-c-top-bar__datepicker-button {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+body.page .wp-block-group.is-content-justification-left .has-text-align-left,
+body.page .wp-block-group.is-content-justification-right .has-text-align-right {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+body.page .wp-block-group.is-content-justification-left h3,
+body.page .wp-block-group.is-content-justification-right h3 {
+    margin-left: 0;
+    margin-right: 0;
+    text-align: inherit;
+}
+
+body.page .wp-block-group.is-layout-flex .has-text-align-left + h3,
+body.page .wp-block-group.is-layout-flex .has-text-align-right + h3 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: inherit;
+}
+
+.media-details {
+    gap: 8px !important;
+}
+
+@media only screen and (max-width: 1095px) {
+    .wp-block-columns :where(.is-layout-flow) > * {
+        margin-block-start: 0;
+        margin-block-end: 0;
+    }
+
+    .wp-block-columns.flex-mobile-half-all.is-layout-flex {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0 !important;
+    }
+
+    .wp-block-columns.flex-mobile-half-all.is-layout-flex > .wp-block-column {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+    }
+
+    .wp-container-core-columns-is-layout-3:has(.flex-mobile-half-column) {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0 !important;
+    }
+
+    .wp-container-core-columns-is-layout-3.is-layout-flex
+        > .wp-block-column.flex-mobile-half-column {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+        box-sizing: border-box !important;
+        margin: 1em 0;
+    }
+
+    .wp-block-columns.flex-mobile-half-all.is-layout-flex
+        > .wp-block-column
+        > * {
+        margin: 0.5em 0 !important;
+        padding: 0.5em 0 !important;
+    }
+
+    .wp-container-core-columns-is-layout-3.is-layout-flex
+        > .wp-block-column.flex-mobile-half-column
+        > * {
+        margin: 0.5em 0 !important;
+        padding: 0.25em 0;
+    }
+
+    .flex-mobile-half-column strong,
+    .flex-mobile-half-all strong {
+        word-break: keep-all;
+        overflow-wrap: normal;
+    }
+}
+
+a[data-type="page"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* removed legacy IE input-placeholder fallback (_: -ms-input-placeholder) */
+
+/* Screen-reader-only text. Used by js/new-tab-links.js to append
+   "(opens in a new tab)" to the accessible name of target=_blank links. */
+.umbc-newtab-sr {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* =============================================================
+   Spacing & layout utility classes
+   Width, height, border, padding, and margin helpers used in
+   the block editor via Additional CSS Class on groups/columns.
+   ============================================================= */
+
+/* ── Width / height ─────────────────────────────────────────── */
+.max-900 .wp-block-group__inner-container {
+    max-width: 900px !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.maxw100 {
+    max-width: 100% !important;
+}
+
+.w75 {
+    width: 75% !important;
+}
+
+.w50 {
+    width: 50% !important;
+}
+
+.maxw1200 {
+    max-width: 1200px !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.maxw800 {
+    max-width: 800px !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.maxw600 {
+    max-width: 600px !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mh-150 {
+    min-height: 150px;
+}
+
+/* ── Borders ────────────────────────────────────────────────── */
+.b-0 {
+    border: 0 !important;
+}
+
+.border-solid,
+.border-solid img {
+    border-style: solid;
+}
+
+.callout-left {
+    border-left: 8px solid #fdb515 !important;
+    padding-left: 24px;
+}
+
+.b-w-8,
+.border-circle-white img {
+    border: 8px solid #ffffff;
+}
+
+.border-circle-black img {
+    border: 8px solid #000000;
+}
+
+.b-t-1 {
+    border: 1px solid #007176;
+}
+
+.bb-b-8 {
+    border-bottom: 8px solid #000;
+}
+
+.bb-g-8 {
+    border-bottom: 8px solid #fdb515;
+}
+
+.b-g-8,
+.border-circle-gold img {
+    border: 8px solid #fdb515;
+}
+
+.bl-g-8 {
+    border-bottom: 8px solid #fdb515;
+}
+
+.calloutbox-border-left {
+    background: #fff !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.16);
+    border-left: 8px solid #fdb515;
+}
+
+.b-b-8 {
+    border: 8px solid #000;
+}
+
+.b-t-8 {
+    border: 8px solid #007176;
+}
+
+/* Padding utility classes (.pr-0, .pl-0, .px-N, .py-N) removed —
+   their fixed rem values with !important couldn't shrink on
+   mobile and forced cover/column blocks wider than the viewport.
+   Editors should use the block inspector's padding controls
+   (WP preset spacing scale) instead. */
+
+/* ── Margins ────────────────────────────────────────────────── */
+.mb-2 {
+    margin-bottom: 2rem !important;
+}
+
+.mb-1 {
+    margin-bottom: 1rem !important;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mt-2 {
+    margin-top: 2rem !important;
+}
+
+.mr-0 {
+    margin-right: 0 !important;
+}
+
+.mr-5 {
+    margin-right: 5px !important;
+}
+
+.mr-2 {
+    margin-right: 2rem !important;
+}
+
+.ml-0 {
+    margin-left: 0 !important;
+}
+
+.mx-0 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.mx-1 {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+}
+
+.mx-2 {
+    margin-left: 2rem !important;
+    margin-right: 2rem !important;
+}
+
+.mx-3 {
+    margin-left: 3rem !important;
+    margin-right: 3rem !important;
+}
+
+.mx-4 {
+    margin-left: 4rem !important;
+    margin-right: 4rem !important;
+}
+
+.mx-5 {
+    margin-left: 5rem !important;
+    margin-right: 5rem !important;
+}
+
+.my-0 {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.my-1 {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.my-2 {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.my-3 {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.my-4 {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+}
+
+.my-5 {
+    margin-top: 5rem;
+    margin-bottom: 5rem;
+}
+
+/* ==================== *DIVIDERS* ==================== */
+.wp-block-separator,
+.wp-block-separator.is-style-wide,
+.hr {
+    border-bottom: 1px solid #ccc !important;
+    border-top: 0 !important;
+    background: none !important;
+    margin: 1em auto;
+}
+
+.site-main .entry-content > .alignwide {
+    margin: 1em auto;
+}
+
+.single hr.wp-block-separator {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Category archive images and magazine homepage moved to umbc-style.css */
+
+/* ==================== *GLOBAL FRAMEWORK — moved from umbc-style.css* ==================== */
+
+/* Global image reset */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Entry content container */
+.entry-content {
+    overflow-x: clip;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* =============================================================
+   WCAG 2.1 AA — Global focus override
+   ============================================================= */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid;
+    outline-offset: 2px;
+}
+
+/* ── Block alignment framework ──────────────────────────────── */
+.alignwide,
+.entry-content > .wp-block-group,
+.entry-content > .wp-block-media-text,
+.entry-content > .wp-block-cover,
+.entry-content > .wp-block-columns {
+    max-width: 1200px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.entry-content > .wp-block-columns.has-background.alignfull,
+.entry-content > .wp-block-group,
+.entry-content > .wp-block-media-text,
+.entry-content > .wp-block-cover.alignfull,
+.entry-content > .wp-block-columns.alignfull {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ── Entry title ────────────────────────────────────────────── */
+.entry-title,
+.entry-title a {
+    font-weight: 700;
+}
+
+/* Non-overlay entry-header title: centered within the page column */
+.entry-header:not(.entry-header--hero-overlay) .entry-title {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+/* When section nav is active, the title is moved into the content column by
+   section-nav-inject.php — hide the entry-header copy to avoid duplication. */
+body.has-section-nav
+    .entry-header:not(.entry-header--hero-overlay)
+    .entry-title {
+    display: none;
+}
+
+/* Title injected inside the section content column */
+.section-content-title {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Dark mode: entry-title text colour */
+[data-theme="dark"] .entry-title,
+[data-theme="dark"] .section-content-title {
+    color: #e8e8e8;
+}
+
+/* ── Group block default padding ────────────────────────────── */
+.wp-block-group {
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+@media (min-width: 991px) {
+    .entry-content > .wp-block-group.alignwide.has-background,
+    .entry-content > .wp-block-group.alignfull.has-background,
+    .entry-content > .wp-block-cover.alignwide,
+    .entry-content > .wp-block-cover.alignfull,
+    .entry-content > .wp-block-columns.has-background.alignwide,
+    .entry-content > .wp-block-columns.has-background.alignfull {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding: 6em 4em;
+    }
+}
+
+/* ── landing-page-section: force white text over WP color classes ──
+ * WP generates .has-black-color { color:#000 } and similar inline in
+ * <head>. Specificity (0,1,0) vs. our (0,3,0) — we win regardless of
+ * load order. Kept in style.css (render-blocking) for safety.
+ * ─────────────────────────────────────────────────────────────────── */
+/* Exclude explicit gold (ast-global-color-0 / umbc-gold) — those headings
+   are intentionally gold even on dark cover backgrounds. */
+.wp-block-cover.landing-page-section:not(.is-light)
+    .has-text-color:not(.has-ast-global-color-0-color):not(
+        .has-umbc-gold-color
+    ),
+.wp-block-cover.landing-page-section:not(.is-light) .has-black-color,
+.wp-block-cover.landing-page-section:not(.is-light)
+    .has-ast-global-color-7-color,
+.wp-block-cover.landing-page-section:not(.is-light)
+    h1:not(.has-ast-global-color-0-color):not(.has-umbc-gold-color),
+.wp-block-cover.landing-page-section:not(.is-light)
+    h2:not(.has-ast-global-color-0-color):not(.has-umbc-gold-color),
+.wp-block-cover.landing-page-section:not(.is-light)
+    h3:not(.has-ast-global-color-0-color):not(.has-umbc-gold-color),
+.wp-block-cover.landing-page-section:not(.is-light)
+    h4:not(.has-ast-global-color-0-color):not(.has-umbc-gold-color),
+.wp-block-cover.landing-page-section:not(.is-light)
+    h5:not(.has-ast-global-color-0-color):not(.has-umbc-gold-color),
+.wp-block-cover.landing-page-section:not(.is-light)
+    h6:not(.has-ast-global-color-0-color):not(.has-umbc-gold-color),
+.wp-block-cover.landing-page-section:not(.is-light) p,
+.wp-block-cover.landing-page-section:not(.is-light) li {
+    color: #fff !important;
+}
+
+/* ── landing-page-section with a LIGHT overlay: restore dark text ──
+ * WordPress only adds .is-light to solid-color covers — image-backed covers
+ * with a light overlay (color-8, white, etc.) come through as :not(.is-light)
+ * and incorrectly inherit the forced-white rule above. Detect light overlays
+ * via :has() on the scrim span and restore the dark text token. Specificity
+ * (0,6,1) beats the forced-white rule's (0,5,1). Gold/umbc-gold headings
+ * stay excluded so intentionally-gold accents survive.
+ * Light-mode only: in dark mode the light overlay flips to a dark card, so
+ * the text must NOT be pinned to the non-flipping #010101 preset. Gating to
+ * :not([data-theme="dark"]) lets dark mode fall through to the forced-white
+ * rule above (white text on the dark-flipped overlay). ─────────────────── */
+html:not([data-theme="dark"]) .wp-block-cover.landing-page-section:has(
+        .wp-block-cover__background:is(
+            .has-ast-global-color-8-background-color,
+            .has-ast-global-color-5-background-color,
+            .has-umbc-white-background-color,
+            .has-umbc-extra-light-gray-background-color,
+            .has-umbc-light-gray-background-color,
+            [style*="background-color:#ffffff"],
+            [style*="background-color:#f3f3f3"],
+            [style*="background-color:#f5f5f5"],
+            [style*="background-color:#efefef"],
+            [style*="background-color:#fafafa"],
+            [style*="background-color:#f2f2f2"]
+        )
+    )
+    :is(h1, h2, h3, h4, h5, h6, p, li):not(.has-ast-global-color-0-color):not(
+        .has-umbc-gold-color
+    ) {
+    color: var(--wp--preset--color--ast-global-color-7) !important;
+}
+
+/* ── Covers with light overlays in dark mode (token policy 2026-06) ──
+   The overlay span's palette class (white / color-5 / color-8 / umbc-*)
+   flips to a dark card via the bg tokens above, turning the light scrim
+   into a dark scrim over the photo; inline-hex white overlays are flipped
+   in umbc-style.css. Inner text goes light through the standard --dm-text
+   token rules. The only extra rule needed here overrides WP core's
+   `.is-light .wp-block-cover__inner-container { color:#000 }` pin so
+   unclassed text (dates, table cells) inherits light. The old "keep the
+   overlay white / pin text dark" rules were removed with the policy change;
+   see .archive/css-pre-change-fable/ for the previous treatment. */
+[data-theme="dark"]
+    .wp-block-cover.is-light
+    .wp-block-cover__inner-container {
+    color: var(--umbc-text, #e0e0e0);
+}
+
+/* ── landing-page-section.is-light: dark mode text ──
+   More specific variant — keeps the black scrim treatment for this pattern
+   while the broader rule above handles plain is-light covers. ── */
+[data-theme="dark"]
+    .wp-block-cover.landing-page-section.is-light
+    .wp-block-cover__background {
+    background-color: #000 !important;
+    opacity: 0.55 !important;
+}
+[data-theme="dark"]
+    .wp-block-cover.landing-page-section.is-light
+    .has-text-color,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light h1,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light h2,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light h3,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light h4,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light h5,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light h6,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light p,
+[data-theme="dark"] .wp-block-cover.landing-page-section.is-light li {
+    color: #e8e8e8 !important;
+}
+[data-theme="dark"]
+    .wp-block-cover.landing-page-section.is-light
+    a:not([class*="wp-block-button"]) {
+    color: #7dd3d6 !important;
+}
+[data-theme="dark"]
+    .wp-block-cover.landing-page-section.is-light
+    a:not([class*="wp-block-button"]):hover {
+    color: #fff !important;
+}
+
+/* Figcaptions inside cover blocks inherit white text from the cover — reset to dark */
+.wp-block-cover figcaption,
+.wp-block-cover .wp-element-caption {
+    color: #1a1a1a;
+}
+
+/* =============================================================
+   404 / not-found page
+   ============================================================= */
+.umbc-404-wrap {
+    padding: 4em 1.5em 6em;
+}
+
+.umbc-404-inner {
+    max-width: 600px;
+    margin: 4rem auto;
+    text-align: center;
+}
+
+.umbc-404-dog {
+    display: block;
+    margin: 0 auto 0.5em;
+    width: 160px;
+    height: auto;
+    opacity: 0.9;
+}
+
+.umbc-404-code {
+    font-size: 5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0 0 0.25em;
+    color: var(--umbc-btn-gold);
+}
+
+.umbc-404-title {
+    font-size: 1.75rem;
+    margin: 0 0 0.75em;
+    color: var(--umbc-color-heading);
+}
+
+.umbc-404-body {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0 0 1em;
+    color: #333;
+}
+
+.umbc-404-sub {
+    font-size: 0.975rem;
+    line-height: 1.6;
+    margin: 0 0 1.75em;
+    color: #555;
+}
+
+.umbc-404-search {
+    margin-bottom: 1.5em;
+    text-align: left;
+}
+
+.umbc-404-search .qs-widget {
+    max-width: 100%;
+}
+
+.umbc-404-search .qs-input {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.65em 1em;
+    border: 2px solid #ccc;
+    border-radius: var(--umbc-btn-radius);
+    background: #fff;
+    color: #1a1a1a;
+    box-sizing: border-box;
+}
+
+.umbc-404-search .qs-input:focus {
+    border-color: var(--umbc-btn-gold);
+    /* WCAG 2.4.7: visible focus ring replacing the suppressed outline */
+    box-shadow: 0 0 0 2px rgba(253, 181, 21, 0.45);
+    outline: none;
+}
+
+.umbc-404-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    justify-content: center;
+    margin-bottom: 2.5em;
+}
+
+.umbc-404-btn-primary {
+    display: inline-block;
+    padding: 0.75em 1.75em;
+    background: var(--umbc-btn-gold);
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: var(--umbc-btn-radius);
+}
+
+.umbc-404-btn-primary:hover {
+    background: var(--umbc-btn-gold-hover);
+    color: #000;
+}
+
+.umbc-404-footer {
+    font-size: 0.875rem;
+    color: #888;
+}
+
+.umbc-404-footer a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+/* Dark mode */
+[data-theme="dark"] .umbc-404-dog {
+    opacity: 0.85;
+    filter: brightness(0.92);
+}
+
+[data-theme="dark"] .umbc-404-title {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .umbc-404-body {
+    color: #c8c8c8;
+}
+
+[data-theme="dark"] .umbc-404-sub {
+    color: #aaa;
+}
+
+[data-theme="dark"] .umbc-404-search .qs-input {
+    background: #2a2a2a;
+    border-color: #555;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .umbc-404-search .qs-input::placeholder {
+    color: #888;
+}
+
+[data-theme="dark"] .umbc-404-search .qs-input:focus {
+    border-color: var(--umbc-btn-gold);
+}
+
+[data-theme="dark"] .umbc-404-footer {
+    color: #c2c2c2;
+}
+
+[data-theme="dark"] .umbc-404-footer a {
+    color: #fff;
+}

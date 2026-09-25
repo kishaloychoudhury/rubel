@@ -1,0 +1,61 @@
+/**
+ * Homepage Hero Block
+ */
+
+(function () {
+    'use strict';
+
+    // Responsive text sizing — batch reads then writes to avoid layout thrashing
+    function adjustTextSizing() {
+        var titles = document.querySelectorAll('.hero-title-line-1, .hero-title-line-2');
+        var measurements = [];
+
+        // Batch READ phase — no writes here
+        titles.forEach(function (title) {
+            var container = title.closest('.hero-container');
+            if (container) {
+                measurements.push({
+                    el: title,
+                    containerWidth: container.offsetWidth,
+                    baseFontSize: parseInt(getComputedStyle(title).fontSize),
+                    textLength: title.textContent.length
+                });
+            }
+        });
+
+        // Batch WRITE phase — no reads here
+        measurements.forEach(function (m) {
+            var scaleFactor = Math.min(m.containerWidth / 800, 1);
+            var lengthFactor = Math.max(0.7, 1 - (m.textLength - 10) * 0.02);
+            var newFontSize = m.baseFontSize * scaleFactor * lengthFactor;
+            m.el.style.fontSize = Math.max(newFontSize, m.baseFontSize * 0.6) + 'px';
+        });
+    }
+
+    function init() {
+        adjustTextSizing();
+
+        var resizeTimeout;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustTextSizing, 250);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Re-initialize for block editor updates
+    if (window.wp && window.wp.domReady) {
+        window.wp.domReady(init);
+    }
+
+    window.HomepageHeroBlock = {
+        init: init,
+        adjustTextSizing: adjustTextSizing
+    };
+
+})();

@@ -1,0 +1,83 @@
+/**
+ * Six-pack accordion — mobile collapse / desktop expand.
+ *
+ * Works on any .ugrad-six-pack-container, whether from the undergrad ACF
+ * block or from plain block-editor markup using the same class pattern.
+ *
+ * Mobile (<768px): titles become toggle buttons; content collapses.
+ * Desktop (≥768px): all content is visible; toggle behaviour removed.
+ */
+( function () {
+	'use strict';
+
+	const BREAKPOINT = 768;
+
+	function handleClick( e ) {
+		if ( e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ' ) return;
+		if ( e.type === 'keydown' ) e.preventDefault();
+
+		const title     = e.currentTarget;
+		const contentId = title.getAttribute( 'aria-controls' );
+		const content   = contentId ? document.getElementById( contentId ) : null;
+		if ( ! content ) return;
+
+		const expanded = title.getAttribute( 'aria-expanded' ) === 'true';
+		title.setAttribute( 'aria-expanded', String( ! expanded ) );
+		content.hidden = expanded;
+	}
+
+	function enableMobile() {
+		document.querySelectorAll( '.ugrad-six-pack-container .ugrad-six-pack' ).forEach( function ( pack ) {
+			const title   = pack.querySelector( '.ugrad-six-pack-title' );
+			const content = pack.querySelector( '.ugrad-six-pack-content' );
+			if ( ! title || ! content ) return;
+
+			title.setAttribute( 'role', 'button' );
+			title.setAttribute( 'tabindex', '0' );
+			title.setAttribute( 'aria-expanded', 'false' );
+			content.hidden = true;
+
+			title.addEventListener( 'click',   handleClick );
+			title.addEventListener( 'keydown', handleClick );
+		} );
+	}
+
+	function enableDesktop() {
+		document.querySelectorAll( '.ugrad-six-pack-container .ugrad-six-pack' ).forEach( function ( pack ) {
+			const title   = pack.querySelector( '.ugrad-six-pack-title' );
+			const content = pack.querySelector( '.ugrad-six-pack-content' );
+			if ( ! title || ! content ) return;
+
+			title.removeAttribute( 'role' );
+			title.removeAttribute( 'tabindex' );
+			title.removeAttribute( 'aria-expanded' );
+			content.hidden = false;
+
+			title.removeEventListener( 'click',   handleClick );
+			title.removeEventListener( 'keydown', handleClick );
+		} );
+	}
+
+	let currentMode = null;
+
+	function applyMode() {
+		const mode = window.innerWidth >= BREAKPOINT ? 'desktop' : 'mobile';
+		if ( mode === currentMode ) return;
+		currentMode = mode;
+		mode === 'desktop' ? enableDesktop() : enableMobile();
+	}
+
+	// Throttle resize to avoid thrashing on mobile scroll-resize events.
+	let resizeTimer;
+	window.addEventListener( 'resize', function () {
+		clearTimeout( resizeTimer );
+		resizeTimer = setTimeout( applyMode, 50 );
+	} );
+
+	// Run on DOM ready.
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', applyMode );
+	} else {
+		applyMode();
+	}
+}() );

@@ -1,0 +1,26 @@
+/* ==============================================
+   UMBC Stories Query Gallery Block
+   style.css — query-specific overrides only.
+   All base layout/component styles live in
+   stories-block/style.css which is declared
+   as a dependency in block.json.
+   ============================================== */
+
+/* Editor-only empty-state notice */
+.stories-query-block__empty {
+  padding: 2rem;
+  text-align: center;
+  font-style: italic;
+  color: #888;
+  border: 2px dashed #ccc;
+  border-radius: var(--umbc-radius-sm, 4px);
+  margin: 1rem;
+}
+
+/* The eyebrow on query-driven cards shows the date —
+   de-emphasise slightly compared to a person's name.  */
+.umbc-stories-block[data-display="query"] .stories-card__eyebrow {
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}

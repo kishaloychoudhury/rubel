@@ -1,0 +1,293 @@
+/*--------------------------------------------------------------
+# UMBC Tabs Block Styles — Unified and Finalized
+--------------------------------------------------------------*/
+
+.umbc-horizontal-tabs {
+  font-family: sans-serif;
+  color: #333;
+  margin: 2rem auto;
+  max-width: 1200px;
+}
+
+/* Tab list as a proper UL */
+/* Fix tab list borders and spacing */
+/* Fix tab list border between tabs */
+.umbc-tab-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  border-bottom: 1px solid #ccc;
+}
+
+
+/* Remove ghost tab list */
+.umbc-horizontal-tabs > .umbc-tab-list + .umbc-tab-list {
+  display: none;
+}
+
+
+/* Tabs with no gap in border between them */
+.umbc-tab + .umbc-tab {
+  margin-left: -1px; /* Removes visible spacing between tabs */
+}
+
+/* Ensure active tab overlaps bottom border */
+.umbc-tab.active {
+  border-bottom: 1px solid #fff; /* match panel background */
+  z-index: 2;
+  position: relative;
+}
+
+
+/* --------------------------------------------------------------
+Override any global button styles and normalize tab button behavior
+-------------------------------------------------------------- */
+.umbc-tab {
+  all: unset;
+  display: inline-block;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  border-radius: var(--umbc-radius-sm, 4px) var(--umbc-radius-sm, 4px) 0 0;
+  padding: 0.5rem 1rem;
+  margin-right: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* On hover (desktop) */
+.umbc-tab:hover {
+  background-color: #eee;
+  color: #000;
+  border-color: #ccc;
+}
+
+/* Active tab */
+.umbc-tab.active {
+  background-color: #fff;
+  color: #000;
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #ccc;
+  border-bottom: 1px solid #fff;
+}
+
+/* Panels */
+.umbc-tab-panels {
+  border: 1px solid #ccc;
+  border-top: none;
+  padding: 1rem;
+  margin-top: -1px;
+  background: #fff;
+}
+
+/* Headings in panels */
+.umbc-tab-panel > h3 {
+  margin-top: 0;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Hide inactive desktop panels but not mobile clones */
+.umbc-tab-panel:not(.active):not(.mobile-tab-panel) {
+  display: none;
+}
+
+/* Responsive tab list */
+@media (max-width: 767px) {
+  
+  .umbc-horizontal-tabs {
+    padding: 0;
+    width: 100%;
+  }
+  
+  .umbc-tab-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* no gap between button and panel */
+    border-bottom: none;
+  }
+
+  .umbc-tab {
+    display: block;
+    padding: 1rem;
+    border-radius: 0;
+    margin-right: auto;
+    margin-left: auto;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+    cursor: pointer;
+    margin-bottom: 0;
+    text-align: left;
+    width: calc(100% - 2em - 2px);
+  }
+
+  .umbc-tab.active, button.umbc-tab.active {
+    background-color: #fff;
+    width: calc(100% - 2em - 2px);
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 0; 
+  }
+
+  .mobile-tab-panel {
+    padding: 1rem;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-top: none;
+    background-color: #fff;
+  }
+
+  .umbc-tab-panels {
+    display: none !important;
+  }
+
+  .umbc-tab-panel:not(.mobile-tab-panel) {
+    display: none !important;
+  }
+  
+  .mobile-tab-panel th,
+  .mobile-tab-panel td {
+    white-space: nowrap;
+  }
+  .mobile-tab-panel {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  
+  .mobile-tab-panel table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-tab-panel {
+    display: none !important;
+  }
+}
+
+/* Responsive content */
+.umbc-tab-panel table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  border-collapse: collapse;
+}
+
+.umbc-tab-panel img,
+.umbc-tab-panel video,
+.umbc-tab-panel iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Visually hidden text utility */
+.screen-reader-text {
+  position: absolute !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  height: 1px !important;
+  width: 1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: -1px !important;
+}
+
+[data-theme="dark"] .umbc-horizontal-tabs {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .umbc-tab-list {
+  border-bottom-color: var(--umbc-border, #3d3d3d);
+}
+
+[data-theme="dark"] .umbc-tab {
+  background-color: var(--umbc-surface-card-alt, #232323);
+  border-color: var(--umbc-border, #3d3d3d);
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .umbc-tab:hover {
+  background-color: #2e2e2e;
+  color: #fff;
+  border-color: var(--umbc-border, #3d3d3d);
+}
+
+[data-theme="dark"] .umbc-tab.active,
+[data-theme="dark"] button.umbc-tab.active {
+  background-color: #1a1a1a;
+  color: #fff;
+  border-color: var(--umbc-border, #3d3d3d);
+  border-bottom-color: #1a1a1a;
+}
+
+[data-theme="dark"] .umbc-tab-panels,
+[data-theme="dark"] .mobile-tab-panel {
+  background: #1a1a1a;
+  border-color: var(--umbc-border, #3d3d3d);
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .umbc-tab-panel,
+[data-theme="dark"] .mobile-tab-panel,
+[data-theme="dark"] .umbc-tab-panel > h3,
+[data-theme="dark"] .mobile-tab-panel > h3,
+[data-theme="dark"] .umbc-tab-panel p,
+[data-theme="dark"] .umbc-tab-panel li,
+[data-theme="dark"] .mobile-tab-panel p,
+[data-theme="dark"] .mobile-tab-panel li {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .umbc-tab-panel a:not(.wp-block-button__link),
+[data-theme="dark"] .mobile-tab-panel a:not(.wp-block-button__link) {
+  color: #fff;
+}
+
+[data-theme="dark"] .umbc-tab-panel a:not(.wp-block-button__link):hover,
+[data-theme="dark"] .mobile-tab-panel a:not(.wp-block-button__link):hover {
+  color: #fff;
+}
+
+[data-theme="dark"] .umbc-tab-panel table,
+[data-theme="dark"] .mobile-tab-panel table,
+[data-theme="dark"] .umbc-tab-panel th,
+[data-theme="dark"] .umbc-tab-panel td,
+[data-theme="dark"] .mobile-tab-panel th,
+[data-theme="dark"] .mobile-tab-panel td {
+  border-color: var(--umbc-border, #3d3d3d);
+  color: #e0e0e0;
+}
+
+@media (max-width: 767px) {
+  [data-theme="dark"] .umbc-tab {
+    background-color: var(--umbc-surface-card-alt, #232323);
+    border-color: var(--umbc-border, #3d3d3d);
+    color: #d0d0d0;
+  }
+
+  [data-theme="dark"] .umbc-tab.active,
+  [data-theme="dark"] button.umbc-tab.active {
+    background-color: #1a1a1a;
+    border-top-color: var(--umbc-border, #3d3d3d);
+    border-bottom-color: var(--umbc-border, #3d3d3d);
+  }
+}

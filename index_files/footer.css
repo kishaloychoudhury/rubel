@@ -1,0 +1,694 @@
+/* ── Variables ──────────────────────────────────────────── */
+.footer-container {
+    --fc-black: #1a1a1a;
+    --fc-gold: #fdb515;
+    --fc-gold-hover: #e8a510;
+    --fc-gray-100: #f5f5f3;
+    --fc-gray-200: #e8e6e0;
+    --fc-gray-700: #3d3c38;
+    --fc-white: #ffffff;
+}
+
+/* ── Reset ──────────────────────────────────────────────── */
+.footer-container *,
+.footer-container *::before,
+.footer-container *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Outer shell ────────────────────────────────────────── */
+.footer-container {
+    font-family: "Inter", "Arial", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: var(--fc-white);
+    color: var(--fc-gray-700);
+    border-top: 4px solid var(--fc-gold);
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+}
+
+/* ── Main grid ──────────────────────────────────────────── */
+.footer-container .footer-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px 16px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+    .footer-container .footer-main {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .footer-container .footer-main {
+        grid-template-columns: 260px 1fr 1fr 220px;
+        gap: 32px 48px;
+        padding: 56px 48px 48px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .footer-container .footer-main {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 639px) {
+    .footer-container .copyright {
+        text-align: center;
+    }
+}
+
+/* ── Brand column ───────────────────────────────────────── */
+.footer-container .footer-brand {
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 1024px) {
+    .footer-container .footer-brand {
+        grid-column: auto;
+    }
+}
+
+.footer-container .footer-logo-link {
+    display: block;
+    width: 200px;
+    margin-bottom: 20px;
+    color: var(--fc-black);
+}
+
+@media (min-width: 768px) {
+    .footer-container .footer-logo-link {
+        width: 230px;
+    }
+}
+
+.footer-container .footer-logo-link img,
+.footer-container .footer-logo-link svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.footer-container .footer-logo-link:hover img,
+.footer-container .footer-logo-link:hover svg {
+    opacity: 0.8;
+}
+
+.footer-container .footer-logo-link:focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+/* ── Address ────────────────────────────────────────────── */
+.footer-container .footer-address {
+    font-size: 13px;
+    color: var(--fc-gray-700);
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.footer-container .footer-address a {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--fc-gray-700) !important;
+    text-decoration: none;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.footer-container .footer-address a:hover {
+    text-decoration: underline;
+}
+
+/* ── Social icons ───────────────────────────────────────── */
+.footer-container .footer-social-navigation {
+    display: inline-flex;
+    flex-wrap: wrap;
+    list-style: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-container .footer-social-navigation a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 44x44 hit target for WCAG 2.5.5 (AAA); the glyph stays 36px so the
+       footer's visual prominence is unchanged — only the tap area grows. */
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--fc-gray-700) !important;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.footer-container .footer-social-navigation a:hover {
+    color: var(--fc-gray-400) !important;
+    text-decoration: none;
+    outline: 0;
+}
+
+.footer-container .footer-social-navigation a:focus-visible {
+    outline: 2px solid var(--fc-gray-700);
+    outline-offset: 2px;
+}
+
+.footer-container .footer-social-navigation a svg,
+.footer-container .footer-social-navigation a img {
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+
+/* myUMBC — no circle, transparent bg, dark gray color */
+.footer-container .footer-social-navigation a.footer-nav-myUMBC {
+    width: auto;
+    height: 44px;
+    border-radius: 4px;
+    padding: 10px 8px;
+    background-color: transparent;
+}
+
+.footer-container .footer-social-navigation a.footer-nav-myUMBC svg {
+    width: auto;
+    height: 100%;
+    max-width: 80px;
+}
+
+.footer-container
+    .footer-social-navigation
+    a.footer-nav-myUMBC
+    svg
+    path[fill="#fdb515"],
+.footer-container
+    .footer-social-navigation
+    a.footer-nav-myUMBC
+    svg
+    path[fill="white"] {
+    fill: var(--fc-gray-700);
+}
+
+.footer-container
+    .footer-social-navigation
+    a.footer-nav-myUMBC:hover
+    svg
+    path[fill="#fdb515"],
+.footer-container
+    .footer-social-navigation
+    a.footer-nav-myUMBC:hover
+    svg
+    path[fill="white"] {
+    fill: var(--fc-black);
+}
+
+/* ── Link columns ───────────────────────────────────────── */
+.footer-container .footer-col {
+    /* no extra padding needed — grid gap handles spacing */
+}
+
+/* ── Column headings ────────────────────────────────────── */
+.footer-container .footer-col-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fc-gray-700);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--fc-gray-700);
+}
+
+.footer-container .footer-col-label--secondary {
+    margin-top: 28px;
+}
+
+/* ── Footer links ───────────────────────────────────────── */
+.footer-container .footer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-container .footer-links a {
+    font-size: 13px;
+    color: var(--fc-gray-700) !important;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    padding: 2px 0;
+    transition: color 0.15s;
+}
+
+.footer-container .footer-links a:hover {
+    color: var(--fc-black) !important;
+    text-decoration: underline;
+}
+
+.footer-container .footer-links a:focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+.footer-container .nowrap {
+    white-space: nowrap;
+}
+
+/* ── CTA column ─────────────────────────────────────────── */
+.footer-container .footer-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-container .cta-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 3px;
+    font-family: "Inter", "Arial", sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    border: 0;
+    transition:
+        background-color 0.15s,
+        color 0.15s,
+        border-color 0.15s;
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* Primary — gold fill */
+.footer-container .cta-btn--primary {
+    background-color: var(--fc-gold);
+    color: var(--fc-black) !important;
+    border: 0;
+}
+
+.footer-container .cta-btn--primary:hover {
+    background-color: var(--fc-gold-hover);
+    color: var(--fc-black) !important;
+    text-decoration: none;
+}
+
+.footer-container .cta-btn--primary:focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+/* Secondary — outlined */
+.footer-container .cta-btn--secondary {
+    background-color: transparent;
+    color: var(--fc-black) !important;
+    border: 1px solid #444;
+}
+
+.footer-container .cta-btn--secondary:hover {
+    border-color: var(--fc-gold);
+    color: var(--fc-gray-700) !important;
+    text-decoration: none;
+}
+
+.footer-container .cta-btn--secondary:focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+/* Tertiary — dark fill */
+.footer-container .cta-btn--tertiary {
+    background-color: #2a2a28;
+    color: var(--fc-gray-100) !important;
+    border: 0;
+}
+
+.footer-container .cta-btn--tertiary:hover {
+    background-color: var(--fc-gray-700);
+    color: var(--fc-white) !important;
+    text-decoration: none;
+}
+
+.footer-container .cta-btn--tertiary:focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+/* Divider between Apply and Top Stories */
+.footer-container .cta-divider {
+    height: 1px;
+    background-color: #d0cec8;
+    margin: 4px 0;
+}
+
+/* Top Stories label */
+.footer-container .top-stories-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fc-black);
+    margin-bottom: 0;
+}
+
+/* ── Request Info dropdown ──────────────────────────────── */
+.footer-container .additional-choices {
+    background-color: var(--fc-white);
+    border: 1px solid var(--fc-gray-200);
+    border-radius: 3px;
+    padding: 8px;
+    margin-top: -4px;
+}
+
+.footer-container .additional-choices .sub-menu-footer {
+    list-style: none;
+}
+
+.footer-container .additional-choices .sub-menu-footer li + li {
+    margin-top: 2px;
+}
+
+.footer-container .additional-choices a.menu-link {
+    display: block;
+    padding: 8px 10px;
+    color: var(--fc-gray-700) !important;
+    text-decoration: none;
+    font-size: 13px;
+    border-radius: 2px;
+    transition: background-color 0.12s;
+}
+
+.footer-container .additional-choices a.menu-link:hover {
+    background-color: var(--fc-gray-200);
+    color: var(--fc-black) !important;
+}
+
+/* ── Sub-footer ─────────────────────────────────────────── */
+.footer-container .subfooter {
+    background-color: var(--fc-gray-100);
+    border-top: 1px solid #d0cec8;
+}
+
+.footer-container .subfooter-inner {
+    display: block;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 16px;
+}
+
+@media (min-width: 768px) {
+    .footer-container .subfooter-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 48px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .footer-container .subfooter-inner {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+/* Copyright */
+.footer-container .copyright {
+    font-size: 11.5px;
+    color: #555;
+    padding: 8px 0;
+}
+
+.footer-container .copyright a {
+    text-decoration: underline;
+}
+
+.footer-container .copyright a:hover {
+    color: #555 !important;
+    text-decoration: none;
+}
+
+/* Sub-footer nav links */
+.footer-container .subfooter-links .footer-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0;
+}
+
+@media (min-width: 1024px) {
+    .footer-container .subfooter-links .footer-list {
+        justify-content: flex-end;
+    }
+}
+
+.footer-container .subfooter-links .footer-list li {
+    padding: 0;
+    margin: 0;
+}
+
+.footer-container .subfooter-links .footer-list li + li {
+    margin: 0;
+}
+
+.footer-container .subfooter-links .footer-list a {
+    display: inline-block;
+    font-size: 11px;
+    color: #555 !important;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-right: 1px solid #c0beba;
+    min-height: 0;
+    transition: color 0.15s;
+}
+
+.footer-container .subfooter-links .footer-list li:last-child a {
+    border-right: none;
+    padding-right: 0;
+}
+
+.footer-container .subfooter-links .footer-list a:hover {
+    color: var(--fc-gray-400) !important;
+    text-decoration: none;
+}
+
+/* "Cookie settings" is a <button> (it opens a dialog) styled to match the
+   sibling legal links. */
+.footer-container .subfooter-links .footer-list .umbc-cookie-settings {
+    display: inline-block;
+    font-family: inherit;
+    font-size: 11px;
+    line-height: inherit;
+    color: #555;
+    background: none;
+    border: 0;
+    border-right: 1px solid #c0beba;
+    border-radius: 0;
+    padding: 6px 12px;
+    margin: 0;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.footer-container .subfooter-links .footer-list .umbc-cookie-settings:hover {
+    color: var(--fc-gray-400);
+}
+
+.footer-container .subfooter-links .footer-list .umbc-cookie-settings:focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+/* ── SR-only utility ────────────────────────────────────── */
+.footer-container .sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap;
+}
+
+/* Open-in-new-window labeling is now handled site-wide by js/new-tab-links.js,
+   which appends real (audit-visible, SR-exposed) DOM text. The old CSS
+   `::before` approach was removed because generated content is ignored by
+   automated accessibility checkers and is not reliably read by assistive tech. */
+
+/* ── Focus visible global override ─────────────────────── */
+.footer-container :focus-visible {
+    outline: 2px solid var(--fc-gold);
+    outline-offset: 2px;
+}
+
+/* ── Dark mode ──────────────────────────────────────────── */
+
+[data-theme="dark"] .footer-container .cta-btn--primary,
+[data-theme="dark"] .footer-container .cta-btn--primary:hover {
+    color: #1a1a1a !important;
+}
+
+[data-theme="dark"] .footer-container {
+    --fc-black: #e0e0e0;
+    --fc-gray-100: #1a1a1a;
+    --fc-gray-200: #2a2a2a;
+    --fc-gray-700: #b0b0b0;
+    --fc-white: #1f1f1f;
+}
+
+[data-theme="dark"] .footer-container {
+    background-color: #1a1a1a;
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .footer-container .footer-col-label {
+    color: #ccc;
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .footer-container .footer-links a {
+    color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .footer-container .footer-links a:hover {
+    color: #fff !important;
+}
+
+[data-theme="dark"] .footer-container .footer-address {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .footer-container .footer-address a {
+    color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .footer-container .footer-social-navigation a {
+    color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .footer-container .footer-social-navigation a:hover {
+    color: #fff !important;
+}
+
+[data-theme="dark"] .footer-container .footer-social-navigation a svg path {
+    fill: #b0b0b0;
+}
+
+[data-theme="dark"]
+    .footer-container
+    .footer-social-navigation
+    a:hover
+    svg
+    path {
+    fill: #fff;
+}
+
+/* Logo picture swap */
+.footer-logo-dark {
+    display: none;
+}
+[data-theme="dark"] .footer-container .footer-logo-light {
+    display: none;
+}
+[data-theme="dark"] .footer-container .footer-logo-dark {
+    display: block;
+}
+
+/* Request Info — outlined button: visible border + light text in dark mode */
+[data-theme="dark"] .footer-container .cta-btn--secondary {
+    border-color: #ccc;
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .footer-container .cta-btn--secondary:hover {
+    border-color: #fdb515;
+    color: #fff !important;
+}
+
+/* Sign Up for UMBC News — dark-fill button: lighten bg so text is readable */
+[data-theme="dark"] .footer-container .cta-btn--tertiary {
+    background-color: #3a3a38;
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .footer-container .cta-btn--tertiary:hover {
+    background-color: #4a4a48;
+    color: #fff !important;
+}
+
+/* Top Stories label */
+[data-theme="dark"] .footer-container .top-stories-label {
+    color: #ccc;
+}
+
+[data-theme="dark"] .footer-container .subfooter {
+    background-color: #141414;
+    border-top-color: #333;
+}
+
+[data-theme="dark"] .footer-container .copyright {
+    color: #888;
+}
+
+[data-theme="dark"] .footer-container .copyright a {
+    color: #ccc !important;
+}
+
+[data-theme="dark"] .footer-container .subfooter-links .footer-list a {
+    color: #888 !important;
+    border-right-color: #333;
+}
+
+[data-theme="dark"] .footer-container .subfooter-links .footer-list a:hover {
+    color: #ccc !important;
+}
+
+[data-theme="dark"] .footer-container .subfooter-links .footer-list .umbc-cookie-settings {
+    color: #888;
+    border-right-color: #333;
+}
+
+[data-theme="dark"] .footer-container .subfooter-links .footer-list .umbc-cookie-settings:hover {
+    color: #ccc;
+}
+
+[data-theme="dark"] .footer-container .cta-divider {
+    background-color: #333;
+}
+
+[data-theme="dark"] .footer-container .additional-choices {
+    background-color: #242424;
+    border-color: #333;
+}
+
+[data-theme="dark"] .footer-container .additional-choices a.menu-link {
+    color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .footer-container .additional-choices a.menu-link:hover {
+    background-color: #2a2a2a;
+    color: #fff !important;
+}

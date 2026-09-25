@@ -1,0 +1,828 @@
+body,
+button,
+input,
+select,
+textarea {
+    font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* ── Skip links (WCAG 2.4.1) ──────────────────────────────────
+   Off-screen until focused, then pinned to the top-left corner.
+   Each link sits at the same focused position; only the focused
+   one is ever on-screen, so they don't visually stack. */
+.umbc-skip-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100001; /* above the sticky header */
+}
+
+.umbc-skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 18px;
+    background: #ffffff;
+    color: #006c70; /* teal, >=4.5:1 on white */
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: underline;
+    white-space: nowrap;
+    border: 2px solid #fdb515;
+    border-radius: 0 0 4px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.umbc-skip-link:focus,
+.umbc-skip-link:focus-visible {
+    left: 0;
+    outline: 3px solid #000;
+    outline-offset: 2px;
+}
+
+/* The "skip to main navigation" link is only useful where the unified
+   header's primary nav exists (>=1100px); the mobile nav is behind the
+   hamburger toggle, so hide this link on small screens.
+   NOTE: the desktop/mobile header breakpoint is 1100px — raised from
+   900px (2026-06) because the primary menu + inline search overlapped
+   in the 900–1090px band. Keep in sync with umbc-nav.css. */
+@media (max-width: 1099px) {
+    .umbc-skip-link--nav {
+        display: none;
+    }
+}
+
+[data-theme="dark"] .umbc-skip-link {
+    background: #1f1f1f;
+    color: #fdb515;
+    border-color: #fdb515;
+}
+
+[data-theme="dark"] .umbc-skip-link:focus,
+[data-theme="dark"] .umbc-skip-link:focus-visible {
+    outline-color: #fff;
+}
+
+html {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: clip;
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+}
+
+#page {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#primary {
+    flex: 1 0 auto;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.ast-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ── Mobile header — hidden by default, shown at ≤899px ── */
+
+.mobile-header {
+    display: none;
+    background-color: #fff;
+}
+
+/* ── Unified header — hidden by default, shown at ≥900px ── */
+
+.unified-header {
+    display: none;
+}
+
+@media (min-width: 1100px) {
+    .unified-header {
+        display: flex;
+        align-items: stretch;
+        background: #fff;
+        height: 120px;
+        position: relative;
+        z-index: 50;
+        overflow: visible;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Left padding = 2rem to line up with the section nav, whose
+       .section-layout-wrapper sits 2rem from the viewport edge. */
+    .uh-logo {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        background: #fff;
+        padding: 22px 0 22px 2rem;
+        text-decoration: none !important;
+        z-index: 2;
+    }
+
+    .uh-logo img {
+        display: block;
+        width: 58px;
+        height: auto;
+    }
+
+    .uh-nav-panel {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        min-width: 0;
+        position: relative;
+    }
+
+    .uh-utility-strip {
+        position: relative;
+        z-index: 65;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 24px 0 56px;
+        flex-shrink: 0;
+        overflow: visible;
+        width: fit-content;
+        align-self: flex-end;
+        background: transparent;
+    }
+
+    /* Angular left-edge shape — pseudo keeps clip-path from clipping the dropdown.
+       Softer charcoal (not near-black) per 2026-06 feedback. */
+    .uh-utility-strip::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #3a3a3a;
+        clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 46px 100%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .uh-utility-strip > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .uh-utility-link,
+    .uh-utility-cta {
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+
+    /* Dividers sit between links only — no leading edge line before the first */
+    .uh-utility-link {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding: 0 16px;
+        font-size: 0.8rem;
+        color: #d6d6d6;
+        border-right: 1px solid #5a5a5a;
+        transition: color 0.15s;
+    }
+
+    .uh-utility-cta {
+        display: flex;
+        align-items: center;
+        height: 32px;
+        padding: 0 20px;
+        margin-left: 16px;
+        background: #fdb515;
+        color: #1a1a1a !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        transition: background 0.15s;
+        text-decoration: none !important;
+    }
+
+    .uh-utility-dropdown {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .uh-utility-link--has-dropdown {
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .uh-utility-link--has-dropdown svg {
+        flex-shrink: 0;
+    }
+
+    /* Full 2rem of clear space between the logo and the menu's leading edge
+       (incl. the first item's hover box) — same as the logo's gap from the
+       screen edge. */
+    .uh-primary-row {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        padding: 0 16px 0 2rem;
+        gap: 8px;
+        overflow: visible;
+        min-width: 0;
+        background: #fff;
+        position: relative;
+        z-index: 60;
+    }
+
+    .uh-primary-nav {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: visible;
+    }
+
+    .uh-primary-nav .uh-primary-menu {
+        display: flex;
+        align-items: center;
+        list-style: none !important;
+        margin: 0;
+        padding: 0;
+        flex-wrap: nowrap;
+        gap: 0;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li {
+        position: relative;
+        list-style: none !important;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > a {
+        display: block;
+        line-height: 74px;
+        height: 74px;
+        padding: 0 14px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        text-decoration: none !important;
+        white-space: nowrap;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+    .uh-primary-nav .uh-primary-menu > li > a::before,
+    .uh-primary-nav .uh-primary-menu > li > a::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    /* Active state is handled by the inset box-shadow in umbc-nav.css — no separate border needed */
+
+    /* flex-shrink 1 + min-width: the search compresses before it can
+       collide with the menu on narrow desktop widths. */
+    .uh-search-inline {
+        flex: 0 1 260px;
+        min-width: 120px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .uh-search-inline .qs-widget {
+        width: 100%;
+        position: static;
+    }
+
+    .uh-search-inline .qs-input-wrap {
+        width: 100%;
+    }
+
+    /* Full pill, 44px tall — matches the 44px circular dark-mode toggle so
+       the pair reads as one control family. */
+    .uh-search-inline .qs-input {
+        width: 100%;
+        background: #f5f5f5;
+        color: #1a1a1a;
+        -webkit-text-fill-color: #1a1a1a;
+        border: 1px solid #757575;
+        border-radius: var(--umbc-radius-pill, 999px);
+        font-size: 0.85rem;
+        height: 44px;
+        padding-left: 2.4em;
+        box-sizing: border-box;
+        transition:
+            border-color 0.15s,
+            box-shadow 0.15s,
+            background 0.15s;
+    }
+
+    .uh-search-inline .qs-input:focus {
+        background: #fff;
+        border-color: #007176;
+        box-shadow: none;
+        color: #1a1a1a;
+        -webkit-text-fill-color: #1a1a1a;
+        outline: none;
+    }
+
+    .uh-search-inline .qs-input::placeholder {
+        color: #707070;
+        -webkit-text-fill-color: #707070;
+    }
+
+    .uh-search-inline .qs-input-wrap::before {
+        left: 0.9em;
+        filter: invert(0.56);
+        opacity: 1;
+    }
+
+    .uh-search-inline .qs-listbox {
+        border-radius: var(--umbc-radius-lg, 12px);
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: auto;
+        width: 400px;
+        margin-top: 2px;
+        z-index: 600;
+    }
+}
+
+/* Roomy desktops: let the search and its results panel breathe */
+@media (min-width: 1440px) {
+    .uh-search-inline {
+        flex-basis: 320px;
+    }
+
+    .uh-search-inline .qs-listbox {
+        width: 480px;
+    }
+}
+
+/* Narrow-desktop squeeze relief (just above the mobile breakpoint):
+   tighter menu padding and a smaller search basis keep the row from
+   crowding before the hamburger takes over below 1100px. */
+@media (min-width: 1100px) and (max-width: 1279px) {
+    .uh-primary-nav .uh-primary-menu > li > a {
+        padding: 0 10px;
+        font-size: 0.85rem;
+    }
+
+    /* Search keeps its 260px basis here — flex-shrink (min-width 120px)
+       still lets it compress if the row ever runs out of room. */
+    .uh-primary-row {
+        padding: 0 12px 0 2rem;
+    }
+}
+
+@media (max-width: 1099px) {
+    .mobile-header {
+        display: block;
+        padding: 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        position: relative;
+        z-index: 100;
+    }
+
+    /* .mobile-logo moves between .mobile-header-inner and .mobile-overlay-logo-slot via JS */
+    .mobile-logo {
+        /* 44px min height tap target (WCAG 2.5.5 AAA); logo image stays 28px */
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        flex: 0 0 auto;
+    }
+
+    .mobile-logo img {
+        display: block;
+        height: 28px;
+        width: auto;
+    }
+
+    .mobile-header-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+    }
+
+    .mobile-overlay-logo-slot {
+        display: flex;
+        align-items: center;
+    }
+}
+
+/* ── Quick search widget — shared base styles ── */
+
+.qs-widget {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+}
+
+.qs-input-wrap {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.qs-input-wrap::before {
+    content: "";
+    position: absolute;
+    left: 0.55em;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    opacity: 0.55;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-893 488 142 142'%3E%3Cpath fill='%23ffffff' d='M-787.4,568.7h-6.3l-2.4-2.4c7.9-8.7,12.6-20.5,12.6-33.1c0-28.4-22.9-51.3-51.3-51.3c-28.4,0-51.3,22.9-51.3,51.3c0,28.4,22.9,51.3,51.3,51.3c12.6,0,24.4-4.7,33.1-12.6l2.4,2.4v6.3l39.4,39.4l11.8-11.8L-787.4,568.7z M-834.7,568.7c-19.7,0-35.5-15.8-35.5-35.5c0-19.7,15.8-35.5,35.5-35.5c19.7,0,35.5,15.8,35.5,35.5C-799.3,553-815,568.7-834.7,568.7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.qs-input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* 44px min height for WCAG 2.5.5 (AAA) touch target */
+    min-height: 44px;
+    padding: 0.45em 0.75em 0.45em 2em;
+    font-size: 0.875rem;
+    font-family: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    caret-color: currentColor;
+    line-height: 1.4;
+    outline: none;
+    transition:
+        border-color 0.15s,
+        background 0.15s,
+        box-shadow 0.15s;
+}
+
+.qs-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.qs-announcer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+body.menu-ready .uh-primary-menu,
+body.menu-ready .mobile-menu-content {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Dark mode toggle button ── */
+
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* 44x44 hit target for WCAG 2.5.5 (AAA). */
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-left: 8px;
+    border: 1px solid #757575;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+    color: #333;
+}
+
+/* Force icons to a solid color regardless of embedded fill.
+   brightness(0) collapses everything to black, invert(1) flips to white. */
+.dark-mode-toggle img {
+    filter: brightness(0);
+}
+
+[data-theme="dark"] .dark-mode-toggle img {
+    filter: brightness(0) invert(1);
+}
+
+.dark-mode-toggle:hover,
+.dark-mode-toggle:focus-visible {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
+
+/* WCAG 2.4.7: keep a visible keyboard-focus ring — the shared hover/focus
+   rule above only swaps to a near-invisible #f0f0f0, so the global outline
+   must NOT be removed for focus. (Hover keeps no outline via :hover above.) */
+.dark-mode-toggle:focus-visible {
+    outline: 2px solid #252525;
+    outline-offset: 2px;
+}
+
+/* Moon visible by default (light mode); sun hidden */
+.dark-mode-toggle__moon {
+    display: block;
+}
+.dark-mode-toggle__sun {
+    display: none;
+}
+
+/* In dark mode: show sun, hide moon */
+[data-theme="dark"] .dark-mode-toggle__moon {
+    display: none;
+}
+[data-theme="dark"] .dark-mode-toggle__sun {
+    display: block;
+}
+
+/* Mobile toggle — chip in the overlay top bar, mirrors the desktop
+   utility-strip chip (filled rounded rectangle, 4px radius). Sits on the
+   light topbar so the icon stays dark in light mode. */
+.dark-mode-toggle--mobile {
+    width: 44px;
+    height: 40px;
+    margin: 0;
+    border: none;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.07);
+    flex-shrink: 0;
+}
+
+.dark-mode-toggle--mobile:hover,
+.dark-mode-toggle--mobile:focus-visible {
+    background: rgba(0, 0, 0, 0.14);
+    border: none;
+}
+
+[data-theme="dark"] .dark-mode-toggle--mobile {
+    border: none;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .dark-mode-toggle--mobile:hover,
+[data-theme="dark"] .dark-mode-toggle--mobile:focus-visible {
+    background: rgba(255, 255, 255, 0.26);
+    border: none;
+}
+
+.mobile-overlay-topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mobile-overlay-search-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.mobile-overlay-search-row .mobile-overlay-search {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* ── Dark mode theme — applied when [data-theme="dark"] is on <html> ── */
+
+/* Logo picture swap — dark version hidden until dark mode active */
+.uh-logo-dark {
+    display: none;
+}
+[data-theme="dark"] .uh-logo-light {
+    display: none;
+}
+[data-theme="dark"] .uh-logo-dark {
+    display: block;
+}
+
+[data-theme="dark"] .unified-header,
+[data-theme="dark"] .uh-primary-row,
+[data-theme="dark"] .uh-logo {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] .unified-header {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Dark mode strip: dark gray (darker than the #2d2d2d header) — was an
+   inverted white strip; 2026-06 feedback asked for dark-on-dark instead. */
+[data-theme="dark"] .uh-utility-strip::before {
+    background: #1f1f1f;
+}
+
+[data-theme="dark"] .uh-utility-link {
+    color: #c7c7c7;
+    border-color: #454545;
+}
+
+[data-theme="dark"] .uh-utility-link:hover {
+    color: #fff;
+}
+
+[data-theme="dark"] .uh-utility-submenu {
+    background: #2d2d2d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .uh-utility-submenu li a {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .uh-utility-submenu li a:hover,
+[data-theme="dark"] .uh-utility-submenu li a:focus-visible {
+    background: #3a3a3a;
+    color: #fff;
+}
+
+[data-theme="dark"] .uh-primary-nav .uh-primary-menu > li > a {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .uh-primary-nav .uh-primary-menu > li > ul.sub-menu {
+    background: #242424;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .uh-primary-nav .uh-primary-menu > li > ul.sub-menu li a {
+    color: #d0d0d0;
+}
+
+[data-theme="dark"]
+    .uh-primary-nav
+    .uh-primary-menu
+    > li
+    > ul.sub-menu
+    li
+    a:hover,
+[data-theme="dark"]
+    .uh-primary-nav
+    .uh-primary-menu
+    > li
+    > ul.sub-menu
+    li
+    a:focus-visible {
+    background: #2e2e2e;
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* WCAG 2.4.7: keyboard focus indicator on dropdown items in dark mode —
+   gold outline matches the other [data-theme="dark"] :focus-visible rules. */
+[data-theme="dark"]
+    .uh-primary-nav
+    .uh-primary-menu
+    > li
+    > ul.sub-menu
+    li
+    a:focus-visible {
+    outline: 2px solid #fdb515;
+    outline-offset: -2px;
+}
+
+[data-theme="dark"] .uh-primary-nav .uh-primary-menu > li.current-menu-item > a,
+[data-theme="dark"]
+    .uh-primary-nav
+    .uh-primary-menu
+    > li.current-menu-ancestor
+    > a,
+[data-theme="dark"]
+    .uh-primary-nav
+    .uh-primary-menu
+    > li.current_page_ancestor
+    > a,
+[data-theme="dark"]
+    .uh-primary-nav
+    .uh-primary-menu
+    > li.current_page_item
+    > a {
+    color: #fff;
+    background: #2a2a2a;
+    border-bottom-color: #fdb515;
+}
+
+[data-theme="dark"] .uh-search-inline .qs-input {
+    background: #2a2a2a;
+    border-color: #858585;
+    color: #e0e0e0 !important;
+    -webkit-text-fill-color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .uh-search-inline .qs-input::placeholder {
+    color: #919191;
+    -webkit-text-fill-color: #919191;
+}
+
+[data-theme="dark"] .uh-search-inline .qs-input:focus {
+    background: #333;
+    border-color: #56b3b7;
+    color: #e0e0e0 !important;
+    -webkit-text-fill-color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .dark-mode-toggle {
+    border-color: #858585;
+}
+
+[data-theme="dark"] .dark-mode-toggle:hover,
+[data-theme="dark"] .dark-mode-toggle:focus-visible {
+    background: #333;
+    border-color: #666;
+}
+
+/* ── Desktop toggle lives in the utility strip (2026-06): compact filled
+   rounded rectangle that matches the strip's chips. Overrides the circular
+   base style, which the mobile overlay toggle still uses. Placed after the
+   dark-mode toggle rules so it wins in both themes. ── */
+.uh-utility-strip .dark-mode-toggle {
+    width: 36px;
+    height: 32px;
+    margin-left: 16px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* Strip is dark in both themes — icon is always light */
+.uh-utility-strip .dark-mode-toggle img,
+[data-theme="dark"] .uh-utility-strip .dark-mode-toggle img {
+    filter: brightness(0) invert(1);
+}
+
+.uh-utility-strip .dark-mode-toggle:hover,
+.uh-utility-strip .dark-mode-toggle:focus-visible,
+[data-theme="dark"] .uh-utility-strip .dark-mode-toggle:hover,
+[data-theme="dark"] .uh-utility-strip .dark-mode-toggle:focus-visible {
+    background: rgba(255, 255, 255, 0.28);
+    border: none;
+}
+
+.uh-utility-strip .dark-mode-toggle:focus-visible {
+    outline: 2px solid #fdb515;
+    outline-offset: 2px;
+}
+
+[data-theme="dark"] .mobile-header {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] .mobile-menu-overlay {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] .mobile-overlay-topbar {
+    background: #2d2d2d;
+}
+
+/* ── Skip link ── */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 0;
+}

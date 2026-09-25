@@ -1,0 +1,239 @@
+/* =============================================
+   Numbered Items Block — Container
+   ============================================= */
+
+.numbered-items-block {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 40px;
+	counter-reset: numbered-item;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	/* Stacking context so the card's z-index:-1 gold panel (see has-card-border
+	   below) lands behind the cards, not behind the page background. */
+	isolation: isolate;
+}
+
+/* =============================================
+   Numbered Item — Individual Card
+   ============================================= */
+
+.numbered-item {
+	position: relative;
+	padding: 40px 24px 28px;
+	background: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: var(--umbc-radius-sm, 4px);
+	counter-increment: numbered-item;
+}
+
+/* Auto-generated gold number badge */
+.numbered-item::before {
+	content: counter(numbered-item);
+	position: absolute;
+	top: -20px;
+	left: 24px;
+	background: #fdb515;
+	color: #1a1a1a;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 1.125rem;
+	line-height: 1;
+}
+
+/* Hide number badge when an icon is present */
+.numbered-item.has-icon {
+	padding-top: 28px;
+}
+
+.numbered-item.has-icon::before {
+	display: none;
+}
+
+/* Font Awesome icon — gold, double size */
+.numbered-item-icon {
+	margin-bottom: 16px;
+	text-align: center;
+	font-size: 2rem; 
+	color: #fdb515;
+}
+
+.numbered-item-icon i {
+	font-size: 5rem;
+	color: #fdb515;
+}
+
+/* Title */
+.numbered-item-title {
+	font-size: 1.5rem !important;
+	font-weight: 700;
+	margin: 0 0 10px;
+	color: inherit;
+}
+
+/* Body */
+.numbered-item-body {
+	font-size: 0.9375rem;
+	line-height: 1.6;
+	margin: 0;
+}
+
+.numbered-item-body p:last-child {
+	margin-bottom: 0;
+}
+
+/* =============================================
+   Responsive
+   ============================================= */
+
+@media (max-width: 600px) {
+	.numbered-items-block {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* =============================================================
+   Block option — heading style
+   ============================================================= */
+
+.numbered-items-block.heading-bold .numbered-item-title {
+	font-weight: 700;
+	text-transform: none;
+}
+
+.numbered-items-block.heading-caps .numbered-item-title {
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+/* =============================================================
+   Block option — alignment (icon, heading, body)
+   ============================================================= */
+
+.numbered-items-block.align-left .numbered-item-icon,
+.numbered-items-block.align-left .numbered-item-title,
+.numbered-items-block.align-left .numbered-item-body {
+	text-align: left;
+}
+
+.numbered-items-block.align-center .numbered-item-icon,
+.numbered-items-block.align-center .numbered-item-title,
+.numbered-items-block.align-center .numbered-item-body {
+	text-align: center;
+}
+
+/* =============================================================
+   Item link — stretched-link overlay
+   The whole card is clickable via an invisible <a> covering it.
+   ============================================================= */
+
+/* The lift uses `top`, not `transform`: a transform would make the card a
+   stacking context, which traps the z-index:-1 gold panel on top of the card
+   instead of behind it. `top` on a position:relative card avoids that. */
+.numbered-item.has-link {
+	cursor: pointer;
+	transition: top 0.15s ease, box-shadow 0.15s ease;
+}
+
+.numbered-item.has-link:hover {
+	top: -3px;
+	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+}
+
+.numbered-item-stretched-link {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	border-radius: inherit;
+}
+
+.numbered-item-stretched-link:focus-visible {
+	outline: 3px solid #fdb515;
+	outline-offset: 3px;
+}
+
+/* =============================================================
+   Block option — offset gold frame (decorative)
+   Per card: a solid gold panel sits behind the card. Selecting a
+   side translates the panel 12px that way; two adjacent sides
+   translate it diagonally, so the visible strip pulls in from the
+   perpendicular edges and reads as a mitered drop shadow. z-index:-1 keeps it
+   behind the card (which is why the card must not form a stacking
+   context — see the .has-link hover note above). The block container
+   carries `isolation: isolate` so this z-index:-1 panel is contained
+   there rather than falling behind the page background.
+   ============================================================= */
+
+.numbered-items-block.has-card-border .numbered-item::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: #fdb515;
+	border-radius: var(--umbc-radius-sm, 4px);
+	z-index: -1;
+	pointer-events: none;
+	/* The panel is the card translated by the selected offsets. Because the
+	   whole rectangle moves, the strip pulls in from the perpendicular edges
+	   by the offset amount — a mitered drop shadow rather than a flush frame. */
+	transform: translate(var(--card-border-x, 0), var(--card-border-y, 0));
+}
+
+/* Each selected side shifts the panel 12px that way (within the 40px gap) */
+.numbered-items-block.has-card-border.border-side-top    { --card-border-y: -12px; }
+.numbered-items-block.has-card-border.border-side-right  { --card-border-x: 12px; }
+.numbered-items-block.has-card-border.border-side-bottom { --card-border-y: 12px; }
+.numbered-items-block.has-card-border.border-side-left   { --card-border-x: -12px; }
+
+/* Whole-block frame — the block container is transparent (a solid panel
+   would show through the grid gaps), so this stays an outlined rule
+   offset outside the block. Best on default/wide blocks; on alignfull an
+   outward side can reach the viewport edge. */
+.numbered-items-block.has-block-border {
+	position: relative;
+}
+.numbered-items-block.has-block-border::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border: 0 solid #fdb515;
+	border-radius: var(--umbc-radius-sm, 4px);
+	pointer-events: none;
+}
+.numbered-items-block.has-block-border.border-side-top::before    { top: -12px;    border-top-width: 3px; }
+.numbered-items-block.has-block-border.border-side-right::before  { right: -12px;  border-right-width: 3px; }
+.numbered-items-block.has-block-border.border-side-bottom::before { bottom: -12px; border-bottom-width: 3px; }
+.numbered-items-block.has-block-border.border-side-left::before   { left: -12px;   border-left-width: 3px; }
+
+/* =============================================================
+   Dark Mode — Numbered Items Block
+   ============================================================= */
+
+/* Card surface */
+[data-theme="dark"] .numbered-item {
+	background: var(--umbc-surface-card-alt, #232323);
+	border-color: var(--umbc-border, #3d3d3d);
+}
+
+/* Number badge: gold + near-black text — valid pair, no change */
+
+/* Icon: gold on dark card — valid pair, no change */
+
+/* Title inherits from card; body copy needs a nudge */
+[data-theme="dark"] .numbered-item-body {
+	color: #c0c0c0;
+}
+
+/* Linked cards — the light-mode drop shadow is invisible on a dark page,
+   so swap in a faint light edge plus a deeper shadow on hover. */
+[data-theme="dark"] .numbered-item.has-link:hover {
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 22px rgba(0, 0, 0, 0.6);
+}
+
+/* Offset gold frame stays gold on the dark card surface — valid pair, no change */
