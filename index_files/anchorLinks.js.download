@@ -1,0 +1,42 @@
+(function ($) {
+  'use strict';
+
+  var self = this;
+
+  var anchorLinksInit = function () {
+    var $anchor = $('a[href^="#"]', self);
+    var $headerHeight;
+
+    setTimeout(function () {
+      $headerHeight = $('.cc--header').height();
+    }, 500);
+
+    $anchor.on('click', function () {
+      var scrollPos = $($(this).attr('href')).offset().top;
+      var currentPos = $(this).offset().top;
+
+      if (currentPos > scrollPos) {
+        $('html,body').animate({
+          scrollTop: scrollPos - $headerHeight
+        }, 300);
+      }
+      else {
+        $('html,body').animate({
+          scrollTop: scrollPos
+        }, 300);
+      }
+    });
+  };
+
+  /**
+  * This is boilerplate: add a behavior to window.DP.behaviors
+  */
+  window.DP.behaviors.backToTop = {
+    attach: function (context) {
+      $(context).find('.cc--rich-text').once('anchorLinks').each(function () {
+        anchorLinksInit.apply(this);
+      });
+    }
+  };
+
+})(jQuery);

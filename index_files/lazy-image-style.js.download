@@ -1,0 +1,13 @@
+/**
+ * @file
+ * Provider default configurations.
+ */
+
+(function (settings) {
+  'use strict';
+
+  // Set default configurations for lazysizes.
+  window.lazySizesConfig = window.lazySizesConfig || {};
+  window.lazySizesConfig.expand = Number(settings.lazy_image_style.offset) || 400;
+
+}(drupalSettings));

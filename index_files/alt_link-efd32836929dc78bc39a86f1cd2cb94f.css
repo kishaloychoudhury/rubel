@@ -1,0 +1,9 @@
+a.alt-link:link {text-decoration: underline;}
+a.alt-link:hover {text-decoration: underline;}
+a.alt-link:visited {text-decoration: underline;}
+a.alt-link:active {text-decoration: underline;}
+
+a.alt-link.ext:link {text-decoration: underline;}
+a.alt-link.ext:hover {text-decoration: underline;}
+a.alt-link.ext:visited {text-decoration: underline;}
+a.alt-link.ext:active {text-decoration: underline;}

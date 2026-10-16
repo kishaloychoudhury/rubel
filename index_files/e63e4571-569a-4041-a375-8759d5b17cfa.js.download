@@ -1,0 +1,29 @@
+/**
+* Pace University
+* Default feed Layout
+* 2026-08-19 20:25:59
+*/
+(function () {
+    // Loader
+    var loader=new function(){this.rC=-1,this.r=[],this.add=function(t){this.r.push(t)},this.addTag=function(t,e){var i=document.getElementsByTagName("head")[0],s=t.indexOf(".js")>0?"script":"link",n=document.createElement(s);i.appendChild(n),n.onload=e,n.charset="UTF-8","script"===s?(n.type="text/javascript",n.src=t):"link"===s&&(n.rel="stylesheet",n.href=t)},this.loadNext=function(){if(this.rC++,this.rC>=this.r.length)this.done();else{var t=this.r[this.rC];this.addTag(t,this.loadNext.bind(this))}},this.done=function(){this.onResourcesLoaded(window.Curator)},this.load=function(t){this.onResourcesLoaded=t,this.loadNext()}};
+
+    // Config
+    var config = {"post":{"animate":true,"maxHeight":0,"showTitles":true,"showShare":false,"showComments":false,"showLikes":false,"autoPlayVideos":true,"clickAction":"open-popup","clickReadMoreAction":"open-popup","maxLines":4,"useHighQualityImages":false},"widget":{"template":"widget-waterfall","colWidth":250,"colGutter":0,"showLoadMore":true,"continuousScroll":false,"postsPerPage":12,"animate":false,"progressiveLoad":false,"lazyLoad":false,"verticalSpacing":20,"horizontalSpacing":20,"autoLoadNew":false,"lazyLoadType":"whole_widget","gridMobile":true,"gridMobileRows":3,"gridMobileShowLoadMore":false,"gridMobileDimensions":"1:1","gridMobileLayoutMode":"byWidth","gridMobileMinWidth":150,"gridMobileColumnCount":2},"lang":"en","container":"#curator-feed-default-feed-layout","debug":0,"hidePoweredBy":false,"embedSource":"","forceHttps":false,"feed":{"id":"e63e4571-569a-4041-a375-8759d5b17cfa","apiEndpoint":"https:\/\/api.curator.io","postsPerPage":12,"params":{},"limit":25},"popup":{"template":"popup","templateWrapper":"popup-wrapper","autoPlayVideos":false,"deepLink":false},"filter":{"template":"filter","showNetworks":false,"showSources":false,"showAll":false,"default":"all","limitPosts":false,"limitPostNumber":0,"period":""},"type":"Waterfall","theme":"sydney"};
+    var colours = {"widgetBgColor":"#ffffff","bgColor":"#ffffff","borderColor":"#cccccc","iconColor":"#002D72","textColor":"#002D72","linkColor":"#428ACB","dateColor":"#000000","footerColor":"#ffffff","tabIndexColor":"#cccccc","buttonColor":"#dddddd","popupBgColor":"#ffffff","popupLetterboxColor":"#F5F5F5","popupTextColor":"#222222","popupLinkColor":"#595959","popupIconColor":"#222222","popupDateColor":"#222222","shareBgColor":"#ffffff","shareTextColor":"#222222","shareIconColor":"#222222","popupInheritPosts":true,"shareInheritPosts":true};
+    var styles = {};
+
+    // Bootstrap
+    function loaderCallback () {
+        window.Curator.loadWidget(config, colours, styles);
+    }
+
+    // Run Loader
+    loader.add('https://cdn.curator.io/6.0/curator.embed.css');
+    loader.add('https://cdn.curator.io/published-css/e63e4571-569a-4041-a375-8759d5b17cfa.css');
+
+    loader.add('https://cdn.curator.io/6.0/curator.embed.js');
+
+    
+
+    loader.load(loaderCallback);
+})();

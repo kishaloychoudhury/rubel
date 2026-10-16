@@ -1,0 +1,23 @@
+(function ($) {
+  'use strict';
+
+  var $self = this;
+
+  var initCtaAudience = function () {
+    var $button = $('.cc--em-by-audience .list-wrapper button', $self);
+
+    $button.once().on('click', function () {
+      $(this).parent().toggleClass('open');
+      $(this).parents('.item-wrapper').siblings().find('.list-wrapper').removeClass('open');
+    });
+  };
+
+  window.DP.behaviors.ctaAudience = {
+    attach: function (context) {
+      $(context).find('.cc--em-by-audience').once('ctaAudience').each(function () {
+        initCtaAudience.apply(this);
+      });
+    }
+  };
+
+})(jQuery);

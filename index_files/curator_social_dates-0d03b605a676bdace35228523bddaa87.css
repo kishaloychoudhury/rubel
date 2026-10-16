@@ -1,0 +1,9 @@
+.cc--social-media-feed .crt-widget .crt-post .crt-post-date a, .cc--social-media-feed .crt-widget .crt-post .crt-post-username a, span.crt-post-username > a
+{color: #333333; height: 24px !important; display: inline-block;}
+.crt-post-date .crt-post-date-link
+{opacity: .75 !important;}
+.crt-post.crt-post-read-more-button
+{color: 333 !important;}
+
+.crt-widget.crt-widget-branded .crt-logo
+{color: #002D72}
